@@ -1,36 +1,35 @@
-from flask import Flask, render_template, request
-from flask_bootstrap import Bootstrap
+from flask import Blueprint, render_template, request
+from flask_login import login_required, current_user
 import json
 from datetime import datetime
-from src.get_boxes import Recon
-import time
 import random
-app = Flask(__name__)
 
-@app.route("/", methods=['GET', 'POST'])
-def index():
+views = Blueprint('views', __name__)
+
+
+@views.route("/", methods=['GET', 'POST'])
+@login_required
+def home():
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠",]
 
     if request.method == "POST":
-        start = time.time()
+        pass
+        # Recon("192.168.1.0/24").save_box_data()
 
-        Recon("192.168.1.0/24").save_box_data()
-        end = time.time()
-
-    with open("data/hosts.json", "r") as f:
+    with open("website/data/hosts.json", "r") as f:
         box_list = json.load(f)["hosts"]
 
-    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=random.choice(emoji_list))
+    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=random.choice(emoji_list), user=current_user)
 
-
-@app.route("/<name>", methods=["GET"])
-def switch_info(name: str):
+@views.route("/<name>", methods=["GET"])
+@login_required
+def box_management(name: str):
     """
     This page shows detailed stats on an individual switch
     queried by name number
     """
-    with open("data/hosts.json", "r") as f:
+    with open("website/data/hosts.json", "r") as f:
         box_list = json.load(f)["hosts"]
 
 
@@ -40,6 +39,7 @@ def switch_info(name: str):
                 "manage.html",
                 title=name,
                 box=box_list[i],
+                user=current_user
             )
 
     return render_template(
@@ -51,10 +51,11 @@ def switch_info(name: str):
             "OS": "Null",
             "services": [],
             "isOn": False
-        }
+        },
+        user=current_user
     )
 
-@app.route("/network-wide", methods=["GET"])
+@views.route("/network-wide", methods=["GET"])
 def network_wide():
     """
     This page shows a summary of all port counts, etc
@@ -62,7 +63,3 @@ def network_wide():
     """
     # network = getNetworkWide()
     return render_template("network-wide.html", network={})
-
-if __name__ == "__main__":
-    Bootstrap(app)
-    app.run(host="0.0.0.0", port=8080, debug=True)

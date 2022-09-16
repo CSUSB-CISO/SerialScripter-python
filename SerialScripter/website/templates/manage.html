@@ -9,20 +9,19 @@
       </div>
    </div>
    <div class="container">
-      <div class="jumbotron">
+      <div class="jumbotron" style = background-color:transparent;>
          <ul class="nav nav-tabs">
-            <li class="nav-item">
+            <li class="nav-item active">
                <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
             </li>
             <li class="nav-item">
-               <a class="nav-link" data-toggle="tab" href="#management">Management</a>
-            </li>
-            
-            <li class="nav-item">
-               <a class="nav-link" data-toggle="tab" href="#portdetail">Port Detail</a>
+               <a class="nav-link active" data-toggle="tab" href="#keymanagement">Key Management</a>
             </li>
             <li class="nav-item">
-               <a class="nav-link" data-toggle="tab" href="#rawoutput">Raw Output</a>
+               <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
+            </li>
+            <li class="nav-item">
+               <a class="nav-link active" data-toggle="tab" href="#rawoutput">Raw Output</a>
             </li>
          </ul>
          <div id="myTabContent" class="tab-content">
@@ -38,7 +37,7 @@
                {% endif %}
                <br>
             </div>
-            <div class="tab-pane" id="management">
+            <div class="tab-pane" id="keymanagement">
                <form data-bitwarden-watching="1">
                <fieldset>
                   <div class="form-group row">
@@ -53,24 +52,6 @@
                   <div class="form-group">
                      <label for="exampleInputPassword1" class="form-label mt-4">Password</label>
                      <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-                  </div>
-                  <div class="form-group">
-                     <label for="exampleSelect1" class="form-label mt-4">Example select</label>
-                     <select class="form-select" id="exampleSelect1">
-                     <option>1</option>
-                     <option>2</option>
-                     <option>3</option>
-                     <option>4</option>
-                     <option>5</option>
-                     </select>
-                  </div>
-                  <div class="form-group">
-                     <label for="exampleTextarea" class="form-label mt-4">Example textarea</label>
-                     <textarea class="form-control" id="exampleTextarea" rows="3"></textarea>
-                  </div>
-                  <div class="form-group">
-                     <label for="formFile" class="form-label mt-4">Default file input example</label>
-                     <input class="form-control" type="file" id="formFile">
                   </div>
                   <fieldset class="form-group">
                      <legend class="mt-4">Radio buttons</legend>
