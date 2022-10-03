@@ -1,8 +1,11 @@
+from os import environ
 from website import create_app
 from flask_bootstrap import Bootstrap
+
 
 app = create_app()
 
 if __name__ == '__main__':
     Bootstrap(app)
-    app.run(debug=True)
+    port = int(environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', debug=True, port=port, ssl_context="adhoc")

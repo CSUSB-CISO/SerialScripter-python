@@ -1,0 +1,31 @@
+{%- extends "base.html" %}
+<body>
+    {% block content %}
+    <div class="container">
+        <div class="col-lg-12">
+           <div class="page-header">
+              <h1>Key-Management</small></h1>
+           </div>
+        </div>
+     </div>
+     <ul class="list-group list-group-flush" id="notes">
+      {% for key in user.keys %}
+      <li class="list-group-item">
+         {{ key.data }}
+         <button type="button" class="close" onClick="deleteKey({{ key.id }})">
+            <span aria-hidden="true">&times;</span>
+         </button>
+      </li>
+      {% endfor %}
+      </ul>
+     <form method="POST">
+         <textarea name="key" id="key" class="form-control"></textarea>
+         <div align="center">
+            <br />
+            <button type="submit" class="btn btn-primary">Add Key</button>
+         </div>
+         </form>
+
+    {% endblock %}
+
+ </body>
