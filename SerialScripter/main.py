@@ -8,4 +8,4 @@ app = create_app()
 if __name__ == '__main__':
     Bootstrap(app)
     port = int(environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', debug=True, port=port, ssl_context="adhoc")
+    app.run(host='0.0.0.0', debug=True, port=port, ssl_context=('website/data/cert.pem', 'website/data/key.pem'))

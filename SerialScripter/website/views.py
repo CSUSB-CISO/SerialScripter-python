@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from flask import Blueprint, render_template, request, flash, jsonify
 from flask_login import login_required, current_user
 import json
@@ -6,7 +5,9 @@ from datetime import datetime
 import random
 from .models import Key
 from . import db
+from src.razdavat import Razdavat
 
+from os import getlogin
 
 views = Blueprint('views', __name__)
 
@@ -75,13 +76,29 @@ def key_management():
     if request.method == 'POST':
         key = request.form.get('key')
 
-        if len(key) < 1:
+        if len(key) < 500:
             flash('Note is too short!', category='error')
         else:
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            flash('Note added!', category='success')
+            print(key)
+            with open("website/data/hosts.json", "r") as f:
+                hosts = json.load(f)["hosts"]
+                try:
+                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+                    connection.add_ssh_key(key)
+                    # for host in hosts:
+                    #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+                    #     connection.add_ssh_key(key)
+                except:
+                    connection = Razdavat("127.0.0.1", password="@11272003Cm!", user="cm03")
+                    connection.add_ssh_key(key)
+                    # for host in hosts:
+                    #     connection = Razdavat(host["ip"], password="@11272003Cm!", user="cm03")
+                    #     connection.add_ssh_key(key)
+
+            flash('Key added!', category='success')
 
 
     return render_template("key-management.html", user=current_user)
@@ -96,4 +113,5 @@ def delete_key():
         if key.user_id == current_user.id:
             db.session.delete(key)
             db.session.commit()
+        print(key.data)
     return jsonify({})

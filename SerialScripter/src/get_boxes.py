@@ -1,13 +1,11 @@
-import nmap
-import socket 
-import os 
-import time
-import json
+from nmap import PortScanner
+from os import popen 
+from json import dump
 
 class Recon:
     def __init__(self, range: str) -> None:
         self.range = range
-        nm = nmap.PortScanner()
+        nm = PortScanner()
         self.results = nm.scan(hosts=range, arguments="-sS -n -T4 -F --min-hostgroup 256 --min-parallelism 10")
         self.hosts = self.set_box_ips()
 
@@ -21,7 +19,7 @@ class Recon:
 
         for ip in hosts:
             try:
-                response = os.popen(f"ping {ip}").readlines()[2]
+                response = popen(f"ping {ip}").readlines()[2]
                 TTLs.append(int(response[response.index("TTL=")+4:]))
             except:
                 print(f"PING blocked by ip {ip}")
@@ -53,11 +51,11 @@ class Recon:
             for box_name in range(len(self.box_data)):
                 if box_name < len(self.box_data)-1:
                     f.write("\t\t")
-                    json.dump(self.box_data[box_name], f)
+                    dump(self.box_data[box_name], f)
                     f.write(",\n")
                 else:
                     f.write("\t\t")
-                    json.dump(self.box_data[box_name], f)
+                    dump(self.box_data[box_name], f)
                     f.write("\n\t]\n}")
  
 # start = time.time()
