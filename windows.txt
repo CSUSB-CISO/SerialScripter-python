@@ -17,7 +17,7 @@
         #users
         > net user
 
-        #network shares
+        #ns
         > net share
 
         #list start up programs
