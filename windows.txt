@@ -22,3 +22,7 @@
 
         #list start up programs
         > gcim win32_startupcommand
+
+
+
+flksmdglkjwrgjewjrgerjopo
