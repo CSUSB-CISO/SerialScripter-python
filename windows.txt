@@ -17,8 +17,10 @@
         #users
         > net user
 
-        #network shares
+        #ns
         > net share
 
         #list start up programs
         > gcim win32_startupcommand
+
+Bruh
