@@ -8,23 +8,41 @@
            </div>
         </div>
      </div>
-     <ul class="list-group list-group-flush" id="notes">
-      {% for key in user.keys %}
-      <li class="list-group-item">
-         {{ key.data }}
-         <button type="button" class="close" onClick="deleteKey({{ key.id }})">
-            <span aria-hidden="true">&times;</span>
-         </button>
-      </li>
-      {% endfor %}
-      </ul>
+      <div class="key-container">
+         {% for key in user.keys %}
+            <div class="key-card">
+               <span data-posistion="{{ key.id }}">
+               <div class="key-card-header">
+                  Key Number: {{ key.id }}
+                  <button type="button" class="key-close" onClick="deleteKey({{ key.id }})" data-posistion-target="{{ key.id }}">
+                     <span aria-hidden="true">&times;</span>
+                  </button>
+                  <hr>
+               </span>
+               </div>
+               <div class="d-flex flex-items-center" >
+                  <div class="Box-row text-center d-flex flex-column">
+                     <object data="static/key-chain.png" width="50" height="50"> </object>
+                     {{ key.data.split()[0] }} 
+                  </br>
+                  </div>
+                  <div class="flex-auto">
+                     <br>
+                     {{ key.data.split()[-1] }}
+                  </div>
+                  <br />
+                  
+               </div>
+            </div>
+         {% endfor %}
+      </div>
      <form method="POST">
-         <textarea name="key" id="key" class="form-control"></textarea>
+         <textarea name="key" id="key" class="key-form"></textarea>
          <div align="center">
             <br />
             <button type="submit" class="btn btn-primary">Add Key</button>
          </div>
-         </form>
+      </form>
 
     {% endblock %}
 

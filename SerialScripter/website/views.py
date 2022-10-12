@@ -82,21 +82,21 @@ def key_management():
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            print(key)
-            with open("website/data/hosts.json", "r") as f:
-                hosts = json.load(f)["hosts"]
-                try:
-                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
-                    connection.add_ssh_key(key)
-                    # for host in hosts:
-                    #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
-                    #     connection.add_ssh_key(key)
-                except:
-                    connection = Razdavat("127.0.0.1", password="@11272003Cm!", user="cm03")
-                    connection.add_ssh_key(key)
-                    # for host in hosts:
-                    #     connection = Razdavat(host["ip"], password="@11272003Cm!", user="cm03")
-                    #     connection.add_ssh_key(key)
+            # print(key)
+            # with open("website/data/hosts.json", "r") as f:
+            #     hosts = json.load(f)["hosts"]
+            #     try:
+            #         connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+            #         connection.add_ssh_key(key)
+            #         # for host in hosts:
+            #         #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+            #         #     connection.add_ssh_key(key)
+            #     except:
+            #         connection = Razdavat("127.0.0.1", password="@11272003Cm!", user="cm03")
+            #         connection.add_ssh_key(key)
+            #         # for host in hosts:
+            #         #     connection = Razdavat(host["ip"], password="@11272003Cm!", user="cm03")
+            #         #     connection.add_ssh_key(key)
 
             flash('Key added!', category='success')
 
@@ -106,9 +106,12 @@ def key_management():
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():
+    # load the json object that was sent
     key = json.loads(request.data)
+    # access the actual pair by using the keyId key
     keyId = key['keyId']
     key = Key.query.get(keyId)
+    # reassigns key to true or false depending on if the key actually exists in the database
     if key:
         if key.user_id == current_user.id:
             db.session.delete(key)
