@@ -11,6 +11,13 @@
   type = "text/javascript"
   src="{{ url_for('static', filename='index.js') }}"
   ></script>
+  <script
+  type = "text/javascript"
+  src="{{ url_for('static', filename='xterm.js') }}"
+  ></script>
+  <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+  <script src="node_modules/xterm/lib/xterm.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"></script>
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
