@@ -30,14 +30,71 @@ class Recon:
     def init_box_data(self, hosts: tuple, TTLs: tuple) -> tuple:
         box_data = list()
 
+    # box={
+    #         "name": "host-00",
+    #         "ip": "0.0.0.0",
+    #         "OS": "Null",
+    #         "services": [],
+    #         "isOn": False,
+    #         "docker": [],
+    #         "tasks": [{}],
+    #         "firewall": []
+    #     }
         for i, ip in enumerate(hosts):
             if TTLs[i] != None:
                 if TTLs[i] > 128:
-                    box_data.append({"name": f'host-{ip.split(".")[-1]}', "ip": ip, "OS": "Unknown", "services": [{"port": port, "service": self.results["scan"][ip]["tcp"][port]["name"]} for port in self.results["scan"][ip]["tcp"]], "isOn": True})
+                    box_data.append(
+                        {
+                            "name": f'host-{ip.split(".")[-1]}',
+                            "ip": ip,
+                            "OS": "Unknown",
+                            "services": [
+                                {
+                                    "port": port,
+                                    "service": self.results["scan"][ip]["tcp"][port]["name"]
+                                } for port in self.results["scan"][ip]["tcp"]
+                            ],
+                            "isOn": True,
+                            "docker": [],
+                            "tasks": [{}],
+                            "firewall": []
+                        }
+                    )
                 elif TTLs[i] >= 120:
-                    box_data.append({"name": f'host-{ip.split(".")[-1]}', "ip": ip, "OS": "Windows", "services": [{"port": port, "service": self.results["scan"][ip]["tcp"][port]["name"]} for port in self.results["scan"][ip]["tcp"]], "isOn": True})
+                    box_data.append(
+                        {
+                            "name": f'host-{ip.split(".")[-1]}',
+                            "ip": ip,
+                            "OS": "Windows",
+                            "services": [
+                                {
+                                    "port": port,
+                                    "service": self.results["scan"][ip]["tcp"][port]["name"]
+                                } for port in self.results["scan"][ip]["tcp"]
+                            ],
+                            "isOn": True,
+                            "docker": [],
+                            "tasks": [{}],
+                            "firewall": []
+                        }
+                    )
                 else:
-                    box_data.append({"name": f'host-{ip.split(".")[-1]}', "ip": ip, "OS": "Linux", "services": [{"port": port, "service": self.results["scan"][ip]["tcp"][port]["name"]} for port in self.results["scan"][ip]["tcp"]], "isOn": True})
+                    box_data.append(
+                        {
+                            "name": f'host-{ip.split(".")[-1]}',
+                            "ip": ip,
+                            "OS": "Linux",
+                            "services": [
+                                {
+                                    "port": port,
+                                    "service": self.results["scan"][ip]["tcp"][port]["name"]
+                                } for port in self.results["scan"][ip]["tcp"]],
+                            "isOn": True,
+                            "docker": [],
+                            "tasks": [{}],
+                            "firewall": []
+                        }
+                    )
 
         return tuple(box_data)
 
@@ -45,7 +102,8 @@ class Recon:
         return self.box_data
 
     def save_box_data(self):
-        with open("data/hosts.json", "w") as f:
+        with open("data/hosts.json",
+        "w") as f:
             f.write('{\n\t"hosts": [\n')
 
             for box_name in range(len(self.box_data)):

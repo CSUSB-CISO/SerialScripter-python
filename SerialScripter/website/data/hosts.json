@@ -10,14 +10,20 @@
         { "port": 8009, "service": "ajp13" },
         { "port": 8443, "service": "https-alt" }
       ],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     },
     {
       "name": "host-86",
       "ip": "192.168.1.86",
       "OS": "Linux",
       "services": [{ "port": 49154, "service": "unknown" }],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     },
     {
       "name": "host-87",
@@ -27,7 +33,10 @@
         { "port": 80, "service": "http" },
         { "port": 111, "service": "rpcbind" }
       ],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     },
     {
       "name": "host-161",
@@ -40,14 +49,20 @@
         { "port": 8080, "service": "http-proxy" },
         { "port": 9100, "service": "jetdirect" }
       ],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     },
     {
       "name": "host-211",
       "ip": "192.168.1.211",
       "OS": "Linux",
       "services": [{ "port": 53, "service": "domain" }],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     },
     {
       "name": "host-254",
@@ -60,7 +75,10 @@
         { "port": 443, "service": "https" },
         { "port": 49152, "service": "unknown" }
       ],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     },
     {
       "name": "host-234",
@@ -74,7 +92,10 @@
         { "port": 5357, "service": "wsdapi" },
         { "port": 8080, "service": "http-proxy" }
       ],
-      "isOn": true
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": []
     }
   ]
 }

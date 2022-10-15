@@ -55,7 +55,10 @@ def box_management(name: str):
             "ip": "0.0.0.0",
             "OS": "Null",
             "services": [],
-            "isOn": False
+            "isOn": False,
+            "docker": [],
+            "tasks": [{}],
+            "firewall": []
         },
         user=current_user
     )
