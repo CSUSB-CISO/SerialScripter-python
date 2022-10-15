@@ -29,17 +29,6 @@ class Recon:
 
     def init_box_data(self, hosts: tuple, TTLs: tuple) -> tuple:
         box_data = list()
-
-    # box={
-    #         "name": "host-00",
-    #         "ip": "0.0.0.0",
-    #         "OS": "Null",
-    #         "services": [],
-    #         "isOn": False,
-    #         "docker": [],
-    #         "tasks": [{}],
-    #         "firewall": []
-    #     }
         for i, ip in enumerate(hosts):
             if TTLs[i] != None:
                 if TTLs[i] > 128:
@@ -57,7 +46,23 @@ class Recon:
                             "isOn": True,
                             "docker": [],
                             "tasks": [{}],
-                            "firewall": []
+                            "firewall": [],
+                            "shares": [
+                                {
+                                    "name": {},
+                                    "fullpath": {},
+                                    "permissions": [
+                                        {
+                                        "users": [
+                                            {
+                                            "username": {}
+                                            }
+                                        ]
+                                        }
+                                    ],
+                                    "SMBversion": {}
+                                }
+                            ]  
                         }
                     )
                 elif TTLs[i] >= 120:
@@ -75,7 +80,23 @@ class Recon:
                             "isOn": True,
                             "docker": [],
                             "tasks": [{}],
-                            "firewall": []
+                            "firewall": [],
+                            "shares": [
+                                {
+                                    "name": {},
+                                    "fullpath": {},
+                                    "permissions": [
+                                        {
+                                        "users": [
+                                            {
+                                            "username": {}
+                                            }
+                                        ]
+                                        }
+                                    ],
+                                    "SMBversion": {}
+                                }
+                            ]   
                         }
                     )
                 else:
@@ -92,10 +113,25 @@ class Recon:
                             "isOn": True,
                             "docker": [],
                             "tasks": [{}],
-                            "firewall": []
+                            "firewall": [],
+                            "shares": [
+                                {
+                                    "name": {},
+                                    "fullpath": {},
+                                    "permissions": [
+                                        {
+                                        "users": [
+                                            {
+                                            "username": {}
+                                            }
+                                        ]
+                                        }
+                                    ],
+                                    "SMBversion": {}
+                                }
+                            ]   
                         }
                     )
-
         return tuple(box_data)
 
     def get_box_data(self):
