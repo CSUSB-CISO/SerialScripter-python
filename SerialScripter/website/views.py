@@ -73,19 +73,33 @@ def network_wide():
     # network = getNetworkWide()
     return render_template("network-wide.html", network={}, user=current_user)
 
+@views.route("/terminal", methods=["GET"])
+@login_required
+def terminal():
+    """
+    This page shows a summary of all port counts, etc
+    across the entire network
+    """
+    # network = getNetworkWide()
+    return render_template("terminal.html", user=current_user)
+
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
 def key_management():
     if request.method == 'POST':
         key = request.form.get('key')
 
-        if len(key) < 500:
-            flash('Note is too short!', category='error')
-        else:
+        # checking if the key to be added matches any keys that are currently in the db
+        is_duplicate = False
+        for database_keys in current_user.keys:
+            if database_keys.data.split()[1] == key.split()[1]:
+                is_duplicate = True
+
+        # ensure it a unique public key will be added
+        if len(key) > 500 and is_duplicate == False:
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            print(key)
             with open("website/data/hosts.json", "r") as f:
                 hosts = json.load(f)["hosts"]
                 try:
@@ -101,7 +115,8 @@ def key_management():
                     #     connection = Razdavat(host["ip"], password="@11272003Cm!", user="cm03")
                     #     connection.add_ssh_key(key)
 
-            flash('Key added!', category='success')
+        else:
+            flash('Note is too short!', category='error')
 
 
     return render_template("key-management.html", user=current_user)
@@ -109,9 +124,12 @@ def key_management():
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():
+    # load the json object that was sent
     key = json.loads(request.data)
+    # access the actual pair by using the keyId key
     keyId = key['keyId']
     key = Key.query.get(keyId)
+    # reassigns key to true or false depending on if the key actually exists in the database
     if key:
         if key.user_id == current_user.id:
             db.session.delete(key)

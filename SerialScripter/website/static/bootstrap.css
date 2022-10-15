@@ -4670,6 +4670,115 @@ fieldset:disabled .btn {
   border-radius: 0;
 }
 
+.d-flex {
+  display: flex !important;
+}
+
+.flex-items-center {
+  align-items: center !important;
+}
+
+.key-border-top {
+
+  position: absolute;
+  top: 50%;
+  bottom: 0;
+}
+
+.flex-auto {
+  flex: auto !important;
+  padding-bottom: 20px;
+
+}
+
+.flex-column {
+  flex-direction: column !important;
+
+}
+
+.Box-row {
+  padding: 20px;
+  margin-top: -1px;
+  list-style-type: none;
+  border-right-color: #000000;
+  border-right-style: solid;
+  border-right-width: 1px;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.key-form {
+  display: block;
+  width: 30%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #292929;
+  background-color: #e7abf7;
+  background-clip: padding-box;
+  border: 0 solid #ced4da;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0.75rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  margin: auto;
+  margin-top: 50px;
+  display: block;
+}
+
+.key-close {
+  position: relative;
+  top: 0px;
+  left: 140px;
+  width: 20px;
+  height: -10px;
+  background-color: #e7abf7;
+}
+
+.key-container {
+  margin: -36px 0 0 -36px;
+}
+
+/* individual card container */
+.key-card {
+  font-size: 2.5rem;
+  font-weight: 400;
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 30%);
+  border-radius: 4px;
+  background: #e7abf7;
+  width: 475px;
+  display: inline-block;
+  vertical-align: top;
+  margin: 36px 0 50px 135px; /* top right bottom left */
+  color: #292929;
+  text-align: center;
+}
+
+.key-card-header {
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  border-bottom-color: #000000;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
+/* material design icon  */
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 48
+}
+
+
 .breadcrumb {
   --bs-breadcrumb-padding-x: 0;
   --bs-breadcrumb-padding-y: 0;
