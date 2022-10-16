@@ -1,0 +1,12 @@
+{%- extends "base.html" %}
+<body>
+  {% block content %}
+
+  <script
+    type="text/javascript"
+    src="{{ url_for('static', filename='new.bundle.js') }}"
+    one="{{ hosts }}"
+    defer
+  ></script>
+  {% endblock %}
+</body>

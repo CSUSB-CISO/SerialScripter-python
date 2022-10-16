@@ -76,9 +76,7 @@ def pop_a_shell(ip):
     across the entire network
     """
     def get_url(proc):
-        stdout = []
         for line in iter(proc.stdout.readline, b''):
-            stdout.append(line.decode('utf-8'))
             a = line.decode('utf-8')
             if "URL" in a and "127.0.0.1" not in a and "::1" not in a:
                 return a.split("URL:")[-1].strip()
@@ -94,6 +92,7 @@ def pop_a_shell(ip):
     t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
     t.start()
     t.join()
+    
     url = que.get()
     print(url)
     return redirect(url)
@@ -136,6 +135,13 @@ def key_management():
 
     return render_template("key-management.html", user=current_user)
 
+@views.route('/visualize', methods=["POST", "GET"])
+@login_required
+def graph():
+    with open("website/data/hosts.json", "r") as f:
+        box_list = json.dumps(json.load(f))
+
+    return render_template("chart.html", hosts=box_list, user=current_user)
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():
