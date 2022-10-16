@@ -3,3 +3,5 @@ Flask-SQLAlchemy==2.5.1
 flask-login
 flask_bootstrap
 python-nmap
+selenium
+paramiko
