@@ -27,12 +27,13 @@
             <th scope="col">Services</th>
             <th scope="col">OS</th>
             <th scope="col">Running</th>
+            <th scope="col">Pop-A-Shell</th>
+
          </tr>
       </thead>
       <tbody>
          {% for box in boxes %}
-         <tr style='cursor: pointer; cursor: hand;' onclick="window.location='{{ box.name }}';">
-            <td>{{emoji}} <a>{{ box.name }}</a></td>
+         <td>{{emoji}} <a href="/{{ box.name }}">{{ box.name }}</a></td>
             <td>{{ box.ip }}</td>
             <td style="padding-left:55px">{{ box.services|length }}</td>
             <td>{{ box.OS }}</td>
@@ -43,7 +44,8 @@
                <span class="badge rounded-pill bg-danger">Down</span>
                {% endif %}
             </td>
-   </td>
+            <td> <a href="/open-shell/{{ box.ip }}" target="_blank">Open in Bash</a></td> 
+         </td>
    </tr>
    {% endfor %}
    </tbody>

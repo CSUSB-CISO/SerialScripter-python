@@ -1,13 +1,17 @@
-from flask import Blueprint, render_template, request, flash, jsonify
+from flask import Blueprint, render_template, request, flash, jsonify, redirect
 from flask_login import login_required, current_user
 import json
 from datetime import datetime
-import random
+from random import randint, choice
 from .models import Key
 from . import db
 from src.razdavat import Razdavat
-
-from os import getlogin
+from threading import Thread
+from queue import Queue
+from selenium import webdriver
+from os import getlogin, system
+from subprocess import Popen, PIPE, STDOUT
+from socket import socket
 
 views = Blueprint('views', __name__)
 
@@ -25,7 +29,7 @@ def home():
     with open("website/data/hosts.json", "r") as f:
         box_list = json.load(f)["hosts"]
 
-    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=random.choice(emoji_list), user=current_user)
+    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
 
 @views.route("/<name>", methods=["GET"])
 @login_required
@@ -63,25 +67,36 @@ def box_management(name: str):
         user=current_user
     )
 
-@views.route("/network-wide", methods=["GET"])
-@login_required
-def network_wide():
-    """
-    This page shows a summary of all port counts, etc
-    across the entire network
-    """
-    # network = getNetworkWide()
-    return render_template("network-wide.html", network={}, user=current_user)
 
-@views.route("/terminal", methods=["GET"])
+@views.route("/open-shell/<ip>", methods=["GET"])
 @login_required
-def terminal():
+def pop_a_shell(ip):
     """
     This page shows a summary of all port counts, etc
     across the entire network
     """
-    # network = getNetworkWide()
-    return render_template("terminal.html", user=current_user)
+    def get_url(proc):
+        stdout = []
+        for line in iter(proc.stdout.readline, b''):
+            stdout.append(line.decode('utf-8'))
+            a = line.decode('utf-8')
+            if "URL" in a and "127.0.0.1" not in a and "::1" not in a:
+                return a.split("URL:")[-1].strip()
+
+    sock = socket()
+    sock.bind(('', 0))
+    port = sock.getsockname()[1]
+
+    que = Queue()
+
+    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh cm03@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
+
+    t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
+    t.start()
+    t.join()
+    url = que.get()
+    print(url)
+    return redirect(url)
 
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
@@ -109,10 +124,10 @@ def key_management():
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.add_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="@11272003Cm!", user="cm03")
+                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="cm03")
                     connection.add_ssh_key(key)
                     # for host in hosts:
-                    #     connection = Razdavat(host["ip"], password="@11272003Cm!", user="cm03")
+                    #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
                     #     connection.add_ssh_key(key)
 
         else:
