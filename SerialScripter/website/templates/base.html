@@ -11,42 +11,21 @@
   type = "text/javascript"
   src="{{ url_for('static', filename='index.js') }}"
   ></script>
-  <script
-  type = "text/javascript"
-  src="{{ url_for('static', filename='xterm.js') }}"
-  ></script>
-  <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
-  <script src="node_modules/xterm/lib/xterm.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"></script>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-    {% if category == 'error' %}
-    <div class="alert alert-danger alert-dismissable fade show" role="alert">
+  {% for message in get_flashed_messages() %}
+  <div class="alert alert-message alert-info" role="alert">
       {{ message }}
-      <button type="button" class="close" data-dismiss="alert">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    {% else %}
-    <div class="alert alert-success alert-dismissable fade show" role="alert">
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    {% endif %}
-    {% endfor%}
-  {% endif %}
-  {% endwith%}
+    <button type="button" class="close" data-dismiss="alert">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+
   
   {% endblock %} {% block title %} {% if title %} {{ title }} {% else %} Serial
   Scripter {% endif %} {% endblock %} {% include 'nav.html' %}
 </head>
 <body>
-
-
-  <div class="container">{% block content %} {% endblock %}</div>
+  <div class="container" >{% block content %} {% endblock %} </div>  
 
   <script
     src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
@@ -63,4 +42,7 @@
     integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
     crossorigin="anonymous"
   ></script>
+
+
 </body>
+

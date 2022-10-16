@@ -15,9 +15,6 @@
                <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
             </li>
             <li class="nav-item">
-               <a class="nav-link active" data-toggle="tab" href="#sshterm">SSH Terminal</a>
-            </li>
-            <li class="nav-item">
                <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
             </li>
             <li class="nav-item">
@@ -36,24 +33,6 @@
                <p>Service Status: Down</p>
                {% endif %}
                <br>
-            </div>
-            <div class="tab-pane" id="sshterm">
-               <div id="terminal">
-               <script>
-                  var term = new Terminal({
-                  cursorBlink: "block"
-                  });
-                  const ws = new WebSocket("ws://localhost:3000", "echo-protocol");
-                  var curr_line = "";
-                  var entries = [];
-                  term.open(document.getElementById('terminal'));
-                  term.write('Based Shell$ ');
-                  term.on("key", function(key, ev) {
-                     curr_line += key;
-                     term.write(key);
-                  })
-               </script>
-               </div>
             </div>
             <div class="tab-pane" id="portdetail">
                <div class="row">

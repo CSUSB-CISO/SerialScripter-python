@@ -4955,6 +4955,15 @@ fieldset:disabled .btn {
   border-radius: var(--bs-alert-border-radius);
 }
 
+.alert-message {
+  padding-right: 3rem;
+  top: 20px;
+  left: 50px;
+  width: 20%;
+  text-align: center;
+  border-radius: 0.75rem;
+}
+
 .alert-heading {
   color: inherit;
 }
@@ -4965,6 +4974,8 @@ fieldset:disabled .btn {
 
 .alert-dismissible {
   padding-right: 3rem;
+  border-radius: 0.75rem;
+
 }
 .alert-dismissible .btn-close {
   position: absolute;
