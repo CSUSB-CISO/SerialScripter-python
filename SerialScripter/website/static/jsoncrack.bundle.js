@@ -578,22 +578,28 @@
     ],
     9: [
       function (require, module, exports) {
-        var { compress } = require('compress-json');
-        var hosts = document.currentScript.getAttribute('one');
-        console.log(hosts);
+        var { compress } = require('compress-json'); // Locally built version of compress-json built in this file
+        var hosts = document.currentScript.getAttribute('one'); // Get parameter from html attribute 'one'
 
+        // Parse html from json formatted string sent by views.py
         let data = JSON.parse(hosts);
         console.log(data);
 
+        // Put into compressed format
         let jsonEncode = compress(data);
+
+        // Stringify
         let jsonString = JSON.stringify(jsonEncode);
 
+        // URL Encode
         jsonString = encodeURIComponent(jsonString);
 
         console.log(jsonString);
 
+        // Create iframe that takes up fool screen and pass jsonString as post parameter
         var s = `<iframe src="https://jsoncrack.com/widget?json=${jsonString}" frameborder='0' marginheight = '0' marginwidth = '0' width = '100%' height = '100%' scrolling = 'auto'></iframe>`;
 
+        // See if window uses dom
         var support = (function () {
           if (!window.DOMParser) return false;
           var parser = new DOMParser();
@@ -623,7 +629,7 @@
           dom.innerHTML = str;
           return dom;
         };
-        document.body.appendChild(stringToHTML(s));
+        document.body.appendChild(stringToHTML(s)); // Inject newly created iframe html
       },
       { 'compress-json': 6 },
     ],

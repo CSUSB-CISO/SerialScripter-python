@@ -1,6 +1,6 @@
-from flask import Blueprint, get_flashed_messages, render_template, request, flash, jsonify, redirect
+from flask import Blueprint, render_template, request, flash, jsonify, redirect
 from flask_login import login_required, current_user
-import json
+from json import load, loads, dumps
 from datetime import datetime
 from random import randint, choice
 from .models import Key
@@ -8,8 +8,7 @@ from . import db
 from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
-from selenium import webdriver
-from os import getlogin, system
+from os import getlogin
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
 
@@ -19,6 +18,8 @@ views = Blueprint('views', __name__)
 @views.route("/", methods=['GET', 'POST'])
 @login_required
 def home():
+
+    # Cringe feature jaylon wanted me to make
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠",]
 
@@ -26,9 +27,11 @@ def home():
         pass
         # Recon("192.168.1.0/24").save_box_data()
 
+    # Load hosts
     with open("website/data/hosts.json", "r") as f:
-        box_list = json.load(f)["hosts"]
+        box_list = load(f)["hosts"]
 
+    # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
 
 @views.route("/<name>", methods=["GET"])
@@ -39,11 +42,11 @@ def box_management(name: str):
     queried by name number
     """
     with open("website/data/hosts.json", "r") as f:
-        box_list = json.load(f)["hosts"]
+        box_list = load(f)["hosts"]
 
 
     for i, box in enumerate(box_list):
-        if box["name"] == name:
+        if box["name"] == name: # Return correct template based on searched box
             return render_template(
                 "manage.html",
                 title=name,
@@ -51,6 +54,7 @@ def box_management(name: str):
                 user=current_user
             )
 
+    # Box doesnt exist
     return render_template(
         "manage.html",
         title=name,
@@ -70,32 +74,58 @@ def box_management(name: str):
 
 @views.route("/open-shell/<ip>", methods=["GET"])
 @login_required
-def pop_a_shell(ip):
+def pop_a_shell(ip: str) -> None:
     """
-    This page shows a summary of all port counts, etc
-    across the entire network
-    """
-    def get_url(proc):
-        for line in iter(proc.stdout.readline, b''):
-            a = line.decode('utf-8')
-            if "URL" in a and "127.0.0.1" not in a and "::1" not in a:
-                return a.split("URL:")[-1].strip()
+    Allows authenitcated users to open a shell on any given host at the click of a button
 
+    :param str ip: The ip to connect to via ssh
+    :rtype redirect url: A redirect to a gotty instance of the selected machine
+    """
+    def get_url(proc) -> str:
+        """
+        Reads STDOUT from a process until it fetches a useable URL
+
+        :param :class <'subprocess.Popen'> proc: The process that we will monitor for output
+        :rtype str url: Gotty instance url
+        """
+        for line in iter(proc.stdout.readline, b''):
+            a = line.decode('utf-8') # decode url from bytes
+            if "URL" in a and "127.0.0.1" not in a and "::1" not in a: # make sure url is not localhost
+                return a.split("URL:")[-1].strip() # return url if valid
+
+    # Find open port
     sock = socket()
     sock.bind(('', 0))
-    port = sock.getsockname()[1]
+    port = sock.getsockname()[1] # Fetch port number
 
-    que = Queue()
+    que = Queue() #  Queue object to pass
 
-    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh imp0ster@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
+    """
+    Start a gotty process
 
+    Flags:
+        --timeout 10 - kills process if no connection for 10 seconds
+        -p {port} - gives gotty open port to run on
+        -t - use TLS
+        --tls-crt website/data/cert.pem  - tls cert to use
+        --tls-key website/data/key.pem  - tls key to use
+        -w - allow user to type in gotty instance
+        -r - make url random
+        ssh <user>@<ip>
+    """ 
+    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh cm03@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
+
+    # Start thread to run shell sessions concurrently
+    # Give it Queue object to allow for retrieval or return value
     t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
     t.start()
     t.join()
     
+    # Get return value from Queue
     url = que.get()
     print(url)
-    return redirect(url)
+
+    return redirect(url) # Redirect to randomly created gotty instance
 
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
@@ -118,17 +148,17 @@ def key_management():
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            # with open("website/data/hosts.json", "r") as f:
-            #     hosts = json.load(f)["hosts"]
-                # try:
-                    # connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
-                    # connection.add_ssh_key(key)
+            with open("website/data/hosts.json", "r") as f:
+                hosts = load(f)["hosts"]
+                try:
+                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+                    connection.add_ssh_key(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.add_ssh_key(key)
-                # except:
-                    # connection = Razdavat("127.0.0.1", password="<REDACTED>", user="cm03")
-                    # connection.add_ssh_key(key)
+                except:
+                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="cm03")
+                    connection.add_ssh_key(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
                     #     connection.add_ssh_key(key)
@@ -140,18 +170,21 @@ def key_management():
 
     return render_template("key-management.html", user=current_user)
 
-@views.route('/visualize', methods=["POST", "GET"])
+@views.route('/visualize', methods=["GET"])
 @login_required
-def graph():
+def visualize():
+    # Load hosts.json object
     with open("website/data/hosts.json", "r") as f:
-        box_list = json.dumps(json.load(f))
+        # load dict from hosts.json then convert it to formatted json string using dumps
+        box_list = dumps(load(f)) 
 
-    return render_template("chart.html", hosts=box_list, user=current_user)
+    # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
+    return render_template("visualize.html", hosts=box_list, user=current_user)
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():
     # load the json object that was sent
-    key = json.loads(request.data)
+    key = loads(request.data)
     # access the actual pair by using the keyId key
     keyId = key['keyId']
     key = Key.query.get(keyId)
