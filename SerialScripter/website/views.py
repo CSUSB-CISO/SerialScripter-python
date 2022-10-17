@@ -21,7 +21,7 @@ def home():
 
     # Cringe feature jaylon wanted me to make
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
-    "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠",]
+    "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
 
     if request.method == "POST":
         pass
@@ -113,7 +113,7 @@ def pop_a_shell(ip: str) -> None:
         -r - make url random
         ssh <user>@<ip>
     """ 
-    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh cm03@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
+    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh imp0ster@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
 
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
@@ -135,15 +135,21 @@ def key_management():
 
         is_duplicate = False
 
+        # needs to be an ssh key to even add it to the database
+        if key.split()[0] != "ssh-rsa":
+            is_duplicate = True
+            flash('Not an ssh key!')
+        else:
         # needs to be an ssh key to even check
         # checking if the key to be added matches any keys that are currently in the db
-        if key.split()[0] == "ssh-rsa":
-            for database_keys in current_user.keys:
-                if database_keys.data.split()[1] == key.split()[1]:
+            for ssh_key in current_user.keys:
+                if ssh_key.data.split()[1] == key.split()[1]:
                     is_duplicate = True
+                    flash(f'Previous key is duplicate of Key Number: {ssh_key.id}')
+        
 
         # ensure a unique public key will be added
-        if len(key) > 500 and is_duplicate == False:
+        if len(key) > 500 and not is_duplicate:
             flash("Key added successfully")
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
@@ -151,22 +157,22 @@ def key_management():
             with open("website/data/hosts.json", "r") as f:
                 hosts = load(f)["hosts"]
                 try:
-                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="imp0ster")
                     connection.add_ssh_key(key)
+                    print(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.add_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="cm03")
+                    connection = Razdavat("127.0.0.1", password="app4rentlyBas3d", user="imp0ster")
                     connection.add_ssh_key(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
                     #     connection.add_ssh_key(key)
 
-        elif is_duplicate:
-            flash("Key is a duplicate... ")
-        else:
+        elif len(key) < 500:
             flash("Key is too short!!")
+
 
     return render_template("key-management.html", user=current_user)
 
@@ -188,10 +194,25 @@ def delete_key():
     # access the actual pair by using the keyId key
     keyId = key['keyId']
     key = Key.query.get(keyId)
+    print(key.data)
     # reassigns key to true or false depending on if the key actually exists in the database
     if key:
         if key.user_id == current_user.id:
             flash(f'Key: {key.id} has been deleted.')
+            with open("website/data/hosts.json", "r") as f:
+                hosts = load(f)["hosts"]
+                try:
+                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="imp0ster")
+                    connection.remove_ssh_key(key.data)
+                    # for host in hosts:
+                    #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
+                    #     connection.remove_ssh_key(key)
+                except:
+                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="imp0ster")
+                    connection.remove_ssh_key(key.data)
+                    # for host in hosts:
+                    #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
+                    #     connection.remove_ssh_key(key)
             db.session.delete(key)
             db.session.commit()
     return jsonify({})
