@@ -29,7 +29,7 @@ def errors():
 def heartbeat():
     return jsonify({})
 
-@auth.route('/api/v1/common/ipblacklist', methods=['GET'])
+@auth.route('/api/v1/common/ipblacklist', methods=['GET', 'POST'])
 def ip_blacklist():
     return jsonify({[]})
 
