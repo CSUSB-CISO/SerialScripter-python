@@ -1,364 +1,213 @@
 {
-  "192.168.1.69": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.69", "mac": "60:6D:C7:A7:37:59" },
-    "vendor": { "60:6D:C7:A7:37:59": "Hon Hai Precision Ind." },
-    "status": { "state": "up", "reason": "arp-response" },
-    "tcp": {
-      "80": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "8008": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "8009": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "ajp13",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "8443": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "https-alt",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
+  "hosts": [
+    {
+      "name": "host-69",
+      "ip": "192.168.1.69",
+      "OS": "Linux",
+      "services": [
+        { "port": 80, "service": "http" },
+        { "port": 8008, "service": "http" },
+        { "port": 8009, "service": "ajp13" },
+        { "port": 8443, "service": "https-alt" }
+      ],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
+    },
+    {
+      "name": "host-86",
+      "ip": "192.168.1.86",
+      "OS": "Linux",
+      "services": [{ "port": 49154, "service": "unknown" }],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
+    },
+    {
+      "name": "host-87",
+      "ip": "192.168.1.87",
+      "OS": "Linux",
+      "services": [
+        { "port": 80, "service": "http" },
+        { "port": 111, "service": "rpcbind" }
+      ],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
+    },
+    {
+      "name": "host-161",
+      "ip": "192.168.1.161",
+      "OS": "Linux",
+      "services": [
+        { "port": 80, "service": "http" },
+        { "port": 443, "service": "https" },
+        { "port": 631, "service": "ipp" },
+        { "port": 8080, "service": "http-proxy" },
+        { "port": 9100, "service": "jetdirect" }
+      ],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
+    },
+    {
+      "name": "host-211",
+      "ip": "192.168.1.211",
+      "OS": "Linux",
+      "services": [{ "port": 53, "service": "domain" }],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
+    },
+    {
+      "name": "host-254",
+      "ip": "192.168.1.254",
+      "OS": "Linux",
+      "services": [
+        { "port": 53, "service": "domain" },
+        { "port": 80, "service": "http" },
+        { "port": 111, "service": "rpcbind" },
+        { "port": 443, "service": "https" },
+        { "port": 49152, "service": "unknown" }
+      ],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
+    },
+    {
+      "name": "host-234",
+      "ip": "192.168.1.234",
+      "OS": "Windows",
+      "services": [
+        { "port": 22, "service": "ssh" },
+        { "port": 135, "service": "msrpc" },
+        { "port": 139, "service": "netbios-ssn" },
+        { "port": 445, "service": "microsoft-ds" },
+        { "port": 5357, "service": "wsdapi" },
+        { "port": 8080, "service": "http-proxy" }
+      ],
+      "isOn": true,
+      "docker": [],
+      "tasks": [],
+      "firewall": [],
+      "shares": [
+        {
+          "name": {},
+          "fullpath": {},
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": {}
+                }
+              ]
+            }
+          ],
+          "SMBversion": {}
+        }
+      ]
     }
-  },
-  "192.168.1.73": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.73", "mac": "40:9F:38:E7:3B:C9" },
-    "vendor": { "40:9F:38:E7:3B:C9": "AzureWave Technology" },
-    "status": { "state": "up", "reason": "arp-response" }
-  },
-  "192.168.1.86": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.86", "mac": "2C:08:8C:46:C9:93" },
-    "vendor": { "2C:08:8C:46:C9:93": "Humax" },
-    "status": { "state": "up", "reason": "arp-response" },
-    "tcp": {
-      "6000": {
-        "state": "closed",
-        "reason": "reset",
-        "name": "X11",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "6001": {
-        "state": "closed",
-        "reason": "reset",
-        "name": "X11:1",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "8080": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http-proxy",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "10000": {
-        "state": "closed",
-        "reason": "reset",
-        "name": "snet-sensor-mgmt",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "49152": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "unknown",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
-    }
-  },
-  "192.168.1.87": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.87", "mac": "2C:08:8C:46:C9:93" },
-    "vendor": { "2C:08:8C:46:C9:93": "Humax" },
-    "status": { "state": "up", "reason": "arp-response" },
-    "tcp": {
-      "80": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "111": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "rpcbind",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
-    }
-  },
-  "192.168.1.90": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.90", "mac": "2C:08:8C:46:C9:93" },
-    "vendor": { "2C:08:8C:46:C9:93": "Humax" },
-    "status": { "state": "up", "reason": "arp-response" }
-  },
-  "192.168.1.149": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.149", "mac": "54:E0:19:12:4C:D0" },
-    "vendor": { "54:E0:19:12:4C:D0": "Ring" },
-    "status": { "state": "up", "reason": "arp-response" }
-  },
-  "192.168.1.161": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.161", "mac": "38:22:E2:B9:F9:FD" },
-    "vendor": { "38:22:E2:B9:F9:FD": "HP" },
-    "status": { "state": "up", "reason": "arp-response" },
-    "tcp": {
-      "80": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "443": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "https",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "631": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "ipp",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "8080": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http-proxy",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "9100": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "jetdirect",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
-    }
-  },
-  "192.168.1.179": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.179", "mac": "54:E0:19:5A:75:3E" },
-    "vendor": { "54:E0:19:5A:75:3E": "Ring" },
-    "status": { "state": "up", "reason": "arp-response" }
-  },
-  "192.168.1.197": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.197", "mac": "10:59:32:06:44:42" },
-    "vendor": { "10:59:32:06:44:42": "Roku" },
-    "status": { "state": "up", "reason": "arp-response" }
-  },
-  "192.168.1.211": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.211", "mac": "54:EF:FE:0B:1E:C8" },
-    "vendor": { "54:EF:FE:0B:1E:C8": "Fullpower Technologies" },
-    "status": { "state": "up", "reason": "arp-response" },
-    "tcp": {
-      "53": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "domain",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
-    }
-  },
-  "192.168.1.253": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.253", "mac": "88:96:4E:F1:29:F2" },
-    "vendor": { "88:96:4E:F1:29:F2": "Arris Group" },
-    "status": { "state": "up", "reason": "arp-response" }
-  },
-  "192.168.1.254": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.254", "mac": "88:96:4E:F1:29:F0" },
-    "vendor": { "88:96:4E:F1:29:F0": "Arris Group" },
-    "status": { "state": "up", "reason": "arp-response" },
-    "tcp": {
-      "53": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "domain",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "80": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "http",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "111": {
-        "state": "filtered",
-        "reason": "no-response",
-        "name": "rpcbind",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "443": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "https",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "49152": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "unknown",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
-    }
-  },
-  "192.168.1.234": {
-    "hostnames": [{ "name": "", "type": "" }],
-    "addresses": { "ipv4": "192.168.1.234" },
-    "vendor": {},
-    "status": { "state": "up", "reason": "localhost-response" },
-    "tcp": {
-      "22": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "ssh",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "135": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "msrpc",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "139": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "netbios-ssn",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "445": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "microsoft-ds",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      },
-      "5357": {
-        "state": "open",
-        "reason": "syn-ack",
-        "name": "wsdapi",
-        "product": "",
-        "version": "",
-        "extrainfo": "",
-        "conf": "3",
-        "cpe": ""
-      }
-    }
-  }
+  ]
 }

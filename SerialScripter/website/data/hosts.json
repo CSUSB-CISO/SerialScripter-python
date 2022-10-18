@@ -1,213 +1,286 @@
 {
-  "hosts": [
-    {
-      "name": "host-69",
-      "ip": "192.168.1.69",
-      "OS": "Linux",
-      "services": [
-        { "port": 80, "service": "http" },
-        { "port": 8008, "service": "http" },
-        { "port": 8009, "service": "ajp13" },
-        { "port": 8443, "service": "https-alt" }
-      ],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+    "hosts": [
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-69",
+            "ip": "192.168.1.69",
+            "OS": "Linux",
+            "services": [
                 {
-                  "username": {}
+                    "port": 80,
+                    "service": "http"
+                },
+                {
+                    "port": 8008,
+                    "service": "http"
+                },
+                {
+                    "port": 8009,
+                    "service": "ajp13"
+                },
+                {
+                    "port": 8443,
+                    "service": "https-alt"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ]
-    },
-    {
-      "name": "host-86",
-      "ip": "192.168.1.86",
-      "OS": "Linux",
-      "services": [{ "port": 49154, "service": "unknown" }],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ]
+        },
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-86",
+            "ip": "192.168.1.86",
+            "OS": "Linux",
+            "services": [
                 {
-                  "username": {}
+                    "port": 49154,
+                    "service": "unknown"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ]
-    },
-    {
-      "name": "host-87",
-      "ip": "192.168.1.87",
-      "OS": "Linux",
-      "services": [
-        { "port": 80, "service": "http" },
-        { "port": 111, "service": "rpcbind" }
-      ],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ]
+        },
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-87",
+            "ip": "192.168.1.87",
+            "OS": "Linux",
+            "services": [
                 {
-                  "username": {}
+                    "port": 80,
+                    "service": "http"
+                },
+                {
+                    "port": 111,
+                    "service": "rpcbind"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ]
-    },
-    {
-      "name": "host-161",
-      "ip": "192.168.1.161",
-      "OS": "Linux",
-      "services": [
-        { "port": 80, "service": "http" },
-        { "port": 443, "service": "https" },
-        { "port": 631, "service": "ipp" },
-        { "port": 8080, "service": "http-proxy" },
-        { "port": 9100, "service": "jetdirect" }
-      ],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ]
+        },
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-161",
+            "ip": "139.182.180.161",
+            "OS": " Ubuntu 20.04.5 LTS",
+            "services": [
                 {
-                  "username": {}
+                    "port": 22,
+                    "service": "sshd:"
+                },
+                {
+                    "port": 53,
+                    "service": "/lib/systemd/systemd-resolved"
+                },
+                {
+                    "port": 631,
+                    "service": "/usr/sbin/cupsd"
+                },
+                {
+                    "port": 902,
+                    "service": "/usr/sbin/vmware-authdlauncher"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ]
-    },
-    {
-      "name": "host-211",
-      "ip": "192.168.1.211",
-      "OS": "Linux",
-      "services": [{ "port": 53, "service": "domain" }],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ],
+            "hostname": "icarus"
+        },
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-211",
+            "ip": "192.168.1.211",
+            "OS": "Linux",
+            "services": [
                 {
-                  "username": {}
+                    "port": 53,
+                    "service": "domain"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ]
-    },
-    {
-      "name": "host-254",
-      "ip": "192.168.1.254",
-      "OS": "Linux",
-      "services": [
-        { "port": 53, "service": "domain" },
-        { "port": 80, "service": "http" },
-        { "port": 111, "service": "rpcbind" },
-        { "port": 443, "service": "https" },
-        { "port": 49152, "service": "unknown" }
-      ],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ]
+        },
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-254",
+            "ip": "192.168.1.254",
+            "OS": "Linux",
+            "services": [
                 {
-                  "username": {}
+                    "port": 53,
+                    "service": "domain"
+                },
+                {
+                    "port": 80,
+                    "service": "http"
+                },
+                {
+                    "port": 111,
+                    "service": "rpcbind"
+                },
+                {
+                    "port": 443,
+                    "service": "https"
+                },
+                {
+                    "port": 49152,
+                    "service": "unknown"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ]
-    },
-    {
-      "name": "host-234",
-      "ip": "192.168.1.234",
-      "OS": "Windows",
-      "services": [
-        { "port": 22, "service": "ssh" },
-        { "port": 135, "service": "msrpc" },
-        { "port": 139, "service": "netbios-ssn" },
-        { "port": 445, "service": "microsoft-ds" },
-        { "port": 5357, "service": "wsdapi" },
-        { "port": 8080, "service": "http-proxy" }
-      ],
-      "isOn": true,
-      "docker": [],
-      "tasks": [],
-      "firewall": [],
-      "shares": [
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ]
+        },
         {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
+            "name": "host-234",
+            "ip": "192.168.1.234",
+            "OS": "Windows",
+            "services": [
                 {
-                  "username": {}
+                    "port": 22,
+                    "service": "ssh"
+                },
+                {
+                    "port": 135,
+                    "service": "msrpc"
+                },
+                {
+                    "port": 139,
+                    "service": "netbios-ssn"
+                },
+                {
+                    "port": 445,
+                    "service": "microsoft-ds"
+                },
+                {
+                    "port": 5357,
+                    "service": "wsdapi"
+                },
+                {
+                    "port": 8080,
+                    "service": "http-proxy"
                 }
-              ]
-            }
-          ],
-          "SMBversion": {}
+            ],
+            "isOn": true,
+            "docker": [],
+            "tasks": [],
+            "firewall": [],
+            "shares": [
+                {
+                    "name": {},
+                    "fullpath": {},
+                    "permissions": [
+                        {
+                            "users": [
+                                {
+                                    "username": {}
+                                }
+                            ]
+                        }
+                    ],
+                    "SMBversion": {}
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
