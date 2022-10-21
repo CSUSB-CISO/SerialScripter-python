@@ -8,8 +8,13 @@ from flask_login import login_user, login_required, logout_user, current_user
 auth = Blueprint('auth', __name__)
 
 
+def user_agent(request):
+    return request.headers.get('User-Agent') == "backshots-galore"
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    if not user_agent(request):
+        return render_template("404.html")
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -31,12 +36,16 @@ def login():
 @auth.route('/logout')
 @login_required
 def logout():
+    if not user_agent(request):
+        return render_template("404.html")
     logout_user()
     return redirect(url_for('auth.login'))
 
 
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
+    if not user_agent(request):
+        return render_template("404.html")
     if request.method == 'POST':
         email = request.form.get('email')
         first_name = request.form.get('firstName')

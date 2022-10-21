@@ -281,6 +281,94 @@
                     "SMBversion": {}
                 }
             ]
+        },
+        {
+            "name": "host-111",
+            "hostname": "icarus",
+            "ip": "",
+            "OS": " Ubuntu 20.04.5 LTS",
+            "services": [
+                {
+                    "port": 22,
+                    "service": "sshd:"
+                },
+                {
+                    "port": 53,
+                    "service": "/lib/systemd/systemd-resolved"
+                },
+                {
+                    "port": 631,
+                    "service": "/usr/sbin/cupsd"
+                },
+                {
+                    "port": 6463,
+                    "service": "/usr/bin/gnome-shell"
+                },
+                {
+                    "port": 902,
+                    "service": "/usr/sbin/vmware-authdlauncher"
+                }
+            ]
+        },
+        {
+            "name": "host-",
+            "hostname": "fedora",
+            "ip": "",
+            "OS": " Fedora Linux 36 (Workstation Edition)",
+            "services": [
+                {
+                    "port": 10000,
+                    "service": "/usr/share/code/code"
+                },
+                {
+                    "port": 1337,
+                    "service": "/usr/bin/perl"
+                },
+                {
+                    "port": 45515,
+                    "service": "/usr/share/code/code"
+                },
+                {
+                    "port": 53,
+                    "service": "/usr/lib/systemd/systemd-resolved"
+                },
+                {
+                    "port": 5355,
+                    "service": "/usr/lib/systemd/systemd-resolved"
+                },
+                {
+                    "port": 631,
+                    "service": "/usr/sbin/cupsd"
+                },
+                {
+                    "port": 6463,
+                    "service": "/usr/bin/gnome-shell"
+                }
+            ],
+            "containers": [
+                {
+                    "container_id": "1ad2d8751a8b",
+                    "image": "jsoncrack",
+                    "status": "Exited"
+                },
+                {
+                    "container_id": "b232656724e1",
+                    "image": "jsoncrack",
+                    "status": "Exited"
+                }
+            ],
+            "users": [
+                {
+                    "username": "root",
+                    "uid": "0",
+                    "home_dir": "root"
+                },
+                {
+                    "username": "cm03",
+                    "uid": "1000",
+                    "home_dir": "Christian"
+                }
+            ]
         }
     ]
 }

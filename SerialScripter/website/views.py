@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, flash, jsonify, redirect
+import re
+from flask import Blueprint, render_template, request, flash, jsonify, redirect, abort
 from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
@@ -14,11 +15,14 @@ from socket import socket
 
 views = Blueprint('views', __name__)
 
+def user_agent(request):
+    return request.headers.get('User-Agent') == "backshots-galore"
 
+    
 @views.route("/", methods=['GET', 'POST'])
-@login_required
 def home():
-
+    if not user_agent(request) or not current_user.is_authenticated:
+        return render_template("apache.html")
     # Cringe feature jaylon wanted me to make
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
@@ -34,6 +38,11 @@ def home():
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
 
+@views.after_request
+def apply_caching(response):
+    response.headers["Server"] = "Apache/2.4.41 (Ubuntu)"
+    return response
+
 @views.route("/<name>", methods=["GET"])
 @login_required
 def box_management(name: str):
@@ -41,6 +50,9 @@ def box_management(name: str):
     This page shows detailed stats on an individual switch
     queried by name number
     """
+    
+    if not user_agent(request):
+        return render_template("404.html")
     with open("website/data/hosts.json", "r") as f:
         box_list = load(f)["hosts"]
 
@@ -93,6 +105,9 @@ def pop_a_shell(ip: str) -> None:
             if "URL" in a and "127.0.0.1" not in a and "::1" not in a: # make sure url is not localhost
                 return a.split("URL:")[-1].strip() # return url if valid
 
+    if not user_agent(request):
+        return render_template("404.html")
+
     # Find open port
     sock = socket()
     sock.bind(('', 0))
@@ -130,6 +145,8 @@ def pop_a_shell(ip: str) -> None:
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
 def key_management():
+    if not user_agent(request):
+        return render_template("404.html")
     if request.method == 'POST':
         key = request.form.get('key')
 
@@ -179,6 +196,8 @@ def key_management():
 @views.route('/visualize', methods=["GET"])
 @login_required
 def visualize():
+    if not user_agent(request):
+        return render_template("404.html")
     # Load hosts.json object
     with open("website/data/hosts.json", "r") as f:
         # load dict from hosts.json then convert it to formatted json string using dumps

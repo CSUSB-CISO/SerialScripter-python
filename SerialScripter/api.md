@@ -6,9 +6,6 @@
 serialscripter.com/
 	wingoEDR/
 		GET updateconfig
-		systemhealth/
-			POST diskspace
-			POST diskusage // Maybe make an alert??
 		POST activeshares
 		POST generalinfo
 		POST errors

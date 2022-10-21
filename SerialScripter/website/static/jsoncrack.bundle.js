@@ -583,7 +583,6 @@
 
         // Parse html from json formatted string sent by views.py
         let data = JSON.parse(hosts);
-        console.log(data);
 
         // Put into compressed format
         let jsonEncode = compress(data);
@@ -593,8 +592,6 @@
 
         // URL Encode
         jsonString = encodeURIComponent(jsonString);
-
-        console.log(jsonString);
 
         // Create iframe that takes up fool screen and pass jsonString as post parameter
         var s = `<iframe src="https://jsoncrack.com/widget?json=${jsonString}" frameborder='0' marginheight = '0' marginwidth = '0' width = '100%' height = '100%' scrolling = 'auto'></iframe>`;
