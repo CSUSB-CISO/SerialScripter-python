@@ -14,7 +14,7 @@ def user_agent(request):
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if not user_agent(request):
-        return render_template("404.html")
+        return render_template("apache.html")
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')

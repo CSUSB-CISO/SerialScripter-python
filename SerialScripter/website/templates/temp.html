@@ -1,0 +1,27 @@
+<div class="container">
+    <table class="table table-hover">
+    <thead>
+       <tr>
+          <th scope="col">Check Boxes</th>
+          <th scope="col">Scripts to Deploy</th>
+          <th scope="col">Parameters</th>
+          <th scope="col">Select Machines</th>
+          <th scope="col">Script OS</th>
+       </tr>
+    </thead>
+    <tbody>
+       {% for script in scripts %}
+       <td><input type="checkbox" id={{ script }} name={{ script }}></td>
+        <td>{{ script }}</td>
+        <td style="padding-left:55px"> Params Here</td>
+        <td> Machine Here </a></td> 
+        {{ if script.split(".")[1] == "ps1" }}
+            <td>Windows</td>
+        {{ elif script.split(".")[1] == "sh" }}
+            <td>Linux</td>
+        {{ endif}}
+       </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>

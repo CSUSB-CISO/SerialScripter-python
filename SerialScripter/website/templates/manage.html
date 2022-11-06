@@ -17,16 +17,13 @@
             <li class="nav-item">
                <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
             </li>
-            <li class="nav-item">
-               <a class="nav-link active" data-toggle="tab" href="#rawoutput">Raw Output</a>
-            </li>
          </ul>
          <div id="myTabContent" class="tab-content">
             <div class="tab-pane active" id="quickstats">
                <br>
                <p>Host name: {{ box.name}}</p>
                <p>Box IP: {{ box.ip }}</p>
-               <p>Operating System: {{ box.os }}</p>
+               <p>Operating System: {{ box.OS }}</p>
                {% if box.isOn == 1 %}
                <p>Service Status: Up</p>
                {% else %}
@@ -108,14 +105,6 @@
                   </table>
                   </div>
                </div>
-            </div>
-            <div class="tab-pane" id="rawoutput">
-               <code>
-               <br>
-               {% for line in raw_data %}
-               {{ line }}<br>
-               {% endfor %}
-               </code>
             </div>
          </div>
       </div>

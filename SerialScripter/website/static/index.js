@@ -9,3 +9,20 @@ function deleteKey(keyId) {
         window.location.href = "/key-management";
     });
 }
+function checkAllBoxes(source, num) {
+    var checkboxes = document.querySelectorAll('input[class="boxes"]');
+
+    console.log(num)
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i] != source)
+            checkboxes[i].checked = source.checked;
+    }
+}
+function checkAllScripts(source) {
+    var checkboxes = document.querySelectorAll('input[class="scripts"]');
+
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i] != source)
+            checkboxes[i].checked = source.checked;
+    }
+}
