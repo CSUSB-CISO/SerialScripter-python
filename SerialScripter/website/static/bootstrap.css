@@ -4689,6 +4689,22 @@ fieldset:disabled .btn {
   align-items: center !important;
 }
 
+.table-script {
+  font-size: large;
+}
+
+.table-box {
+  font-size: larger;
+}
+
+.header-font {
+  font-size: xx-large;
+}
+.header-script {
+  color: #f15dc7;
+  text-shadow: 0 0 1px rgb(234 57 184 / 30%), 0 0 2px rgb(234 57 184 / 30%), 0 0 5px rgb(234 57 184 / 20%);
+}
+
 .key-border-top {
   position: absolute;
   top: 50%;

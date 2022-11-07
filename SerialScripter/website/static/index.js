@@ -9,10 +9,9 @@ function deleteKey(keyId) {
         window.location.href = "/key-management";
     });
 }
-function checkAllBoxes(source, num) {
+function checkAllBoxes(source) {
     var checkboxes = document.querySelectorAll('input[class="boxes"]');
 
-    console.log(num)
     for (var i = 0; i < checkboxes.length; i++) {
         if (checkboxes[i] != source)
             checkboxes[i].checked = source.checked;

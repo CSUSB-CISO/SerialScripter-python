@@ -1,21 +1,22 @@
 {%- extends "base.html" %}
 <body>
+
    {% block content %}
    <div class="container">
       <div class="col-lg-12">
          <div class="page-header">
-            <h1>Script Distribution</h1>
+            <h1 class="header-font">Script Distribution</h1>
          </div>
       </div>
    </div>
    <div class="container tab-content">
       <div class="tab-pane active" id="script-selection"> 
-         <table class="table" >
+         <table class="table table-box" >
          <thead>
             <tr>
-               <th scope="col">Scripts to Deploy</th>
-               <th scope="col">Parameters</th>
-               <th scope="col">Script OS</th>
+               <th class="header-script" scope="col">Scripts to Deploy</th>
+               <th class="header-script" scope="col">Parameters</th>
+               <th class="header-script" scope="col">Intended OS</th>
             </tr>
          </thead>
          <form method="POST">
@@ -25,7 +26,7 @@
             <tr>
             <td>
                <input class="scripts" type="checkbox" id={{ script }} name={{ script }}>
-               <label for={{ script }}>   {{ script }} </label>
+               <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
             </td>
             <td style="padding-left:5px"> 
                <input type="text" name={{ script.split(".")[0] }} id={{ script.split(".")[0] }}>
@@ -42,7 +43,7 @@
             <tr>
                <td>
                   <input class="scripts" type="checkbox" id="autoSelectScripts" onclick="checkAllScripts(this);"/>
-                  <label for="autoSelectScripts">   Check All</label>
+                  <label style="font-size:22px" for="autoSelectScripts">   Check All</label>
                </td>
                <td> </td>
                <td>
@@ -55,12 +56,12 @@
       </div>
    <!-- <input type="submit" value="Submit"> -->
       <div class="tab-pane" id="box-selection">
-         <table class="table">
+         <table class="table table-box">
             <thead>
                <tr>
-                  <th scope="col" style="width: 33%;">Host Name</th>
-                  <th scope="col" style="width: 33%;">IP</th>
-                  <th scope="col" style="width: 33%;">OS</th>
+                  <th class="header-script" scope="col" style="width: 33%;">Host Name</th>
+                  <th class="header-script" scope="col" style="width: 45%;">IP</th>
+                  <th class="header-script" scope="col" style="width: 33%;">OS</th>
                </tr>
             </thead>
             <form method="POST">
@@ -70,7 +71,7 @@
                   <tr>
                         <td>
                            <input class="boxes" type="checkbox" id={{ box.name }} name={{ box.name }} >
-                           <label for={{ box.name }}>   {{ box.name }} </label>
+                           <label style="font-size: 20px;"for={{ box.name }}>   {{ box.name }} </label>
                         </td>
                         <td> 
                            {{ box.ip }}
@@ -83,7 +84,7 @@
                   <tr>
                         <td>
                            <input class="boxes" type="checkbox" id="autoSelect" onclick="checkAllBoxes(this);"/>
-                           <label for="autoSelect">   Check All</label>
+                           <label style="font-size: 22px;" for="autoSelect">   Check All</label>
                         </td>
                         <td></td>
                         <td>
