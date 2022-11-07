@@ -16,7 +16,7 @@ from socket import socket
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots-galore"
+    return request.headers.get('User-Agent') == "open-house-secret-code"
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -128,7 +128,7 @@ def pop_a_shell(ip: str) -> None:
         -r - make url random
         ssh <user>@<ip>
     """ 
-    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh imp0ster@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
+    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh cm03@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
 
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
@@ -205,6 +205,19 @@ def visualize():
 
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("visualize.html", hosts=box_list, user=current_user)
+
+@views.route('/incidents', methods=["GET"])
+# @login_required
+def incidents():
+    
+    with open("website/data/incidents.json", "r") as f:
+        incidents = load(f)["Alerts"]
+        
+    print(incidents)
+    
+    # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
+    return render_template("incident.html", incidents=incidents, user=current_user)
+
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():

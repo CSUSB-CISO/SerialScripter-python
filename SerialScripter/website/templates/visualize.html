@@ -1,12 +1,32 @@
 {%- extends "base.html" %}
 <body>
   {% block content %}
+  <section>
+    <div>
+      <!-- Our script to communicate between embed -->
+      <script>
+        function sendToEmbed() {
+          const jsonCrackEmbed = document.getElementById('jsoncrackEmbed');
+          const json = {{ hosts|tojson|safe }};
+          jsonCrackEmbed.contentWindow.postMessage(
+            {
+              json: json,
+            },
+            '*'
+          );
+        }
+        window.onload = sendToEmbed;
+      </script>
+    </div>
 
-  <script
-    type="text/javascript"
-    src="{{ url_for('static', filename='jsoncrack.bundle.js') }}"
-    one="{{ hosts }}"
-    defer
-  ></script>
+    <!-- JSON Crack iframe embed goes here -->
+    <iframe
+      id="jsoncrackEmbed"
+      src="https://jsoncrack.com/widget?t=1"
+      width="100%"
+      height="100%"
+      style="border: 2px solid #b9bbbe; border-radius: 6px"
+    ></iframe>
+  </section>
   {% endblock %}
 </body>

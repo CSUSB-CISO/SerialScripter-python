@@ -33,7 +33,9 @@ class Razdavat(SSHClient):
         _, stdout, _ = self.exec_command("cat ~/.ssh/authorized_keys")
         keys = stdout.readlines()
         self.exec_command(f'echo -n "" > ~/.ssh/authorized_keys')
-        {self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys") for key in keys if key not in (key_to_delete+"\n", "\n")}
+        for key in keys:
+            if key not in (key_to_delete+"\n", "\n"):
+                self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys")
 
     def put(self, script, script_path='/tmp/'):
         sftp = self.open_sftp()
