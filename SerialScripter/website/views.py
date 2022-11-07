@@ -1,5 +1,5 @@
-import re
-from flask import Blueprint, render_template, request, flash, jsonify, redirect, abort
+import re, os
+from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json
 from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
@@ -20,8 +20,9 @@ def user_agent(request):
 
     
 @views.route("/", methods=['GET', 'POST'])
+@login_required
 def home():
-    if not user_agent(request) or not current_user.is_authenticated:
+    if not user_agent(request):
         return render_template("apache.html")
     # Cringe feature jaylon wanted me to make
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
@@ -38,12 +39,13 @@ def home():
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
 
+
 @views.after_request
 def apply_caching(response):
     response.headers["Server"] = "Apache/2.4.41 (Ubuntu)"
     return response
 
-@views.route("/<name>", methods=["GET"])
+@views.route("/<name>", methods=["GET", "POST"])
 @login_required
 def box_management(name: str):
     """
@@ -53,18 +55,21 @@ def box_management(name: str):
     
     if not user_agent(request):
         return render_template("404.html")
+
     with open("website/data/hosts.json", "r") as f:
         box_list = load(f)["hosts"]
-
+    
 
     for i, box in enumerate(box_list):
         if box["name"] == name: # Return correct template based on searched box
+
             return render_template(
                 "manage.html",
                 title=name,
                 box=box_list[i],
                 user=current_user
             )
+
 
     # Box doesnt exist
     return render_template(
@@ -80,6 +85,50 @@ def box_management(name: str):
             "tasks": [{}],
             "firewall": []
         },
+        user=current_user
+
+    )
+
+@views.route("/scripting-hub", methods=["GET", "POST"])
+@login_required
+def scripting_hub():
+    if not user_agent(request):
+        return render_template("404.html")
+    
+    linux_scripts = os.listdir('scripts/linux/')
+    windows_scripts = os.listdir('scripts/windows/')
+    with open("website/data/hosts.json", "r") as f:
+        box_list = load(f)["hosts"]
+
+    for script in windows_scripts:
+        linux_scripts.append(script)
+
+    if request.method == 'POST':
+        # loops through every script in both script directories
+        scripts_list = []
+        parameters_list = []
+        boxes_list = []
+        for script in linux_scripts:
+            # checks if checkbox corresponding to script name is checked
+            if request.form.get(script):
+                # parameters that are inputted within the website
+                parameters = request.form.get(script.split(".")[0])
+
+                # name of script that was checked
+                scripts_list.append(script)
+                parameters_list.append(parameters)
+        for box in box_list:
+            if request.form.get(box["name"]):
+                boxes_list.append(box["name"])
+        print(scripts_list)
+        print(parameters_list)
+        print(boxes_list)
+
+    
+    return render_template(
+        "scripting-hub.html",
+        scripts=linux_scripts,
+        boxes=box_list,
         user=current_user
     )
 
@@ -248,3 +297,5 @@ def delete_key():
             db.session.delete(key)
             db.session.commit()
     return jsonify({})
+
+
