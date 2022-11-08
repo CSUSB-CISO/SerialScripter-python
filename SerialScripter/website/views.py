@@ -16,7 +16,7 @@ from socket import socket
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "open-house-secret-code"
+    return request.headers.get('User-Agent') == "backshots"
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -62,11 +62,15 @@ def box_management(name: str):
 
     for i, box in enumerate(box_list):
         if box["name"] == name: # Return correct template based on searched box
+            total_ports = 0
+            for service in box["services"]:
+                total_ports += 1
 
             return render_template(
                 "manage.html",
                 title=name,
                 box=box_list[i],
+                ports=total_ports,
                 user=current_user
             )
 
@@ -280,7 +284,7 @@ def incidents():
     print(incidents)
     
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
-    return render_template("incident.html", incidents=incidents, user=current_user)
+    return render_template("incidents-report.html", incidents=incidents, user=current_user)
 
 
 @views.route('/delete-key', methods=['POST'])

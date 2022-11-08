@@ -4697,10 +4697,14 @@ fieldset:disabled .btn {
   font-size: larger;
 }
 
-.header-font {
+.header-font-xxl {
   font-size: xx-large;
 }
-.header-script {
+.header-font-xl {
+  font-size:x-large;
+}
+
+.column-hotpink {
   color: #f15dc7;
   text-shadow: 0 0 1px rgb(234 57 184 / 30%), 0 0 2px rgb(234 57 184 / 30%), 0 0 5px rgb(234 57 184 / 20%);
 }
