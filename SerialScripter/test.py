@@ -1,11 +1,5 @@
+from difflib import SequenceMatcher
 
-# type incident struct {
-	# Name     string
-	# User     string
-	# Process  string
-	# RemoteIP string
-	# Cmd      string
-# }
 a = {
   "Alerts": [
     {
@@ -24,7 +18,7 @@ a = {
         "Name": "Net cat back door",
         "User": "John",
         "Process": "nc.exe",
-        "RemoteIP": "10.123.65.30",
+        "RemoteIP": "10.8.65.30",
         "Cmd": "nc.exe --someoption"
       }
     },
@@ -33,7 +27,7 @@ a = {
         "Host": "host-69422",
         "Name": "Net cat back door",
         "User": "hunte",
-        "Process": "nc.exe",
+        "Process": "hunte",
         "RemoteIP": "10.123.65.30",
         "Cmd": "nc.exe --someoption"
       }
@@ -41,17 +35,25 @@ a = {
   ]
 }
 
-def partial(item, query):
-        return item if query in item or (len(query)//2 > 0 and query[0:len(query)//2] in item) or (len(query)//2 > 0 and query[len(query)//2::] in item) else None
+def matches_query(incident, queries, filters=[]) -> bool:
+  if filters:
+    for query in queries:
+      for filter in filters:
+        query.set_seq1(incident['Incident'][filter])
+        if query.ratio() > 0.6:
+          return True
+  else:
+    for query in queries:
+      for value in incident['Incident']:
+        query.set_seq1(incident['Incident'][value])
+        if query.ratio() > 0.6:
+          return True
+  return False
 
-def search(items: list, query, filters=None) -> tuple:
-        if filters:
-                try:
-                        return tuple(item for item in items for filter in filters if partial(item["Incident"][filter], query))
-                except KeyError:
-                        return tuple(item for item in items for key in item["Incident"] if partial(item["Incident"][key], query))
-        else:
-                return tuple(item["Incident"] for item in items for key in item["Incident"] if partial(item["Incident"][key], query))
 
-print(search(a["Alerts"], "hunters"))
 
+def search(incidents, search_words=["host"], filters=[]):
+  queries = {SequenceMatcher(None, "", word) for word in search_words}
+  return tuple(incident for incident in incidents if matches_query(incident, queries))
+
+print(search(incidents=a["Alerts"], search_words=["10.123"]))

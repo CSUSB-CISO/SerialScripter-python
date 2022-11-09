@@ -1,4 +1,3 @@
-import re, os
 from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json
 from flask_login import login_required, current_user
 from json import load, loads, dumps
@@ -9,14 +8,15 @@ from . import db
 from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
-from os import getlogin
+from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
+from src.search import search
 
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "open-house-secret-code"
+    return request.headers.get('User-Agent') == "backshots"
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -95,8 +95,8 @@ def scripting_hub():
     if not user_agent(request):
         return render_template("404.html")
     
-    linux_scripts = os.listdir('scripts/linux/')
-    windows_scripts = os.listdir('scripts/windows/')
+    linux_scripts = listdir('scripts/linux/')
+    windows_scripts = listdir('scripts/windows/')
     with open("website/data/hosts.json", "r") as f:
         box_list = load(f)["hosts"]
 
@@ -107,7 +107,6 @@ def scripting_hub():
         # loops through every script in both script directories
         scripts_list = []
         parameters_list = []
-        boxes_list = []
         for script in linux_scripts:
             # checks if checkbox corresponding to script name is checked
             if request.form.get(script):
@@ -117,12 +116,17 @@ def scripting_hub():
                 # name of script that was checked
                 scripts_list.append(script)
                 parameters_list.append(parameters)
-        for box in box_list:
-            if request.form.get(box["name"]):
-                boxes_list.append(box["name"])
+        ip_list = tuple(box["ip"] for box in box_list if request.form.get(box["name"]))
+        
         print(scripts_list)
         print(parameters_list)
-        print(boxes_list)
+
+        for i, script in enumerate(scripts_list):
+            for ip in ip_list: 
+                print(ip)
+                a = Razdavat(ip, key_path="~/.ssh/id_rsa.pub")
+                a.deploy("out", "scripts/")
+                
 
     
     return render_template(
@@ -255,18 +259,18 @@ def visualize():
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("visualize.html", hosts=box_list, user=current_user)
 
-@views.route('/incidents', methods=["GET"])
-# @login_required
+@views.route('/incidents', methods=["GET", "POST"])
+@login_required
 def incidents():
-    
     with open("website/data/incidents.json", "r") as f:
         incidents = load(f)["Alerts"]
-        
-    print(incidents)
+
+    args = request.args.get("search")
+    if args:
+        incidents = search(incidents, args.split())
     
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("incident.html", incidents=incidents, user=current_user)
-
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():
