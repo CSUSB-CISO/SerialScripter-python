@@ -62,11 +62,15 @@ def box_management(name: str):
 
     for i, box in enumerate(box_list):
         if box["name"] == name: # Return correct template based on searched box
+            total_ports = 0
+            for service in box["services"]:
+                total_ports += 1
 
             return render_template(
                 "manage.html",
                 title=name,
                 box=box_list[i],
+                ports=total_ports,
                 user=current_user
             )
 
@@ -95,43 +99,54 @@ def scripting_hub():
     if not user_agent(request):
         return render_template("404.html")
     
-    linux_scripts = listdir('scripts/linux/')
-    windows_scripts = listdir('scripts/windows/')
+    # gather scripts from linux and windows' scripts directories
+    scripts_list = os.listdir('scripts/linux/') + os.listdir('scripts/windows/')
+
+    # load list of boxes from hosts.json 
     with open("website/data/hosts.json", "r") as f:
         box_list = load(f)["hosts"]
 
-    for script in windows_scripts:
-        linux_scripts.append(script)
-
     if request.method == 'POST':
-        # loops through every script in both script directories
-        scripts_list = []
+        # initializings vars
+        scripts_checked = []
         parameters_list = []
-        for script in linux_scripts:
+        boxes_list = []
+        num_boxes = 0
+
+        for script in scripts_list:
             # checks if checkbox corresponding to script name is checked
             if request.form.get(script):
+                # only grabbing params if corresponding box is checked
                 # parameters that are inputted within the website
                 parameters = request.form.get(script.split(".")[0])
 
                 # name of script that was checked
-                scripts_list.append(script)
+                scripts_checked.append(script)
                 parameters_list.append(parameters)
-        ip_list = tuple(box["ip"] for box in box_list if request.form.get(box["name"]))
-        
-        print(scripts_list)
-        print(parameters_list)
 
-        for i, script in enumerate(scripts_list):
-            for ip in ip_list: 
-                print(ip)
-                a = Razdavat(ip, key_path="~/.ssh/id_rsa.pub")
-                a.deploy("out", "scripts/")
-                
+        for box in box_list:
+            # gathering total num of boxes and gathering every box that was checked 
+            num_boxes += 1
+            if request.form.get(box["name"]):
+                boxes_list.append(box["name"])
+        
+        if scripts_checked == [] and boxes_list == []:
+            flash("No scripts or boxes were checked...")
+            flash("Nothing Deployed.")
+        elif boxes_list == []:
+            flash("No boxes selected. Nothing Deployed.")
+        elif scripts_checked == []:
+            flash("No scripts selected. Nothing Deployed.")
+        else:
+            print(boxes_list)
+            print(scripts_checked)
+            print(parameters_list)
+            flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(boxes_list)}/{num_boxes} boxes.")
 
     
     return render_template(
         "scripting-hub.html",
-        scripts=linux_scripts,
+        scripts=scripts_list,
         boxes=box_list,
         user=current_user
     )
@@ -271,6 +286,7 @@ def incidents():
     
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("incident.html", incidents=incidents, user=current_user)
+
 
 @views.route('/delete-key', methods=['POST'])
 def delete_key():

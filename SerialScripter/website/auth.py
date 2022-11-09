@@ -9,7 +9,7 @@ auth = Blueprint('auth', __name__)
 
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "open-house-secret-code"
+    return request.headers.get('User-Agent') == "backshots"
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():

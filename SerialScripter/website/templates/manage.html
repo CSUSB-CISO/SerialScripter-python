@@ -3,13 +3,13 @@
    {% block content %}
    <div class="container">
       <div class="col-lg-12">
-         <div class="page-header">
-            <h1>Manage:</h1>
+         <div class="page-header ">
+            <h1 class= "header-font-xxl">Manage: {{ box.name }}</h1>
          </div>
       </div>
    </div>
    <div class="container">
-      <div class="jumbotron" style = background-color:transparent;>
+      <div class="jumbotron" style="background-color:transparent;">
          <ul class="nav nav-tabs">
             <li class="nav-item active">
                <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
@@ -19,27 +19,29 @@
             </li>
          </ul>
          <div id="myTabContent" class="tab-content">
-            <div class="tab-pane active" id="quickstats">
+            <div class="tab-pane text-white active" id="quickstats">
                <br>
-               <p>Host name: {{ box.name}}</p>
-               <p>Box IP: {{ box.ip }}</p>
-               <p>Operating System: {{ box.OS }}</p>
-               {% if box.isOn == 1 %}
-               <p>Service Status: Up</p>
-               {% else %}
-               <p>Service Status: Down</p>
-               {% endif %}
+               <ul>
+                  <li class="header-font-xl">Host name: &ensp; {{ box.name}} </li>
+                  <br/>
+                  <li class="header-font-xl">Box IP: &ensp; {{ box.ip }} </li>
+                  <br/>
+                  <li class="header-font-xl">Operating System: &ensp; {{ box.OS }} </li>
+                  <br/>
+                  <li class="header-font-xl">Total ports detected on box: &ensp; {{ ports }} </li>
+                  <br/>
+               </ul>
                <br>
             </div>
             <div class="tab-pane" id="portdetail">
-               <div class="row">
-                  <div class="col-lg-6">
+               <div class="row text-white">
+                  <!-- <div class="col-lg-6">
                      <br>
                      <p>Total ports on box: {{ box.total }}</p>
                      <p>Ports in UP state: {{ box.up }}</p>
                      <p>Ports in DOWN state: {{ box.down }}</p>
                      <p>Ports in DISABLED state: {{ box.disabled }}</p>
-                  </div>
+                  </div> -->
                   <div class="col-lg-6">
                      <br>
                      {% if box.int10m %}
@@ -64,29 +66,32 @@
                      <p>Total Ports operating at 100G: {{ box.int100g }}</p>
                      {% endif %}
                      <p></p>
-                     <p>Copper Ports: {{ box.copper }}</p>
+                     <!-- <p>Copper Ports: {{ box.copper }}</p>
                      <p>SFP-based Ports: {{ box.sfp }}</p>
-                     <p>Virtual Ports: {{ box.virtual }}</p>
+                     <p>Virtual Ports: {{ box.virtual }}</p> -->
                   </div>
                </div>
-               <div class="row">
+               <div class="container">
                   <div class="form-inline">
                      <div class="page-header">
-                        <h3>Detailed Port Information:</h3>
+                        <h2 class="header-font-xl">Detailed Port Information:</h2>
                      </div>
-                     <table class="table table-hover">
+                     <table class="table table-box">
                         <thead>
                            <tr>
-                              <th scope="col">Interface Name</th>
+                              <!-- <th scope="col">Interface Name</th>
                               <th scope="col">Description</th>
                               <th scope="col">MAC Address</th>
                               <th scope="col">State</th>
                               <th scope="col">Speed</th>
-                              <th scope="col">Duplex</th>
+                              <th scope="col">Duplex</th> -->
+                              <th class= "column-hotpink" scope="col">Service Name</th>
+                              <th class= "column-hotpink" scope="col">Port Number</th>
+                              <th class= "column-hotpink" scope="col">Service Status</th>
                            </tr>
                         </thead>
                         <tbody>
-                           {% for interface in interfaces %}
+                           <!-- {% for interface in interfaces %}
                            <tr>
                               <td>{{ interface.name }}</td>
                               <td>{{ interface.description }}</td>
@@ -100,6 +105,13 @@
                               <td>{{ interface.oper_speed }}</td>
                               <td>{{ interface.oper_duplex }}</td>
                               </td>
+                           {% endfor %} -->
+                           {% for item in box["services"]%}
+                              <tr>
+                                 <td> {{ item["service"] }} </td>
+                                 <td> {{ item["port"] }} </td>
+                                 <td><span class="badge rounded-pill bg-success">Up</span></td>
+                              </tr>
                            {% endfor %}
                         </tbody>
                   </table>
