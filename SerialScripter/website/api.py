@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from json import load, loads, dumps
 
-from yaml import dump
-
 api = Blueprint('api', __name__)
 
 def user_agent(request):
