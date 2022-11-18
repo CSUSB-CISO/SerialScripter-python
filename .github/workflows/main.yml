@@ -13,10 +13,12 @@ env:
   AZURE_WEBAPP_NAME: serial-scripter-server   # set this to your application's name
   PYTHON_VERSION: '3.9'               # set this to the Python version to use
 
-on:
-  push:
-    branches:
-      - main
+#on:
+#  push:
+#    branches:
+#      - main
+      
+on: workflow_dispatch
 
 jobs:
   build:
