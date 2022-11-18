@@ -32,11 +32,6 @@ jobs:
 
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
       
       - name: Set up dependency caching for faster installs
         uses: actions/cache@v3
@@ -51,7 +46,7 @@ jobs:
         run: pip install -r requirements.txt
         
       - name: Run webserver
-        run: python3 main.py
+        run: python3 /home/runner/work/SerialScripter/SerialScripter/SerialScripter/main.py
 
       # Optional: Add a step to run tests here (PyTest, Django test suites, etc.)
 
