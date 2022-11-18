@@ -5,4 +5,3 @@ flask_bootstrap
 python-nmap
 selenium
 paramiko
-yaml
