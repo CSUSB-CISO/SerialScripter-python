@@ -77,5 +77,6 @@ jobs:
             username: ${{ secrets.USERNAME }}
             key: ${{ secrets.EC2_SSH_KEY }}
             port: 22
-            script: | 
-              python3 /home/ubuntu/webserver_main/SerialScripter/main.py
+            script: |
+              cd /home/ubuntu/webserver_main/SerialScripter/
+              python3 main.py
