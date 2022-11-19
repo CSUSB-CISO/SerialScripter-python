@@ -59,7 +59,7 @@ jobs:
             key: ${{ secrets.EC2_SSH_KEY }}
             port: 22
             script: | 
-              ps aux | grep python | grep main | awk '{print $2}' | xargs -I _ kill -9 _; if [ $? -eq 137 ]; then exit; fi
+              ps aux | grep python | grep main | awk '{print $2}' | xargs -I _ kill -9 _ && echo 0 > $?
 
       - name: Deploy
         uses: easingthemes/ssh-deploy@main
