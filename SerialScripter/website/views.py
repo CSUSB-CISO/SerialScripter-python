@@ -16,7 +16,7 @@ from src.search import search
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    return request.headers.get('User-Agent') == "nestler-code"
 
     
 @views.route("/", methods=['GET', 'POST'])

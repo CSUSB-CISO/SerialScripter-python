@@ -4,7 +4,7 @@ from json import load, loads, dumps
 api = Blueprint('api', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    return request.headers.get('User-Agent') == "nestler-code"
 
 @api.route('/api/v1/wingoEDR/updateconfig', methods=['GET'])
 def update_config():
