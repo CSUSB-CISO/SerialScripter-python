@@ -8,6 +8,7 @@ from . import db
 from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
+import os
 from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
