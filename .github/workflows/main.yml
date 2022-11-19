@@ -54,7 +54,7 @@ jobs:
       - name: Deploy
         uses: easingthemes/ssh-deploy@main
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST_PROD }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER_PROD }}
-          TARGET: /home/ubuntu/webserver_main
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
