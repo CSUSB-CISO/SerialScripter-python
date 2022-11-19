@@ -50,6 +50,16 @@ jobs:
 #        run: python3 ./main.py
 
       # Optional: Add a step to run tests here (PyTest, Django test suites, etc.)
+      
+      - name: Pre Deploy
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.HOST_DNS }}
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+            script: | 
+              ps aux | grep python | grep main | awk '{print $2}' | xargs -I _ kill -9 _
 
       - name: Deploy
         uses: easingthemes/ssh-deploy@main
@@ -58,3 +68,13 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           TARGET: ${{ secrets.TARGET_DIR }}
+          
+      - name: Post Deploy
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.HOST_DNS }}
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+            script: | 
+              python3 /home/ubuntu/webserver_main/SerialScripter/main.py
