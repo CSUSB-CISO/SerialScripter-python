@@ -46,7 +46,8 @@ jobs:
         run: pip install -r /home/runner/work/SerialScripter/SerialScripter/SerialScripter/requirements.txt
         
       - name: Run webserver
-        run: python3 /home/runner/work/SerialScripter/SerialScripter/SerialScripter/main.py
+        working-directory: /home/runner/work/SerialScripter/SerialScripter/SerialScripter/
+        run: python3 ./main.py
 
       # Optional: Add a step to run tests here (PyTest, Django test suites, etc.)
 
