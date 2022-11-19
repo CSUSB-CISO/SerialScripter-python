@@ -72,6 +72,8 @@ jobs:
           
       - name: Post Deploy
         uses: appleboy/ssh-action@master
+        timeout-minutes: 1
+        continue-on-error: true
         with:
             host: ${{ secrets.HOST_DNS }}
             username: ${{ secrets.USERNAME }}
