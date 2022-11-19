@@ -79,4 +79,4 @@ jobs:
             port: 22
             script: |
               cd /home/ubuntu/webserver_main/SerialScripter/
-              python3 main.py
+              python3 main.py > /dev/null 2>&1
