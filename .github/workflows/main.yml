@@ -53,6 +53,7 @@ jobs:
       
       - name: Pre Deploy
         uses: appleboy/ssh-action@master
+        continue-on-error: true
         with:
             host: ${{ secrets.HOST_DNS }}
             username: ${{ secrets.USERNAME }}
