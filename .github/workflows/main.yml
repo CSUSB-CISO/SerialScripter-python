@@ -45,10 +45,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r /home/runner/work/SerialScripter/SerialScripter/SerialScripter/requirements.txt
         
-      - name: Run webserver
-        working-directory: /home/runner/work/SerialScripter/SerialScripter/SerialScripter/
-        timeout-minutes: 1
-        run: python3 ./main.py
+#      - name: Run webserver
+#        working-directory: /home/runner/work/SerialScripter/SerialScripter/SerialScripter/
+#        timeout-minutes: 1
+#        run: python3 ./main.py
 
       # Optional: Add a step to run tests here (PyTest, Django test suites, etc.)
 
