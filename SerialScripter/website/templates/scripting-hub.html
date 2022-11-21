@@ -5,7 +5,7 @@
    <div class="container">
       <div class="col-lg-12">
          <div class="page-header">
-            <h1 class="header-font-xxl">Script Distribution</h1>
+            <h1 class="header-font-xxl">Script Amazon</h1>
          </div>
       </div>
    </div>
@@ -24,10 +24,17 @@
             
             {% for script in scripts %}
             <tr>
-            <td>
-               <input class="scripts" type="checkbox" id={{ script }} name={{ script }}>
-               <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
-            </td>
+               {% if script.split(".")[1] == "ps1" %}
+                  <td>
+                     <input class="scriptsWindows" type="checkbox" id={{ script }} name={{ script }}>
+                     <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
+                  </td>
+               {% elif script.split(".")[1] == "sh" %}
+                  <td>
+                     <input class="scriptsLinux" type="checkbox" id={{ script }} name={{ script }}>
+                     <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
+                  </td>
+               {% endif %}
             <td style="padding-left:5px"> 
                <input type="text" name={{ script.split(".")[0] }} id={{ script.split(".")[0] }}>
             </td>
@@ -42,10 +49,13 @@
             {% endfor %}
             <tr>
                <td>
-                  <input class="scripts" type="checkbox" id="autoSelectScripts" onclick="checkAllScripts(this);"/>
-                  <label style="font-size:22px" for="autoSelectScripts">   Check All</label>
+                  <input class="scriptsLinux" type="checkbox" id="autoSelectScriptsLinux" onclick="checkAllScriptsLinux(this);"/>
+                  <label style="font-size:22px" for="autoSelectScriptsLinux">   Check All Linux Scripts</label>
                </td>
-               <td> </td>
+               <td>
+                  <input class="scriptsWindows" type="checkbox" id="autoSelectScriptsWindows" onclick="checkAllScriptsWindows(this);"/>
+                  <label style="font-size:22px" for="autoSelectScriptsWindows">   Check All Windows Scripts</label>   
+               </td>
                <td>
                   <a class="nav-link active" href="#box-selection" data-toggle="tab">Next &rarr;</a>
                </td>
@@ -69,10 +79,17 @@
                
                {% for box in boxes %}
                   <tr>
+                     {% if "Windows" in box.OS %}
                         <td>
-                           <input class="boxes" type="checkbox" id={{ box.name }} name={{ box.name }} >
+                           <input class="boxesWindows" type="checkbox" id={{ box.name }} name={{ box.name }} >
                            <label style="font-size: 20px;"for={{ box.name }}>   {{ box.name }} </label>
                         </td>
+                     {% else %}
+                        <td>
+                           <input class="boxesLinux" type="checkbox" id={{ box.name }} name={{ box.name }} >
+                           <label style="font-size: 20px;"for={{ box.name }}>   {{ box.name }} </label>
+                        </td>
+                     {% endif %}
                         <td> 
                            {{ box.ip }}
                         </td>
@@ -83,10 +100,13 @@
                {% endfor %}
                   <tr>
                         <td>
-                           <input class="boxes" type="checkbox" id="autoSelect" onclick="checkAllBoxes(this);"/>
-                           <label style="font-size: 22px;" for="autoSelect">   Check All</label>
+                           <input class="boxesLinux" type="checkbox" id="autoSelectLinux" onclick="checkAllBoxesLinux(this);"/>
+                           <label style="font-size: 22px;" for="autoSelectLinux">   Check All Linux Boxes</label>
                         </td>
-                        <td></td>
+                        <td>
+                           <input class="boxesWindows" type="checkbox" id="autoSelectWindows" onclick="checkAllBoxesWindows(this);"/>
+                           <label style="font-size: 22px;" for="autoSelectWindows">   Check All Windows Boxes</label>
+                        </td>
                         <td>
                            <a class="nav-link active" href="#script-selection" data-toggle="tab">&larr; Previous</a>
                         </td>

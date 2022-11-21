@@ -8,6 +8,7 @@ from . import db
 from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
+import os
 from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
@@ -16,6 +17,7 @@ from src.search import search, sort
 views = Blueprint('views', __name__)
 
 def user_agent(request):
+    return request.headers.get('User-Agent') == "nestler-code"
     return request.headers.get('User-Agent') == "nestler-secret-code"
 
     

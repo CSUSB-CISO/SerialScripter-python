@@ -15,6 +15,7 @@
     window.onload = autoType;
   
   </script>
+
   <div class="container">
     <form action="/incidents">
               <input id="search-box" name="search" class="search-container" type="text" placeholder="Search..">
@@ -22,12 +23,12 @@
     <table class="table table-box">
       <thead>
         <tr>
-          <!-- <td>👾 <a href="/host-69" style="text-decoration:none"> host-69</a></td> -->
+          <!-- <td>👾 <a href="/host-69" class="column-hotpink" style="text-decoration:none"> host-69</a></td> -->
           <th scope="col"><a href="/incidents?filter=hosts">Host</a></th>
-          <th scope="col"><a href="/incidents?filter=users">User</a></th>
-          <th scope="col"><a href="/incidents?filter=processes">Process</a></th>
-          <th scope="col"><a href="/incidents?filter=ips">IP</a></th>
-          <th scope="col"><a href="/incidents?filter=cmds">CMD</a></th>
+          <th class="column-hotpink" scope="col"><a href="/incidents?filter=users">User</a></th>
+          <th class="column-hotpink" scope="col"><a href="/incidents?filter=processes">Process</a></th>
+          <th class="column-hotpink" scope="col"><a href="/incidents?filter=ips">IP</a></th>
+          <th class="column-hotpink" scope="col"><a href="/incidents?filter=cmds">CMD</a></th>
         </tr>
       </thead>
       <tbody>

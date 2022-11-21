@@ -1,0 +1,82 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Serial Scripter Deployment
+
+env:
+  PYTHON_VERSION: '3.9'               # set this to the Python version to use
+      
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python version
+        uses: actions/setup-python@v4
+
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Set up dependency caching for faster installs
+        uses: actions/cache@v3
+
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r /home/runner/work/SerialScripter/SerialScripter/SerialScripter/requirements.txt
+        
+#      - name: Run webserver
+#        working-directory: /home/runner/work/SerialScripter/SerialScripter/SerialScripter/
+#        timeout-minutes: 1
+#        run: python3 ./main.py
+
+      # Optional: Add a step to run tests here (PyTest, Django test suites, etc.)
+      
+      - name: Pre Deploy
+        uses: appleboy/ssh-action@master
+        continue-on-error: true
+        with:
+            host: ${{ secrets.HOST_DNS }}
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+            script: | 
+              ps aux | grep python | grep main | awk '{print $2}' | xargs -I _ kill -9 _ && echo 0 > $?
+
+      - name: Deploy
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
+          
+      - name: Post Deploy
+        uses: appleboy/ssh-action@master
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+            host: ${{ secrets.HOST_DNS }}
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+            script: |
+              cd /home/ubuntu/webserver_main/SerialScripter/
+              python3 main.py > /home/ubuntu/bullshit 2>&1
