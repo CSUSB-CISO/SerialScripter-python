@@ -1,12 +1,11 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, jsonify
 from json import load, loads, dumps
 
-from yaml import dump
 
 api = Blueprint('api', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    return request.headers.get('User-Agent') == "nestler-code"
 
 @api.route('/api/v1/wingoEDR/updateconfig', methods=['GET'])
 def update_config():

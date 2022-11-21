@@ -1,59 +1,63 @@
 from difflib import SequenceMatcher
+from json import load
 
-a = {
-  "Alerts": [
-    {
-      "Incident": {
-        "Host": "host-69420",
-        "Name": "Net cat back door",
-        "User": "hunte",
-        "Process": "nc.exe",
-        "RemoteIP": "10.123.65.30",
-        "Cmd": "nc.exe --someoption"
-      }
-    },
-    {
-      "Incident": {
-        "Host": "host-69421",
-        "Name": "Net cat back door",
-        "User": "John",
-        "Process": "nc.exe",
-        "RemoteIP": "10.8.65.30",
-        "Cmd": "nc.exe --someoption"
-      }
-    },
-    {
-      "Incident": {
-        "Host": "host-69422",
-        "Name": "Net cat back door",
-        "User": "hunte",
-        "Process": "hunte",
-        "RemoteIP": "10.123.65.30",
-        "Cmd": "nc.exe --someoption"
-      }
+from src.search import search, sort
+
+def main():
+    with open("website/data/incidents.json", "r") as f:
+        incidents = load(f)["Alerts"]
+
+    search_words = "ip:10.123.65.199 and user:john"
+
+
+    switch = {
+        "ip": "RemoteIP",
+        "host": "Host",
+        "name": "Name",
+        "user": "User",
+        "process": "Process",
+        "cmd": "Cmd"
     }
-  ]
-}
 
-def matches_query(incident, queries, filters=[]) -> bool:
-  if filters:
-    for query in queries:
-      for filter in filters:
-        query.set_seq1(incident['Incident'][filter])
-        if query.ratio() > 0.6:
-          return True
-  else:
-    for query in queries:
-      for value in incident['Incident']:
-        query.set_seq1(incident['Incident'][value])
-        if query.ratio() > 0.6:
-          return True
-  return False
+    if search_words:
+        match_all = "and" in search_words
 
+        switch = {
+            "ip": "RemoteIP",
+            "host": "Host",
+            "name": "Name",
+            "user": "User",
+            "process": "Process",
+            "cmd": "Cmd"
+        }
 
+        queries = list()
+        filters = list()
 
-def search(incidents, search_words=["host"], filters=[]):
-  queries = {SequenceMatcher(None, "", word) for word in search_words}
-  return tuple(incident for incident in incidents if matches_query(incident, queries))
+        for term in search_words.split():
+            if term == "and" or term.startswith("search_by"):
+                continue
+            try:
+                x = term.split(":")
+                if len(x) > 1:
+                    filters.append(x[0])
+                    queries.append(x[1])
+                else:
+                    queries.append(x[1])
+            except:
+                queries.append(term)
+        filters = tuple(map(lambda a: switch[a], filters))
+        results = search(incidents, search_words=queries, filters=filters, match_all=match_all) if "and" in search_words else search(incidents, search_words=queries, filters=filters)
+        if results:
+            incidents = results
+        
+        if search_words.startswith("search_by"):
+            try:
+                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:search_words.index(" ")]])
+            except:
+                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:]])
 
-print(search(incidents=a["Alerts"], search_words=["10.123"]))
+    for incident in incidents:
+        print(incident)
+if __name__ == "__main__":
+    main()

@@ -3,10 +3,11 @@ from time import sleep
 
 
 class Razdavat(SSHClient):
-    def __init__(self, server: str, password: str = None, key_path: str = None ,port: int = 22, user: str = 'root') -> None:
+    def __init__(self, server: str, password: str = None, key_path: str = None ,port: int = 22, user: str = 'root', os="linux") -> None:
         super().__init__()
         self.set_missing_host_key_policy(AutoAddPolicy())
         self.server = server
+        self.os = os
 
         if key_path:
             self.connect(
@@ -37,10 +38,10 @@ class Razdavat(SSHClient):
             if key not in (key_to_delete+"\n", "\n"):
                 self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys")
 
-    def put(self, script, script_path='/tmp/'):
+    def put(self, script_name, script_path='/tmp/'):
         sftp = self.open_sftp()
-        sftp.put('scripts/linux/'+script, script_path+script)
-        sftp.chmod(script_path+script, 777)
+        sftp.put(f'scripts/{self.os}/'+script_name, script_path+script_name)
+        sftp.chmod(script_path+script_name, 777)
         sftp.close()
 
     def get(self, file, file_path='/tmp/'):
@@ -48,9 +49,8 @@ class Razdavat(SSHClient):
         sftp.get(file_path+file, file)
         sftp.close()
 
-    def deploy(self, script, script_path='/tmp/'):
-        out = script.split(".")[0]
-        self.put(script, script_path)
-        self.exec_command(f'{script_path}{script} > {script_path}{out}')
-        sleep(4)
-        self.get(out, script_path)
+    def deploy(self, script_name, script_path='/tmp/'):
+        if script_path[-1] != "/":
+            script_path += "/"
+        self.put(script_name, script_path=script_path)
+        self.exec_command(f'{script_path}{script_name}')

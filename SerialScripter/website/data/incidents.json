@@ -16,7 +16,7 @@
         "Name": "Net cat back door",
         "User": "John",
         "Process": "nc.exe",
-        "RemoteIP": "10.123.65.30",
+        "RemoteIP": "10.123.65.116",
         "Cmd": "nc.exe --someoption"
       }
     },
@@ -26,7 +26,7 @@
         "Name": "Net cat back door",
         "User": "hunte",
         "Process": "nc.exe",
-        "RemoteIP": "10.123.65.30",
+        "RemoteIP": "10.123.65.199",
         "Cmd": "nc.exe --someoption"
       }
     },

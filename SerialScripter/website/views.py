@@ -11,12 +11,12 @@ from queue import Queue
 from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
-from src.search import search
+from src.search import search, sort
 
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    return request.headers.get('User-Agent') == "nestler-secret-code"
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -100,7 +100,7 @@ def scripting_hub():
         return render_template("404.html")
     
     # gather scripts from linux and windows' scripts directories
-    scripts_list = os.listdir('scripts/linux/') + os.listdir('scripts/windows/')
+    scripts_list = listdir('scripts/linux/') + listdir('scripts/windows/')
 
     # load list of boxes from hosts.json 
     with open("website/data/hosts.json", "r") as f:
@@ -111,7 +111,7 @@ def scripting_hub():
         scripts_checked = []
         parameters_list = []
         boxes_list = []
-        num_boxes = 0
+        
 
         for script in scripts_list:
             # checks if checkbox corresponding to script name is checked
@@ -124,24 +124,23 @@ def scripting_hub():
                 scripts_checked.append(script)
                 parameters_list.append(parameters)
 
-        for box in box_list:
+        for num_boxes, box in enumerate(box_list):
             # gathering total num of boxes and gathering every box that was checked 
-            num_boxes += 1
             if request.form.get(box["name"]):
-                boxes_list.append(box["name"])
+                boxes_list.append(box["ip"])
         
-        if scripts_checked == [] and boxes_list == []:
+        if not (scripts_checked and boxes_list):
             flash("No scripts or boxes were checked...")
             flash("Nothing Deployed.")
-        elif boxes_list == []:
+        elif not boxes_list:
             flash("No boxes selected. Nothing Deployed.")
-        elif scripts_checked == []:
+        elif not scripts_checked:
             flash("No scripts selected. Nothing Deployed.")
         else:
             print(boxes_list)
             print(scripts_checked)
             print(parameters_list)
-            flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(boxes_list)}/{num_boxes} boxes.")
+            flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(boxes_list)}/{num_boxes+1} boxes.")
 
     
     return render_template(
@@ -270,7 +269,7 @@ def visualize():
     with open("website/data/hosts.json", "r") as f:
         # load dict from hosts.json then convert it to formatted json string using dumps
         box_list = dumps(load(f)) 
-
+    print(box_list)
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("visualize.html", hosts=box_list, user=current_user)
 
@@ -280,12 +279,61 @@ def incidents():
     with open("website/data/incidents.json", "r") as f:
         incidents = load(f)["Alerts"]
 
-    args = request.args.get("search")
-    if args:
-        incidents = search(incidents, args.split())
-    
+    search_words = request.args.get("search")
+
+    switch = {
+        "ip": "RemoteIP",
+        "host": "Host",
+        "name": "Name",
+        "user": "User",
+        "process": "Process",
+        "cmd": "Cmd"
+    }
+
+    if search_words:
+        match_all = "and" in search_words
+
+        switch = {
+            "ip": "RemoteIP",
+            "host": "Host",
+            "name": "Name",
+            "user": "User",
+            "process": "Process",
+            "cmd": "Cmd"
+        }
+
+        queries = list()
+        filters = list()
+
+
+        for term in search_words.split():
+            if term == "and" or term.startswith("sort_by"):
+                continue
+            try:
+                x = term.split(":")
+                if len(x) > 1:
+                    filters.append(x[0])
+                    queries.append(x[1])
+                else:
+                    queries.append(x[1])
+            except:
+                queries.append(term)
+        filters = tuple(map(lambda a: switch[a], filters))
+        
+        results = search(incidents, search_words=queries, filters=filters, match_all=match_all) if "and" in search_words else search(incidents, search_words=queries, filters=filters)
+        
+        if results:
+            incidents = results
+        
+        if search_words.startswith("sort_by"):
+            try:
+                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:search_words.index(" ")]])
+            except:
+                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:]])
+
+    print(incidents)
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
-    return render_template("incident.html", incidents=incidents, user=current_user)
+    return render_template("incidents.html", incidents=incidents, user=current_user)
 
 
 @views.route('/delete-key', methods=['POST'])
