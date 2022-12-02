@@ -316,11 +316,11 @@ def incidents():
                     filters.append(x[0])
                     queries.append(x[1])
                 else:
+                    filters.append("")
                     queries.append(x[1])
             except:
                 queries.append(term)
-        filters = tuple(map(lambda a: switch[a], filters))
-        
+        filters = tuple(map(lambda a: switch[a] if a else "", filters))
         results = search(incidents, search_words=queries, filters=filters, match_all=match_all) if "and" in search_words else search(incidents, search_words=queries, filters=filters)
         
         if results:

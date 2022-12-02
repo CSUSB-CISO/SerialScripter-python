@@ -1,63 +1,85 @@
 from difflib import SequenceMatcher
-from json import load
+from re import match
 
-from src.search import search, sort
+def is_ip(ip: str):
+    return bool(match("^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$", ip))
 
-def main():
-    with open("website/data/incidents.json", "r") as f:
-        incidents = load(f)["Alerts"]
+def check_sequence(incident, sequencer, key, query, match_all):
+    sequencer.set_seq1(incident['Incident'][key])
+    if match_all:
+        if is_ip(query[0]) and sequencer.ratio() == 1:
+            match_counter += 1
+        elif sequencer.ratio() > 0.6:
+            match_counter += 1
+    else:
+        if is_ip(query[0]):
+            if sequencer.ratio() == 1:
+                return True
+        elif sequencer.ratio() > 0.6:
+            return True
 
-    search_words = "ip:10.123.65.199 and user:john"
+def matches_query(incident, queries, match_all=False) -> bool:
+    match_counter = 0
+    
+    for query in queries:
+        sequencer = SequenceMatcher(None, "", query[0])
+        print(query)
+        if query[1]:
+            sequencer.set_seq1(incident['Incident'][query[1]])
+            print("ratio"+str(sequencer.ratio()), is_ip(query[0]))
 
+            if match_all:
+                if is_ip(query[0]) and sequencer.ratio() == 1:
+                    match_counter += 1
+                    break
+                elif not is_ip(query[0]) and sequencer.ratio() > 0.6:
+                    match_counter += 1
+                    break
+            else:
 
-    switch = {
-        "ip": "RemoteIP",
-        "host": "Host",
-        "name": "Name",
-        "user": "User",
-        "process": "Process",
-        "cmd": "Cmd"
-    }
+                if is_ip(query[0]):
+                    return query[0] == incident['Incident'][query[1]]
+                elif sequencer.ratio() > 0.6:
+                    return True
+        else:
+            for value in incident['Incident']:
+                sequencer.set_seq1(incident['Incident'][value])
+                # print(incident['Incident'][value], "ratio"+str(sequencer.ratio()), is_ip(query[0]))
 
-    if search_words:
-        match_all = "and" in search_words
-
-        switch = {
-            "ip": "RemoteIP",
-            "host": "Host",
-            "name": "Name",
-            "user": "User",
-            "process": "Process",
-            "cmd": "Cmd"
-        }
-
-        queries = list()
-        filters = list()
-
-        for term in search_words.split():
-            if term == "and" or term.startswith("search_by"):
-                continue
-            try:
-                x = term.split(":")
-                if len(x) > 1:
-                    filters.append(x[0])
-                    queries.append(x[1])
+                if match_all:
+                    
+                    if is_ip(query[0]) and sequencer.ratio() == 1:
+                        print(query[0], incident['Incident'][value])
+                        match_counter +=1
+                        break
+                    elif not is_ip(query[0]) and sequencer.ratio() > 0.6:
+                        match_counter +=1
+                        print(query[0], incident['Incident'][value])
+                        break
                 else:
-                    queries.append(x[1])
-            except:
-                queries.append(term)
-        filters = tuple(map(lambda a: switch[a], filters))
-        results = search(incidents, search_words=queries, filters=filters, match_all=match_all) if "and" in search_words else search(incidents, search_words=queries, filters=filters)
-        if results:
-            incidents = results
-        
-        if search_words.startswith("search_by"):
-            try:
-                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:search_words.index(" ")]])
-            except:
-                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:]])
+                    if is_ip(query[0]):
+                        if sequencer.ratio() == 1:
+                            return True
+                    elif sequencer.ratio() > 0.6:
+                        return True
 
-    for incident in incidents:
-        print(incident)
-if __name__ == "__main__":
-    main()
+    if match_all and match_counter == len(queries):
+        print(match_counter)
+        return True
+
+    return False
+
+def search(incidents, search_words=["host"], filters=[], match_all=False):
+    queries = list()
+    for i, word in enumerate(search_words):
+        try:
+            queries.append((word, filters[i]))
+        except:
+            queries.append((word,))
+    print(queries)
+    
+    return tuple(incident for incident in incidents if matches_query(incident, queries, match_all=match_all))
+
+def sort(incidents: list[dict], by="Host"):
+
+    return sorted(incidents, key=lambda ip: ip["Incident"][by])
