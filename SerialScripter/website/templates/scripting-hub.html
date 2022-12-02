@@ -24,37 +24,37 @@
             
             {% for script in scripts %}
             <tr>
-               {% if script.split(".")[1] == "ps1" %}
+               {% if script.split(".")[1] == "ps1" or script == "wingoEDR.exe" %}
                   <td>
                      <input class="scriptsWindows" type="checkbox" id={{ script }} name={{ script }}>
                      <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
                   </td>
-               {% elif script.split(".")[1] == "sh" %}
+               {% elif script.split(".")[1] == "sh" or script in ("godadelus", "gomemento") %}
                   <td>
                      <input class="scriptsLinux" type="checkbox" id={{ script }} name={{ script }}>
                      <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
                   </td>
                {% endif %}
-            <td style="padding-left:5px"> 
-               <input type="text" name={{ script.split(".")[0] }} id={{ script.split(".")[0] }}>
-            </td>
-            <td>
-                  {% if script.split(".")[1] == "ps1" %}
-                     Windows
-                  {% elif script.split(".")[1] == "sh" %}
-                     Linux
-                  {% endif %}
-            </td>
-            </tr>
-            {% endfor %}
-            <tr>
-               <td>
-                  <input class="scriptsLinux" type="checkbox" id="autoSelectScriptsLinux" onclick="checkAllScriptsLinux(this);"/>
-                  <label style="font-size:22px" for="autoSelectScriptsLinux">   Check All Linux Scripts</label>
+               <td style="padding-left:5px"> 
+                  <input type="text" name={{ script.split(".")[0] }} id={{ script.split(".")[0] }}>
                </td>
+               <td>
+                     {% if script.split(".")[1] == "ps1" or script == "wingoEDR.exe" %}
+                        Windows
+                     {% elif script.split(".")[1] == "sh" or script in ("godadelus", "gomemento") %}
+                        Linux
+                     {% endif %}
+               </td>
+            {% endfor %}
+            </tr>
+            <tr>
                <td>
                   <input class="scriptsWindows" type="checkbox" id="autoSelectScriptsWindows" onclick="checkAllScriptsWindows(this);"/>
                   <label style="font-size:22px" for="autoSelectScriptsWindows">   Check All Windows Scripts</label>   
+               </td>
+               <td>
+                  <input class="scriptsLinux" type="checkbox" id="autoSelectScriptsLinux" onclick="checkAllScriptsLinux(this);"/>
+                  <label style="font-size:22px" for="autoSelectScriptsLinux">   Check All Linux Scripts</label>
                </td>
                <td>
                   <a class="nav-link active" href="#box-selection" data-toggle="tab">Next &rarr;</a>

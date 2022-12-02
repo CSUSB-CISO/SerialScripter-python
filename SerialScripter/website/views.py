@@ -102,7 +102,7 @@ def scripting_hub():
         return render_template("404.html")
     
     # gather scripts from linux and windows' scripts directories
-    scripts_list = listdir('scripts/linux/') + listdir('scripts/windows/')
+    scripts_list = listdir('scripts/windows/') + listdir('scripts/linux/') 
 
     # load list of boxes from hosts.json 
     with open("website/data/hosts.json", "r") as f:
@@ -231,7 +231,7 @@ def key_management():
             for ssh_key in current_user.keys:
                 if ssh_key.data.split()[1] == key.split()[1]:
                     is_duplicate = True
-                    flash(f'Previous key is duplicate of Key Number: {ssh_key.id}')
+                    flash(f'Inserted key is duplicate of Key Number: {ssh_key.id}')
         
 
         # ensure a unique public key will be added
@@ -250,7 +250,7 @@ def key_management():
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.add_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="app4rentlyBas3d", user="imp0ster")
+                    connection = Razdavat("127.0.0.0", password="<REDACTED>", user="hunte")
                     connection.add_ssh_key(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
@@ -359,7 +359,7 @@ def delete_key():
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.remove_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="imp0ster")
+                    connection = Razdavat("127.0.0.0", password="<REDACTED>", user="hunte")
                     connection.remove_ssh_key(key.data)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")

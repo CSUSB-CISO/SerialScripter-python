@@ -4707,6 +4707,7 @@ fieldset:disabled .btn {
 .column-hotpink {
   color: #f15dc7;
   text-shadow: 0 0 1px rgb(234 57 184 / 30%), 0 0 2px rgb(234 57 184 / 30%), 0 0 5px rgb(234 57 184 / 20%);
+  text-decoration: none;
 }
 
 .key-border-top {
