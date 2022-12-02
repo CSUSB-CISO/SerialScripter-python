@@ -23,8 +23,11 @@ def matches_query(incident, queries, match_all=False) -> bool:
     
     for query in queries:
         sequencer = SequenceMatcher(None, "", query[0])
+        print(query)
         if len(query) > 1:
             sequencer.set_seq1(incident['Incident'][query[1]])
+            print("ratio"+str(sequencer.ratio()))
+
             if match_all:
                 if is_ip(query[0]) and sequencer.ratio() == 1:
                     match_counter += 1
@@ -33,16 +36,18 @@ def matches_query(incident, queries, match_all=False) -> bool:
                     match_counter += 1
                     break
             else:
+
                 if is_ip(query[0]):
-                    if sequencer.ratio() == 1:
-                        return True
+                    return query[0] == incident['Incident'][query[1]]
                 elif sequencer.ratio() > 0.6:
                     return True
         else:
             for value in incident['Incident']:
                 sequencer.set_seq1(incident['Incident'][value])
+                print("ratio"+str(sequencer.ratio()))
 
                 if match_all:
+                    
                     if is_ip(query[0]) and sequencer.ratio() == 1:
                         match_counter +=1
                         break
@@ -57,6 +62,7 @@ def matches_query(incident, queries, match_all=False) -> bool:
                         return True
 
     if match_all and match_counter == len(queries):
+        print()
         return True
 
     return False

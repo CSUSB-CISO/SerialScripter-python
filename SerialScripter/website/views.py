@@ -17,8 +17,7 @@ from src.search import search, sort
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "nestler-code"
-    return request.headers.get('User-Agent') == "nestler-secret-code"
+    return request.headers.get('User-Agent') == "backshots"
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -243,14 +242,14 @@ def key_management():
             with open("website/data/hosts.json", "r") as f:
                 hosts = load(f)["hosts"]
                 try:
-                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="imp0ster")
+                    connection = Razdavat("127.0.0.0", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="imp0ster")
                     connection.add_ssh_key(key)
                     print(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.add_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="app4rentlyBas3d", user="imp0ster")
+                    connection = Razdavat("127.0.0.0", password="<REDACTED>", user="imp0ster")
                     connection.add_ssh_key(key)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
@@ -359,7 +358,7 @@ def delete_key():
                     #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
                     #     connection.remove_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="imp0ster")
+                    connection = Razdavat("127.0.0.0", password="<REDACTED>", user="imp0ster")
                     connection.remove_ssh_key(key.data)
                     # for host in hosts:
                     #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")

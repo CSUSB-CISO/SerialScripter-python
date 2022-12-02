@@ -27,7 +27,7 @@
         "User": "hunte",
         "Process": "nc.exe",
         "RemoteIP": "10.123.65.199",
-        "Cmd": "nc.exe --someoption"
+        "Cmd": "exception"
       }
     },
     {

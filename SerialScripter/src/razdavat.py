@@ -1,6 +1,4 @@
 from paramiko import SSHClient, AutoAddPolicy
-from time import sleep
-
 
 class Razdavat(SSHClient):
     def __init__(self, server: str, password: str = None, key_path: str = None ,port: int = 22, user: str = 'root', os="linux") -> None:
