@@ -25,16 +25,27 @@ class Razdavat(SSHClient):
             print("INVALID LOGIN TYPE")
 
     def add_ssh_key(self, key_to_add: str) -> None:
-        self.exec_command(f'yes "y" | ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
-        self.exec_command(f'echo {key_to_add} >> ~/.ssh/authorized_keys')
+        if self.os == "Windows":
+            self.exec_command(f"echo {key_to_add} >> C:\\ProgramData\\ssh\\administrators_authorized_keys")
+        else:
+            self.exec_command(f'yes "y" | ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
+            self.exec_command(f'echo {key_to_add} >> ~/.ssh/authorized_keys')
 
     def remove_ssh_key(self, key_to_delete: str) -> None:
-        _, stdout, _ = self.exec_command("cat ~/.ssh/authorized_keys")
-        keys = stdout.readlines()
-        self.exec_command(f'echo -n "" > ~/.ssh/authorized_keys')
-        for key in keys:
-            if key not in (key_to_delete+"\n", "\n"):
-                self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys")
+        if self.os == "Windows":
+            _, stdout, _ = self.exec_command(f"cat C:\\ProgramData\\ssh\\administrators_authorized_keys")
+            keys = stdout.readlines()
+            self.exec_command(f'echo -n "" > C:\\ProgramData\\ssh\\administrators_authorized_keys')
+            for key in keys:
+                if key not in (key_to_delete+"\n", "\n"):
+                    self.exec_command("echo "+key.replace('\n', "")+">> C:\\ProgramData\\ssh\\administrators_authorized_keys")
+        else:
+            _, stdout, _ = self.exec_command("cat ~/.ssh/authorized_keys")
+            keys = stdout.readlines()
+            self.exec_command(f'echo -n "" > ~/.ssh/authorized_keys')
+            for key in keys:
+                if key not in (key_to_delete+"\n", "\n"):
+                    self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys")
 
     def put(self, script_name, script_path='/tmp/'):
         sftp = self.open_sftp()

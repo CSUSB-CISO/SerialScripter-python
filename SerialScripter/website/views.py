@@ -8,7 +8,7 @@ from . import db
 from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
-import os
+from src.get_boxes import Recon
 from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
@@ -30,12 +30,15 @@ def home():
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
 
     if request.method == "POST":
-        pass
-        # Recon("192.168.1.0/24").save_box_data()
+        Recon("10.100.112.0/24").save_box_data()
+        # Recon("192.168.220.0/24").save_box_data()
 
     # Load hosts
-    with open("website/data/hosts.json", "r") as f:
-        box_list = load(f)["hosts"]
+    try:
+        with open("website/data/hosts.json", "r") as f:
+            box_list = load(f)["hosts"]
+    except:
+        box_list = {}
 
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
@@ -196,8 +199,7 @@ def pop_a_shell(ip: str) -> None:
         -r - make url random
         ssh <user>@<ip>
     """ 
-    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh cm03@localhost", shell=True, stdout=PIPE, stderr=STDOUT)
-
+    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh root@{ip}", shell=True, stdout=PIPE, stderr=STDOUT)
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
     t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
@@ -242,18 +244,15 @@ def key_management():
             with open("website/data/hosts.json", "r") as f:
                 hosts = load(f)["hosts"]
                 try:
-                    connection = Razdavat("127.0.0.0", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="imp0ster")
-                    connection.add_ssh_key(key)
-                    print(key)
-                    # for host in hosts:
-                    #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
-                    #     connection.add_ssh_key(key)
+
+                    for host in hosts:
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                        connection.add_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="app4rentlyBas3d", user="imp0ster")
-                    connection.add_ssh_key(key)
-                    # for host in hosts:
-                    #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
-                    #     connection.add_ssh_key(key)
+                    
+                    for host in hosts:
+                        connection = Razdavat(host["ip"], password="<REDACTED>", user="root")
+                        connection.add_ssh_key(key)
 
         elif len(key) < 500:
             flash("Key is too short!!")
@@ -294,15 +293,6 @@ def incidents():
     if search_words:
         match_all = "and" in search_words
 
-        switch = {
-            "ip": "RemoteIP",
-            "host": "Host",
-            "name": "Name",
-            "user": "User",
-            "process": "Process",
-            "cmd": "Cmd"
-        }
-
         queries = list()
         filters = list()
 
@@ -321,7 +311,7 @@ def incidents():
             except:
                 queries.append(term)
         filters = tuple(map(lambda a: switch[a] if a else "", filters))
-        results = search(incidents, search_words=queries, filters=filters, match_all=match_all) if "and" in search_words else search(incidents, search_words=queries, filters=filters)
+        results = search(incidents, search_words=queries, filters=filters, match_all=match_all) 
         
         if results:
             incidents = results
@@ -332,7 +322,6 @@ def incidents():
             except:
                 incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:]])
 
-    print(incidents)
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("incidents.html", incidents=incidents, user=current_user)
 
@@ -352,17 +341,14 @@ def delete_key():
             with open("website/data/hosts.json", "r") as f:
                 hosts = load(f)["hosts"]
                 try:
-                    connection = Razdavat("127.0.0.1", key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="imp0ster")
-                    connection.remove_ssh_key(key.data)
-                    # for host in hosts:
-                    #     connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="cm03")
-                    #     connection.remove_ssh_key(key)
+                    for host in hosts:
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                        connection.remove_ssh_key(key)
                 except:
-                    connection = Razdavat("127.0.0.1", password="<REDACTED>", user="imp0ster")
-                    connection.remove_ssh_key(key.data)
-                    # for host in hosts:
-                    #     connection = Razdavat(host["ip"], password="<REDACTED>", user="cm03")
-                    #     connection.remove_ssh_key(key)
+                    for host in hosts:
+                        connection = Razdavat(host["ip"], password="<REDACTED>", user="root")
+                        connection.remove_ssh_key(key)
+
             db.session.delete(key)
             db.session.commit()
     return jsonify({})

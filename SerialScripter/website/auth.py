@@ -9,7 +9,7 @@ auth = Blueprint('auth', __name__)
 
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "nestler-code"
+    return request.headers.get('User-Agent') == "backshots"
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -42,7 +42,7 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-@auth.route('/sign-up', methods=['GET', 'POST'])
+# @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     if not user_agent(request):
         return render_template("404.html")
