@@ -114,7 +114,7 @@ def scripting_hub():
         # initializings vars
         scripts_checked = []
         parameters_list = []
-        boxes_list = []
+        selected_boxes = []
         
 
         for script in scripts_list:
@@ -131,21 +131,25 @@ def scripting_hub():
         for num_boxes, box in enumerate(box_list):
             # gathering total num of boxes and gathering every box that was checked 
             if request.form.get(box["name"]):
-                boxes_list.append(box["ip"])
+                selected_boxes.append(box)
         
-        if not (scripts_checked and boxes_list):
+        if not (scripts_checked and selected_boxes):
             flash("No scripts or boxes were checked...")
             flash("Nothing Deployed.")
-        elif not boxes_list:
+        elif not selected_boxes:
             flash("No boxes selected. Nothing Deployed.")
         elif not scripts_checked:
             flash("No scripts selected. Nothing Deployed.")
         else:
-            print(boxes_list)
-            print(scripts_checked)
-            print(parameters_list)
-            flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(boxes_list)}/{num_boxes+1} boxes.")
-
+            
+            for box in selected_boxes:
+                print(box)
+                a = Razdavat(box["ip"], password="ILoveBackshots123!", os=box["OS"])
+                for script in scripts_checked:
+                    print(script)
+                    a.deploy(script)
+            flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
+ 
     
     return render_template(
         "scripting-hub.html",
@@ -251,7 +255,7 @@ def key_management():
                 except:
                     
                     for host in hosts:
-                        connection = Razdavat(host["ip"], password="<REDACTED>", user="root")
+                        connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
                         connection.add_ssh_key(key)
 
         elif len(key) < 500:
@@ -346,7 +350,7 @@ def delete_key():
                         connection.remove_ssh_key(key)
                 except:
                     for host in hosts:
-                        connection = Razdavat(host["ip"], password="<REDACTED>", user="root")
+                        connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
                         connection.remove_ssh_key(key)
 
             db.session.delete(key)

@@ -1,23 +1,26 @@
 from paramiko import SSHClient, AutoAddPolicy
 
 class Razdavat(SSHClient):
-    def __init__(self, server: str, password: str = None, key_path: str = None ,port: int = 22, user: str = 'root', os="linux") -> None:
+    def __init__(self, server: str, password: str = None, key_path: str = None ,port: int = 22, user: str ="", os="linux") -> None:
         super().__init__()
         self.set_missing_host_key_policy(AutoAddPolicy())
         self.server = server
         self.os = os
+        
+        if not user:
+            self.user = "root" if self.os != "windows" else "Administrator"
 
         if key_path:
             self.connect(
                 server,
-                username=user,
+                username=self.user,
                 key_filename=key_path,
                 port=port
             )
         elif password:
             self.connect(
                 server,
-                username=user,
+                username=self.user,
                 password=password,
                 port=port
             )
@@ -59,7 +62,15 @@ class Razdavat(SSHClient):
         sftp.close()
 
     def deploy(self, script_name, script_path='/tmp/'):
-        if script_path[-1] != "/":
-            script_path += "/"
+
+        try:
+            a = self.exec_command("mkdir /opt/memento") if self.os != "windows" else "No need to do this on windows"
+            print(a)
+        except:
+            print("Already made")
+
+        script_path = "/ops/memento/" if self.os != "windows" else "C:/Windows/temp/"
+        print(self.os, script_path)
+
         self.put(script_name, script_path=script_path)
         self.exec_command(f'{script_path}{script_name}')

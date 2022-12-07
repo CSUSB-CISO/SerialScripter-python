@@ -43,19 +43,19 @@ def heartbeat():
 def ip_blacklist():
     if not user_agent(request):
         return render_template("404.html")
-    return jsonify({[]})
+    return jsonify({"ips":[]})
 
 @api.route('/api/v1/common/incidentalert', methods=['POST'])
 def incidentalert():
     if not user_agent(request):
         return render_template("404.html")
-    return jsonify({[]})
+    return jsonify({"incidents":[]})
 
 @api.route('/api/v1/common/ipwhitelist', methods=['GET'])
 def ip_whitelist():
     if not user_agent(request):
         return render_template("404.html")
-    return jsonify({[]})
+    return jsonify({"ips":[]})
 
 @api.route('/api/v1/common/inventory', methods=['POST', 'GET'])
 def inventory():

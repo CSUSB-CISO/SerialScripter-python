@@ -6,15 +6,15 @@ class Recon:
     def __init__(self, range: str) -> None:
         self.range = range
         nm = PortScanner()
-        # self.results = nm.scan(hosts=range, arguments="-sS -n -T4 -F --min-hostgroup 256 --min-parallelism 10")
+        self.results = nm.scan(hosts=self.range, arguments="-sS -n -T4 -F --min-hostgroup 256 --min-parallelism 10")
         
         
-        self.results = nm.scan(hosts=range, arguments="-sn --min-hostgroup 256 --min-parallelism 10")
-        ips = ', '.join(tuple(ip for ip in self.results['scan']))
-        self.results = nm.scan(hosts=ips, arguments="-sS -n -T4 -F --min-hostgroup 256 --min-parallelism 10")
+        # self.results = nm.scan(hosts=range, arguments="-sn --min-hostgroup 256 --min-parallelism 10")
+        # ips = ', '.join(tuple(ip for ip in self.results['scan']))
+        # self.results = nm.scan(hosts=ips, arguments="-sS -n -T4 -F --min-hostgroup 256 --min-parallelism 10")
 
-        self.results = nm.scan(hosts=ips)
-        print(self.results)
+        # self.results = nm.scan(hosts=ips)
+        # print(self.results)
         self.hosts = self.set_box_ips()
 
         self.box_data = self.init_box_data(self.hosts, self.get_TTLs(self.hosts))
