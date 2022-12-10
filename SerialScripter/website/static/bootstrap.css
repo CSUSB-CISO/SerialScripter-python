@@ -7276,7 +7276,7 @@ input[type="checkbox"] {
 }
 
 .text-bg-success {
-  color: #fff !important;
+  color: #000 !important;
   background-color: RGBA(60, 242, 129, var(--bs-bg-opacity, 1)) !important;
 }
 

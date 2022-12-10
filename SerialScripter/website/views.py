@@ -62,13 +62,36 @@ def box_management(name: str):
 
     with open("website/data/hosts.json", "r") as f:
         box_list = load(f)["hosts"]
+
+    with open("website/data/users.json", "r") as j:
+        windows_users = load(j)["hosts"]
     
 
     for i, box in enumerate(box_list):
-        if box["name"] == name: # Return correct template based on searched box
+        if box["name"] == name: # Return correct template based on clicked box
             total_ports = 0
             for service in box["services"]:
                 total_ports += 1
+
+            for k, host in enumerate(windows_users):
+                if host["hostname"] == box["name"]:
+                    total_users = 0
+                    for user in host["users"]:
+                        total_users += 1
+                    print(f'{total_users} asdf')
+
+                    return render_template(
+                        "manage.html",
+                        title=name,
+                        box=box_list[i],
+                        ports=total_ports,
+                        users=total_users,
+                        user_properties=windows_users[k], 
+                        user=current_user
+                    )
+
+
+
 
             return render_template(
                 "manage.html",

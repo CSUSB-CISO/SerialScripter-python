@@ -17,6 +17,11 @@
             <li class="nav-item">
                <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
             </li>
+            {% if users %}
+               <li class="nav-item">
+                  <a class="nav-link active" data-toggle="tab" href="#windowsusers">Windows Users</a>
+               </li>
+            {% endif %}
          </ul>
          <div id="myTabContent" class="tab-content">
             <div class="tab-pane text-white active" id="quickstats">
@@ -34,7 +39,7 @@
                <br>
             </div>
             <div class="tab-pane" id="portdetail">
-               <div class="row text-white">
+               <!-- <div class="row text-white"> -->
                   <!-- <div class="col-lg-6">
                      <br>
                      <p>Total ports on box: {{ box.total }}</p>
@@ -42,35 +47,7 @@
                      <p>Ports in DOWN state: {{ box.down }}</p>
                      <p>Ports in DISABLED state: {{ box.disabled }}</p>
                   </div> -->
-                  <div class="col-lg-6">
-                     <br>
-                     {% if box.int10m %}
-                     <p>Total Ports operating at 10M: {{ box.int10m }}</p>
-                     {% endif %}
-                     {% if box.int100m %}
-                     <p>Total Ports operating at 100M: {{ box.int100m }}</p>
-                     {% endif %}
-                     {% if box.int1g %}
-                     <p>Total Ports operating at 1G: {{ box.int1g }}</p>
-                     {% endif %}
-                     {% if box.int10g %}
-                     <p>Total Ports operating at 10G: {{ box.int10g }}</p>
-                     {% endif %}
-                     {% if box.int25g %}
-                     <p>Total Ports operating at 25G: {{ box.int25g }}</p>
-                     {% endif %}
-                     {% if box.int40g %}
-                     <p>Total Ports operating at 40G: {{ box.int40g }}</p>
-                     {% endif %}
-                     {% if box.int100g %}
-                     <p>Total Ports operating at 100G: {{ box.int100g }}</p>
-                     {% endif %}
-                     <p></p>
-                     <!-- <p>Copper Ports: {{ box.copper }}</p>
-                     <p>SFP-based Ports: {{ box.sfp }}</p>
-                     <p>Virtual Ports: {{ box.virtual }}</p> -->
-                  </div>
-               </div>
+               <!-- </div> -->
                <div class="container">
                   <div class="form-inline">
                      <div class="page-header">
@@ -118,6 +95,56 @@
                   </div>
                </div>
             </div>
+            {% if users %}
+               <div class="tab-pane" id="windowsusers">
+                  <div class="container">
+                     <div class="form-inline">
+                        <div class="page-header">
+                           <h2 class="header-font-xl">Users Enumerated: {{ users }}</h2>
+                        </div>
+                        <table class="table table-box">
+                           <thead>
+                              <tr>
+                                 <th class= "column-hotpink" scope="col">Username</th>
+                                 <th class= "column-hotpink" scope="col">Full name</th>
+                                 <th class= "column-hotpink" scope="col">Enabled</th>
+                                 <!-- <th class= "column-hotpink" scope="col">Locked</th> -->
+                                 <th class= "column-hotpink" scope="col">Admin</th>
+                                 <!-- <th class= "column-hotpink" scope="col">Pass no expire</th> -->
+                                 <th class= "column-hotpink" scope="col">Passwd Age</th>
+                                 <th class= "column-hotpink" scope="col">Last Logon</th>
+                                 <th class= "column-hotpink" scope="col">Bad Passwd Attempts</th>
+                                 <th class= "column-hotpink" scope="col">Num Logons</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {% for user in user_properties["users"] %}
+                                 <tr>
+                                    <td> {{ user["Username"] }} </td>
+                                    <td> {{ user["Fullname"] }} </td>
+                                    {% if user["Enabled"] == "True" %}
+                                       <td><span class="badge rounded-pill bg-success">True</span></td>
+                                    {% else %}
+                                       <td><span class="badge rounded-pill bg-danger">False</span></td>
+                                    {% endif %}
+                                    {% if user["Admin"] == "True" %}
+                                       <td><span class="badge rounded-pill bg-success">True</span></td>
+                                    {% else %}
+                                       <td><span class="badge rounded-pill bg-danger">False</span></td>
+                                    {% endif %}
+                                    <td> {{ user["Passwdage"] }} </td>
+                                    <td> {{ user["LastLogon"] }} </td>
+                                    <td> {{ user["BadPasswdAttempts"] }} </td>
+                                    <td> {{ user["NumofLogons"] }} </td>
+                                    <!-- <td><span class="badge rounded-pill bg-danger">True</span></td> -->
+                                 </tr>
+                              {% endfor %}
+                           </tbody>
+                     </table>
+                     </div>
+                  </div>
+               </div>
+            {% endif %}
          </div>
       </div>
    </div>
