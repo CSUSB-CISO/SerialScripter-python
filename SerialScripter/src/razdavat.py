@@ -1,14 +1,11 @@
-from paramiko import SSHClient, AutoAddPolicy
+import paramiko
 
-class Razdavat(SSHClient):
+class Razdavat(paramiko.SSHClient):
     def __init__(self, server: str, password: str = None, key_path: str = None ,port: int = 22, user: str ="", os="linux") -> None:
         super().__init__()
-        self.set_missing_host_key_policy(AutoAddPolicy())
+        self.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.server = server
-        self.os = os
-        
-        if not user:
-            self.user = "root" if self.os != "windows" else "Administrator"
+        self.user = user or "root" if os != "windows" else "Administrator"
 
         if key_path:
             self.connect(
@@ -56,21 +53,20 @@ class Razdavat(SSHClient):
         sftp.chmod(script_path+script_name, 777)
         sftp.close()
 
-    def get(self, file, file_path='/tmp/'):
+    def get(self, file, file_path='/'):
         sftp = self.open_sftp()
         sftp.get(file_path+file, file)
         sftp.close()
 
-    def deploy(self, script_name, script_path='/tmp/'):
-
-        try:
-            a = self.exec_command("mkdir /opt/memento") if self.os != "windows" else "No need to do this on windows"
-            print(a)
-        except:
-            print("Already made")
-
-        script_path = "/ops/memento/" if self.os != "windows" else "C:/Windows/temp/"
-        print(self.os, script_path)
-
+    def deploy(self, script_name, script_path='/opt/memento'):
+        if self.os != "windows":
+            try:
+                self.exec_command("mkdir /opt/memento")
+            except:
+                print("Directory already exists")
+        else:
+            script_path = "C:/Windows/temp/"
+        
         self.put(script_name, script_path=script_path)
         self.exec_command(f'{script_path}{script_name}')
+

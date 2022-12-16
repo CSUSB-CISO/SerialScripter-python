@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
 from random import randint, choice
-from .models import Key
+from .models import Key, Host, from_host_to_dict, create_host_from_dict, Share
 from . import db
 from src.razdavat import Razdavat
 from threading import Thread
@@ -13,6 +13,7 @@ from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
 from src.search import search, sort
+from sqlalchemy.exc import IntegrityError
 
 views = Blueprint('views', __name__)
 
@@ -30,7 +31,9 @@ def home():
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
 
     if request.method == "POST":
-        Recon("10.100.112.0/24").save_box_data()
+        Recon("192.168.1.0/24").save_box_data(db)
+        print(Host.query.all())
+
         # Recon("192.168.220.0/24").save_box_data()
 
     # Load hosts
@@ -43,6 +46,89 @@ def home():
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
 
+
+@views.route("/test")
+def test():
+    # from_host_to_dict, create_host_from_dict
+    x = {
+      "name": "host-42",
+      "ip": "192.168.220.42",
+      "OS": "Ubuntu 18.04.6 LTS",
+      "services": [
+        {
+          "port": 10000,
+          "service": "/usr/sbin/sshd"
+        },
+        {
+          "port": 22,
+          "service": "/usr/sbin/sshd"
+        },
+        {
+          "port": 45177,
+          "service": "/usr/bin/containerd"
+        },
+        {
+          "port": 53,
+          "service": "/lib/systemd/systemd-resolved"
+        },
+        {
+          "port": 5432,
+          "service": "/usr/lib/postgresql/10/bin/postgres"
+        },
+        {
+          "port": 5433,
+          "service": "/usr/lib/postgresql/15/bin/postgres"
+        },
+        {
+          "port": 80,
+          "service": "nginx:"
+        },
+        {
+          "port": 8000,
+          "service": "/usr/bin/node"
+        },
+        {
+          "port": 8001,
+          "service": "/usr/bin/python3"
+        },
+        {
+          "port": 8080,
+          "service": "/usr/bin/node"
+        }
+      ],
+      "isOn": True,
+      "docker": [],
+      "tasks": [{}],
+      "firewall": [],
+      "shares": [
+        {
+          "name": "C:",
+          "fullpath": "C:/",
+          "permissions": [
+            {
+              "users": [
+                {
+                  "username": "Administrator"
+                }
+              ]
+            }
+          ],
+          "SMBversion": "1.1"
+        }
+      ],
+      "hostname": "dexter"
+    }
+    
+    try:
+        host = create_host_from_dict(x)
+        db.session.add(host)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+    print(Host.query.all())
+    host = db.session.query(Host).filter(Host.name == "host-42").first()
+    return jsonify(from_host_to_dict(host))
 
 @views.after_request
 def apply_caching(response):
