@@ -6,6 +6,7 @@ class Razdavat(paramiko.SSHClient):
         self.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.server = server
         self.user = user or "root" if os != "windows" else "Administrator"
+        self.os = os
 
         if key_path:
             self.connect(
@@ -49,7 +50,7 @@ class Razdavat(paramiko.SSHClient):
 
     def put(self, script_name, script_path='/tmp/'):
         sftp = self.open_sftp()
-        sftp.put(f'scripts/{self.os}/'+script_name, script_path+script_name)
+        sftp.put(f'scripts/{self.os.lower()}/'+script_name, script_path+script_name)
         sftp.chmod(script_path+script_name, 777)
         sftp.close()
 
@@ -58,7 +59,7 @@ class Razdavat(paramiko.SSHClient):
         sftp.get(file_path+file, file)
         sftp.close()
 
-    def deploy(self, script_name, script_path='/opt/memento'):
+    def deploy(self, script_name, params, script_path='/opt/memento/'):
         if self.os != "windows":
             try:
                 self.exec_command("mkdir /opt/memento")
@@ -68,5 +69,5 @@ class Razdavat(paramiko.SSHClient):
             script_path = "C:/Windows/temp/"
         
         self.put(script_name, script_path=script_path)
-        self.exec_command(f'{script_path}{script_name}')
+        self.exec_command(f'{script_path}{script_name} {params}')
 

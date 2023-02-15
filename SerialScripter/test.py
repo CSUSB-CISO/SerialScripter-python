@@ -1,5 +1,6 @@
-from os import popen 
-import re 
-response = popen("ping 192.168.1.189 -c 1").readlines()[1]
-pattern = re.compile('ttl=\d*')
-print(pattern.search(str(response)).group().split("=")[1])
+from sqlalchemy_schemadisplay import create_schema_graph
+from sqlalchemy import MetaData
+
+graph = create_schema_graph(metadata=MetaData('sqlite:///data/database.db'),rankdir="LR")
+graph.set('scale', 20)
+graph.write_png('image_name.png')

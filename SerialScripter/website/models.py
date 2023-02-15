@@ -2,6 +2,8 @@ from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from random import randint
+from sqlalchemy import or_, and_
+
 class Key(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.String(10000))
@@ -104,6 +106,20 @@ class Host(db.Model):
     firewall = db.relationship('Firewall', back_populates='host')
     shares = db.relationship('Share', back_populates='host')
 
+class Alert(db.Model):
+    __tablename__ = 'alerts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    host = db.Column(db.String)
+    name = db.Column(db.String)
+    user = db.Column(db.String)
+    process = db.Column(db.String)
+    remote_ip = db.Column(db.String)
+    cmd = db.Column(db.String)
+    type = db.Column(db.String)
+
+
+
 def create_service_from_dict(service):
     # Create a Service object and set its attributes
     s = Service()
@@ -159,39 +175,54 @@ def create_host_from_dict(dict):
     host.ip = dict.get("ip")
     host.os = dict.get("OS")
     host.hostname = dict.get("hostname")
-
     # Create a Service object for each service in the dict
     # and add it to the host.services list
-    host.services = [create_service_from_dict(service) for service in dict.get("services")]
-
+    try:
+        host.services = [create_service_from_dict(service) for service in dict.get("services")]
+    except TypeError:
+        print("No services")
     # Set the host.isOn attribute
     host.isOn = dict.get("isOn")
 
     # Create a Docker object for each docker in the dict
     # and add it to the host.docker list
-    host.docker = [create_docker_from_dict(docker) for docker in dict.get("docker")]
+    try:
+        host.docker = [create_docker_from_dict(docker) for docker in dict.get("docker")]
+    except TypeError as e:
+        print("No dockers ")
 
     # Create a Task object for each task in the dict
     # and add it to the host.tasks list
-    host.tasks = [create_task_from_dict(task) for task in dict.get("tasks")]
-
+    try:
+        host.tasks = [create_task_from_dict(task) for task in dict.get("tasks")]
+    except TypeError as e:
+        print("No tasks")
     # Create a Firewall object for each firewall in the dict
     # and add it to the host.firewall list
-    host.firewall = [create_firewall_from_dict(firewall) for firewall in dict.get("firewall")]
+
+    try:
+        host.firewall = [create_firewall_from_dict(firewall) for firewall in dict.get("firewall")]
+    except TypeError as e:
+        print("No Firewall")
 
     # create a Share object for each dictionary in the "shares" list
-    host.shares = [create_share_from_dict(share) for share in dict.get("shares")]
+
+    try:
+        host.shares = [create_share_from_dict(share) for share in dict.get("shares")]
+    except TypeError as e:
+        print("No shares ")
+
     return host
 
 def from_host_to_dict(host):
     # Create a dictionary with the host's name, ip, OS, and hostname attributes
+    print(host.name)
     host_dict = {
         "name": host.name,
         "ip": host.ip,
         "OS": host.os,
         "hostname": host.hostname
     }
-
     # Create a dictionary for each service in the host's services list
     # and add it to the host_dict["services"] list
     host_dict["services"] = [{"port": s.port, "service": s.name} for s in host.services]
@@ -226,14 +257,54 @@ def from_host_to_dict(host):
             ]
         } for s in host.shares]
 
-        # {
-        #       "users": [
-        #         {
-        #           "username": {}
-        #         }
-        #       ]
-            # }
-    print(host_dict["shares"])
-    
     return host_dict
 
+# def search_alerts(search_terms):
+#     filters = []
+#     for term in search_terms:
+#         filters.append(or_(
+#             Alert.host.like(f'%{term}%'),
+#             Alert.name.like(f'%{term}%'),
+#             Alert.user.like(f'%{term}%'),
+#             Alert.process.like(f'%{term}%'),
+#             Alert.remote_ip.like(f'%{term}%'),
+#             Alert.cmd.like(f'%{term}%'),
+#             Alert.type.like(f'%{term}%')
+#         ))
+
+#     return Alert.query.filter(or_(*filters)).all()
+import re
+def search_alerts(search_string):
+    search_terms = re.findall(r'([^\s:]+):([^\s]+)', search_string)
+    filters = []
+    for term in search_terms:
+        column, value = term
+        column = column.lower()
+        if column == 'host':
+            filters.append(Alert.host.like(f'%{value}%'))
+        elif column == 'name':
+            filters.append(Alert.name.like(f'%{value}%'))
+        elif column == 'user':
+            filters.append(Alert.user.like(f'%{value}%'))
+        elif column == 'process':
+            filters.append(Alert.process.like(f'%{value}%'))
+        elif column == 'remoteip':
+            filters.append(Alert.remote_ip.like(f'%{value}%'))
+        elif column == 'cmd':
+            filters.append(Alert.cmd.like(f'%{value}%'))
+        elif column == 'type':
+            filters.append(Alert.type.like(f'%{value}%'))
+
+    # If no search terms were found, search all columns
+    if not filters:
+        filters = [
+            Alert.host.like(f'%{search_string}%'),
+            Alert.name.like(f'%{search_string}%'),
+            Alert.user.like(f'%{search_string}%'),
+            Alert.process.like(f'%{search_string}%'),
+            Alert.remote_ip.like(f'%{search_string}%'),
+            Alert.cmd.like(f'%{search_string}%'),
+            Alert.type.like(f'%{search_string}%')
+        ]
+
+    return Alert.query.filter(or_(*filters)).all()

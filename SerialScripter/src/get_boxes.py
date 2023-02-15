@@ -85,5 +85,6 @@ class Recon:
     def save_box_data(self, db):
         for box in self.box_data:
             host = create_host_from_dict(box)
+            print(box)
             db.session.add(host)
             db.session.commit()

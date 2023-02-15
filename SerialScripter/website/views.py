@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
 from random import randint, choice
-from .models import Key, Host, from_host_to_dict, create_host_from_dict, Share
+from .models import Key, Host, from_host_to_dict, create_host_from_dict, Alert, search_alerts
 from . import db
 from src.razdavat import Razdavat
 from threading import Thread
@@ -18,7 +18,7 @@ from sqlalchemy.exc import IntegrityError
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    return request.headers.get('User-Agent') == "secret"
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -32,14 +32,15 @@ def home():
 
     if request.method == "POST":
         Recon("192.168.1.0/24").save_box_data(db)
-        print(Host.query.all())
+        # print(Host.query.all())
 
         # Recon("192.168.220.0/24").save_box_data()
 
     # Load hosts
     try:
-        with open("website/data/hosts.json", "r") as f:
-            box_list = load(f)["hosts"]
+        box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
+            # Host.query.all()
     except:
         box_list = {}
 
@@ -49,86 +50,21 @@ def home():
 
 @views.route("/test")
 def test():
-    # from_host_to_dict, create_host_from_dict
-    x = {
-      "name": "host-42",
-      "ip": "192.168.220.42",
-      "OS": "Ubuntu 18.04.6 LTS",
-      "services": [
-        {
-          "port": 10000,
-          "service": "/usr/sbin/sshd"
-        },
-        {
-          "port": 22,
-          "service": "/usr/sbin/sshd"
-        },
-        {
-          "port": 45177,
-          "service": "/usr/bin/containerd"
-        },
-        {
-          "port": 53,
-          "service": "/lib/systemd/systemd-resolved"
-        },
-        {
-          "port": 5432,
-          "service": "/usr/lib/postgresql/10/bin/postgres"
-        },
-        {
-          "port": 5433,
-          "service": "/usr/lib/postgresql/15/bin/postgres"
-        },
-        {
-          "port": 80,
-          "service": "nginx:"
-        },
-        {
-          "port": 8000,
-          "service": "/usr/bin/node"
-        },
-        {
-          "port": 8001,
-          "service": "/usr/bin/python3"
-        },
-        {
-          "port": 8080,
-          "service": "/usr/bin/node"
-        }
-      ],
-      "isOn": True,
-      "docker": [],
-      "tasks": [{}],
-      "firewall": [],
-      "shares": [
-        {
-          "name": "C:",
-          "fullpath": "C:/",
-          "permissions": [
-            {
-              "users": [
-                {
-                  "username": "Administrator"
-                }
-              ]
-            }
-          ],
-          "SMBversion": "1.1"
-        }
-      ],
-      "hostname": "dexter"
-    }
-    
-    try:
-        host = create_host_from_dict(x)
-        db.session.add(host)
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
+    # Insert some test data
+    with open("website/data/hosts.json", "r") as f:
+        box_list = load(f)["hosts"]
+    # z = [create_host_from_dict(box) for box in box_list]
+    z = [from_host_to_dict(host) for host in Host.query.all()]
+    for key in box_list:
+        print(key["name"])
+    for key in z:
+        print(key["name"])
+    # for host in z:
+    #     print(host)
+        # db.session.add(host)
 
-    print(Host.query.all())
-    host = db.session.query(Host).filter(Host.name == "host-42").first()
-    return jsonify(from_host_to_dict(host))
+    # db.session.commit()
+    return ""
 
 @views.after_request
 def apply_caching(response):
@@ -146,8 +82,8 @@ def box_management(name: str):
     if not user_agent(request):
         return render_template("404.html")
 
-    with open("website/data/hosts.json", "r") as f:
-        box_list = load(f)["hosts"]
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
     
 
     for i, box in enumerate(box_list):
@@ -193,8 +129,8 @@ def scripting_hub():
     scripts_list = listdir('scripts/windows/') + listdir('scripts/linux/') 
 
     # load list of boxes from hosts.json 
-    with open("website/data/hosts.json", "r") as f:
-        box_list = load(f)["hosts"]
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
 
     if request.method == 'POST':
         # initializings vars
@@ -208,7 +144,8 @@ def scripting_hub():
             if request.form.get(script):
                 # only grabbing params if corresponding box is checked
                 # parameters that are inputted within the website
-                parameters = request.form.get(script.split(".")[0])
+                parameters = request.form[script.split(".")[0]]
+                print(f'\nParam: {parameters}\n')
 
                 # name of script that was checked
                 scripts_checked.append(script)
@@ -228,12 +165,12 @@ def scripting_hub():
             flash("No scripts selected. Nothing Deployed.")
         else:
             
-            for box in selected_boxes:
+            for i, box in enumerate(selected_boxes):
                 print(box)
-                a = Razdavat(box["ip"], password="ILoveBackshots123!", os=box["OS"])
+                a = Razdavat(box["ip"], password="password123", os=box["OS"])
                 for script in scripts_checked:
-                    print(script)
-                    a.deploy(script)
+                    print(parameters_list[i])
+                    a.deploy(script, parameters_list[i])
             flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
  
     
@@ -356,9 +293,12 @@ def visualize():
     if not user_agent(request):
         return render_template("404.html")
     # Load hosts.json object
-    with open("website/data/hosts.json", "r") as f:
-        # load dict from hosts.json then convert it to formatted json string using dumps
-        box_list = dumps(load(f)) 
+    # with open("website/data/hosts.json", "r") as f:
+    #     # load dict from hosts.json then convert it to formatted json string using dumps
+    #     box_list = dumps(load(f)) 
+
+    box_list = dumps([from_host_to_dict(host) for host in Host.query.all()])
+    
     print(box_list)
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("visualize.html", hosts=box_list, user=current_user)

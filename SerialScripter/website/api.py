@@ -1,12 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify
 from json import load, loads, dumps
 from . import db
-from .models import IPs
-
+from .models import IPs, Key, Host, from_host_to_dict, create_host_from_dict, Alert, search_alerts
 api = Blueprint('api', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    return request.headers.get('User-Agent') == "secret"
 
 @api.route('/api/v1/wingoEDR/updateconfig', methods=['GET'])
 def update_config():
@@ -50,28 +49,32 @@ def incidentalert():
 def inventory():
     if not user_agent(request):
         return render_template("404.html")
-    with open("website/data/hosts.json", 'r') as f:
-        hosts = load(f)["hosts"]
+    # hosts = [from_host_to_dict(host) for host in Host.query.all()]
+
 
     print(request.data)
     a = loads(request.data)
     
-    entered = False
-    for host in hosts:
-        if host["name"] == a["name"]:
-            entered = True
-            for item in a:
-                host[item] = a[item]
+    host = Host.query.filter_by(name=a["name"]).first()
 
-    if not entered:
-        hosts.append(a)
+    if not host:
+        db.session.add(create_host_from_dict(a))
+        db.session.commit()
+    else:
+        if not a.get("services"):
+            a["services"] = from_host_to_dict(host)["services"]
+
+        db.session.delete(Host.query.filter_by(name=a["name"]).first())
+        db.session.commit()
+        db.session.add(create_host_from_dict(a))
+        db.session.commit()
+
     
-    json_to_write = dumps({"hosts": hosts}, indent=4)
 
-    with open("website/data/hosts.json", "w") as f:
-        f.write(json_to_write)
+    # with open("website/data/hosts.json", "w") as f:
+    #     f.write(json_to_write)
 
-    return jsonify({"hosts": hosts})
+    return jsonify({"hosts": [from_host_to_dict(host) for host in Host.query.all()]})
  
 
 @api.route('/blacklist_ip/<ip_address>')

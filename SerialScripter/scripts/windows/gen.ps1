@@ -1,0 +1,1 @@
+Write-Output "it worked you hoe" > /opt/memento/test.txt
