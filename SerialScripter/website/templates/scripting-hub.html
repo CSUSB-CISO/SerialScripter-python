@@ -35,9 +35,15 @@
                      <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
                   </td>
                {% endif %}
-               <td style="padding-left:5px"> 
-                  <input type="text" name={{ script.split(".")[0] }} id={{ script.split(".")[0] }}>
-               </td>
+               {% if script in ("godadelus", "gomemento") %}
+                  <td style="padding-left:5px"> 
+                     <input type="text" name={{ script[0:3] }} id={{ script[0:3] }}>
+                  </td>
+               {% else %}
+                  <td style="padding-left:5px"> 
+                     <input type="text" name={{ script.split(".")[0] }} id={{ script.split(".")[0] }}>
+                  </td>
+               {% endif %}
                <td>
                      {% if script.split(".")[1] == "ps1" or script == "wingoEDR.exe" %}
                         Windows

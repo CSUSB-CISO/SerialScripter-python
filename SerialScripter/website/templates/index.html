@@ -26,26 +26,23 @@
             <th class="column-hotpink" scope="col">IP</th>
             <th class="column-hotpink" scope="col">Services</th>
             <th class="column-hotpink" scope="col">OS</th>
-            <th class="column-hotpink" scope="col">Running</th>
             <th class="column-hotpink" scope="col">Pop-A-Shell</th>
+            <th class="column-hotpink" scope="col">Delete Box</th>
 
          </tr>
       </thead>
       <tbody>
          {% for box in boxes %}
-         <td>{{ emoji }} <a href="/{{ box.name }}" style="text-decoration:none"> {{ box.name }}</a></td>
+         <td>{{ emoji }} <a href="/{{ box.name }}" style="text-decoration:none"> {{ box.hostname }}</a></td>
             <td>{{ box.ip }}</td>
             <td style="padding-left:55px">{{ box.services|length }}</td>
             <td>{{ box.OS }}</td>
-            <td>
-               {% if box.isOn == True %}
-               <span class="badge rounded-pill bg-success">Up</span>
-               {% else %}
-               <span class="badge rounded-pill bg-danger">Down</span>
-               {% endif %}
-            </td>
             <td> <a href="/open-shell/{{ box.ip }}" target="_blank">Open in Bash</a></td> 
-         </td>
+            <td style="text-align: center; vertical-align: middle; padding-right: 50px;">               
+               <button type="button" onClick="deleteHost('{{ box.name }}')">
+                  <span aria-hidden="true">&times;</span>
+               </button>
+            </td>
    </tr>
    {% endfor %}
    </tbody>

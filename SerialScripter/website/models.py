@@ -216,7 +216,6 @@ def create_host_from_dict(dict):
 
 def from_host_to_dict(host):
     # Create a dictionary with the host's name, ip, OS, and hostname attributes
-    print(host.name)
     host_dict = {
         "name": host.name,
         "ip": host.ip,

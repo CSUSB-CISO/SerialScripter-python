@@ -32,7 +32,7 @@ def home():
 
     if request.method == "POST":
         Recon("192.168.1.0/24").save_box_data(db)
-        # print(Host.query.all())
+        print(Host.query.all())
 
         # Recon("192.168.220.0/24").save_box_data()
 
@@ -55,15 +55,7 @@ def test():
         box_list = load(f)["hosts"]
     # z = [create_host_from_dict(box) for box in box_list]
     z = [from_host_to_dict(host) for host in Host.query.all()]
-    for key in box_list:
-        print(key["name"])
-    for key in z:
-        print(key["name"])
-    # for host in z:
-    #     print(host)
-        # db.session.add(host)
 
-    # db.session.commit()
     return ""
 
 @views.after_request
@@ -134,23 +126,33 @@ def scripting_hub():
 
     if request.method == 'POST':
         # initializings vars
-        scripts_checked = []
-        parameters_list = []
-        selected_boxes = []
+        scripts_checked = list()
+        parameters_list = list()
+        selected_boxes = list()
         
 
         for script in scripts_list:
             # checks if checkbox corresponding to script name is checked
             if request.form.get(script):
                 # only grabbing params if corresponding box is checked
+
+                # special exception for files withs no extension                
+                if len(script.split(".")) == 1:
+                    parameters = request.form.getlist(script[0:3])
+
                 # parameters that are inputted within the website
-                parameters = request.form[script.split(".")[0]]
+                else:    
+                    parameters = request.form.getlist(script.split(".")[0])
                 print(f'\nParam: {parameters}\n')
+
 
                 # name of script that was checked
                 scripts_checked.append(script)
-                parameters_list.append(parameters)
-
+                
+                try:
+                    parameters_list.append(parameters[1])
+                except IndexError:
+                    parameters_list.append(parameters[0])
         for num_boxes, box in enumerate(box_list):
             # gathering total num of boxes and gathering every box that was checked 
             if request.form.get(box["name"]):
@@ -165,12 +167,16 @@ def scripting_hub():
             flash("No scripts selected. Nothing Deployed.")
         else:
             
-            for i, box in enumerate(selected_boxes):
-                print(box)
-                a = Razdavat(box["ip"], password="password123", os=box["OS"])
-                for script in scripts_checked:
-                    print(parameters_list[i])
-                    a.deploy(script, parameters_list[i])
+            for box in selected_boxes:
+                # a = Razdavat(box["ip"], password="password123", os=box["OS"])
+                for i, script in enumerate(scripts_checked):
+                    if len(parameters_list) == 1:
+                        # a.deploy(script, parameters_list[0])
+                        print(f'Script: {script}\n Parameters: {parameters_list[0]}')
+                    else:
+                        # a.deploy(script, parameters_list[i])
+                        print(f'Script: {script}\n Parameters: {parameters_list[i]}')
+
             flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
  
     
@@ -235,7 +241,7 @@ def pop_a_shell(ip: str) -> None:
     
     # Get return value from Queue
     url = que.get()
-    print(url)
+    # print(url)
 
     return redirect(url) # Redirect to randomly created gotty instance
 
@@ -252,6 +258,7 @@ def key_management():
         return render_template("404.html")
     if request.method == 'POST':
         key = request.form.get('key')
+        # print(key)
 
         is_duplicate = False
 
@@ -276,16 +283,18 @@ def key_management():
             db.session.commit()
             with open("website/data/hosts.json", "r") as f:
                 hosts = load(f)["hosts"]
-                try:
+                # try:
 
-                    for host in hosts:
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
-                        connection.add_ssh_key(key)
-                except:
+                #     for host in hosts:
+                #         connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                #         connection.add_ssh_key(key)
+                # except:
                     
-                    for host in hosts:
-                        connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
-                        connection.add_ssh_key(key)
+                #     for host in hosts:
+                #         connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
+                #         connection.add_ssh_key(key)
+                connection = Razdavat("192.168.1.38", password="password123", user="root")
+                connection.add_ssh_key(key)
 
         elif len(key) < 500:
             flash("Key is too short!!")
@@ -305,7 +314,7 @@ def visualize():
 
     box_list = dumps([from_host_to_dict(host) for host in Host.query.all()])
     
-    print(box_list)
+    # print(box_list)
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("visualize.html", hosts=box_list, user=current_user)
 
@@ -369,7 +378,7 @@ def delete_key():
     # access the actual pair by using the keyId key
     keyId = key['keyId']
     key = Key.query.get(keyId)
-    print(key.data)
+    # print(key.data)
     # reassigns key to true or false depending on if the key actually exists in the database
     if key:
         if key.user_id == current_user.id:
@@ -389,4 +398,9 @@ def delete_key():
             db.session.commit()
     return jsonify({})
 
+@views.route("/delete/<name>", methods=["GET", "POST"])
+@login_required
+def delete_host(name: str):
+    db.session.delete(Host.query.filter_by(name=name).first())
+    db.session.commit()
 

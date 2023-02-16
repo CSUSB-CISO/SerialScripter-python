@@ -400,10 +400,14 @@ textarea {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
-  background-color: #3b4148;
+  background-color: var(--bs-gray-800);
   border-radius: 6px;
   width: auto;
   border: transparent;
+}
+
+button {
+  background-color: transparent;
 }
 
 button,
@@ -4832,6 +4836,14 @@ input[type="checkbox"] {
   width: 15px;
   height: 0px;
   background-color: #e7abf7;
+}
+
+.close-index {
+  top: 0px;
+  right: 30px;
+  left: 0px;
+  width: 5px;
+  height: 10px;
 }
 
 .key-container {
