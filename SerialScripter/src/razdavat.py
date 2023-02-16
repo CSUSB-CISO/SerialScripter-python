@@ -48,8 +48,9 @@ class Razdavat(paramiko.SSHClient):
                 if key not in (key_to_delete+"\n", "\n"):
                     self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys")
 
-    def put(self, script_name, script_path='/tmp/'):
+    def put(self, script_name, script_path='/opt/memento'):
         sftp = self.open_sftp()
+        print(script_path+script_name)
         sftp.put(f'scripts/{self.os.lower()}/'+script_name, script_path+script_name)
         sftp.chmod(script_path+script_name, 777)
         sftp.close()
@@ -69,5 +70,10 @@ class Razdavat(paramiko.SSHClient):
             script_path = "C:/Windows/temp/"
         
         self.put(script_name, script_path=script_path)
-        self.exec_command(f'{script_path}{script_name} {params}')
+        if params:
+            self.exec_command(f'{script_path}{script_name} {params}')
+            print(f'{script_path}{script_name} {params}')
+        else:
+            self.exec_command(f'{script_path}{script_name}')
+            
 
