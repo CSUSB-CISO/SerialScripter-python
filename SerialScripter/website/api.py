@@ -63,7 +63,7 @@ def inventory():
     else:
         if not a.get("services"):
             a["services"] = from_host_to_dict(host)["services"]
-        a["ip"] = host["ip"]
+        a["ip"] = from_host_to_dict(host)["ip"]
         db.session.delete(Host.query.filter_by(name=a["name"]).first())
         db.session.commit()
         db.session.add(create_host_from_dict(a))

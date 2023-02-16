@@ -239,6 +239,12 @@ def pop_a_shell(ip: str) -> None:
 
     return redirect(url) # Redirect to randomly created gotty instance
 
+@views.route("/delete/<name>", methods=["GET", "POST"])
+@login_required
+def delete_host(name: str):
+    db.session.delete(Host.query.filter_by(name=name).first())
+    db.session.commit()
+
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
 def key_management():

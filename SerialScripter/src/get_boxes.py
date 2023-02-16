@@ -3,14 +3,14 @@ from os import popen
 from json import dump
 from website.models import create_host_from_dict
 from re import compile
+from sqlalchemy.exc import IntegrityError
 class Recon:
     def __init__(self, range: str) -> None:
         self.range = range
         nm = PortScanner()
-        self.results = nm.scan(hosts=self.range, arguments="-n -T4 -F")
+        self.results = nm.scan(hosts=self.range, arguments="-T4 -F")
         
         self.hosts = self.set_box_ips()
-
         self.box_data = self.init_box_data(self.hosts, self.get_TTLs(self.hosts))
 
     def set_box_ips(self) -> tuple:
@@ -34,7 +34,6 @@ class Recon:
         box_data = list()
         for i, ip in enumerate(hosts):
             if TTLs[i] != None:
-                print(TTLs[i])
                 if TTLs[i] > 128:
                     os = "Unkown"
                 elif TTLs[i] >= 120:
@@ -72,7 +71,7 @@ class Recon:
                                     "SMBversion": ""
                                 }
                             ],
-                            "hostname": "Unknown"
+                            "hostname": self.results["scan"][ip]["hostnames"][0]["name"]
                         }
                     )
 
@@ -85,6 +84,9 @@ class Recon:
     def save_box_data(self, db):
         for box in self.box_data:
             host = create_host_from_dict(box)
-            print(box)
-            db.session.add(host)
-            db.session.commit()
+            try:
+                db.session.add(host)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                print("Inventory has been ran already")
