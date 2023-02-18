@@ -98,6 +98,9 @@ class Host(db.Model):
     ip = db.Column(db.String)
     os = db.Column(db.String)
     hostname = db.Column(db.String)
+    changed_password = db.Column(db.Boolean)
+    added_ssh_key = db.Column(db.Boolean)
+
 
     services = db.relationship('Service', back_populates='host')
     isOn = db.Column(db.Boolean)
@@ -175,6 +178,9 @@ def create_host_from_dict(dict):
     host.ip = dict.get("ip")
     host.os = dict.get("OS")
     host.hostname = dict.get("hostname")
+    host.changed_password = dict.get("isOn")
+    host.added_ssh_key = dict.get("isOn")
+
     # Create a Service object for each service in the dict
     # and add it to the host.services list
     try:
@@ -220,7 +226,9 @@ def from_host_to_dict(host):
         "name": host.name,
         "ip": host.ip,
         "OS": host.os,
-        "hostname": host.hostname
+        "hostname": host.hostname,
+        "changed_password": host.changed_password,
+        "added_ssh_key": host.added_ssh_key
     }
     # Create a dictionary for each service in the host's services list
     # and add it to the host_dict["services"] list

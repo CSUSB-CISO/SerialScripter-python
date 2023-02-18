@@ -65,9 +65,7 @@ def box_management(name: str):
 
     for i, box in enumerate(box_list):
         if box["name"] == name: # Return correct template based on searched box
-            total_ports = 0
-            for service in box["services"]:
-                total_ports += 1
+            total_ports = len(box["services"])
 
             return render_template(
                 "manage.html",
@@ -138,6 +136,7 @@ def scripting_hub():
                     parameters_list.append(parameters[1])
                 except IndexError:
                     parameters_list.append(parameters[0])
+                    
         for num_boxes, box in enumerate(box_list):
             # gathering total num of boxes and gathering every box that was checked 
             if request.form.get(box["name"]):
@@ -235,7 +234,6 @@ def pop_a_shell(ip: str) -> None:
     
     # Get return value from Queue
     url = que.get()
-    # print(url)
 
     return redirect(url) # Redirect to randomly created gotty instance
 
@@ -268,7 +266,6 @@ def key_management():
                     is_duplicate = True
                     flash(f'Inserted key is duplicate of Key Number: {ssh_key.id}')
         
-
         # ensure a unique public key will be added
         if len(key) > 500 and not is_duplicate:
             flash("Key added successfully")
@@ -289,8 +286,6 @@ def key_management():
                         connection = Razdavat(host["ip"], password="GibM3Money123!", user=user)
                         connection.add_ssh_key(key)
             
-                # connection = Razdavat("192.168.1.38", password="password123", user="root")
-                # connection.add_ssh_key(key)
 
         elif len(key) < 500:
             flash("Key is too short!!")
