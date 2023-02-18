@@ -3,13 +3,15 @@ from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
-
+from json import load
 
 auth = Blueprint('auth', __name__)
 
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "secret"
+    with open("config.json") as config:
+        return request.headers.get('User-Agent') == load(config).get("configs").get("secret-agent")
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():

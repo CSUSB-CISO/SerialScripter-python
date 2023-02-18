@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json
+from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file
 from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
@@ -13,12 +13,12 @@ from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
 from src.search import search, sort
-from sqlalchemy.exc import IntegrityError
 
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "secret"
+    with open("config.json") as config:
+        return request.headers.get('User-Agent') == load(config).get("configs").get("secret-agent")
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -31,32 +31,17 @@ def home():
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
 
     if request.method == "POST":
-        Recon("192.168.1.0/24").save_box_data(db)
-        print(Host.query.all())
-
-        # Recon("192.168.220.0/24").save_box_data()
+        with open("config.json") as config:
+            Recon(load(config).get("configs").get("in-ip")).save_box_data(db)
 
     # Load hosts
     try:
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
-
-            # Host.query.all()
     except:
         box_list = {}
 
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
-
-
-@views.route("/test")
-def test():
-    # Insert some test data
-    with open("website/data/hosts.json", "r") as f:
-        box_list = load(f)["hosts"]
-    # z = [create_host_from_dict(box) for box in box_list]
-    z = [from_host_to_dict(host) for host in Host.query.all()]
-
-    return ""
 
 @views.after_request
 def apply_caching(response):
@@ -258,7 +243,16 @@ def pop_a_shell(ip: str) -> None:
         -r - make url random
         ssh <user>@<ip>
     """ 
-    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh root@{ip}", shell=True, stdout=PIPE, stderr=STDOUT)
+    
+    user = "Administrator" if "window" in from_host_to_dict(Host.query.filter_by(ip=ip).first()).get("os").lower() else "root"
+    
+    p = Popen(
+        f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh {user}@{ip}",
+        shell=True, 
+        stdout=PIPE, 
+        stderr=STDOUT
+     )
+    
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
     t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
@@ -312,20 +306,22 @@ def key_management():
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            with open("website/data/hosts.json", "r") as f:
-                hosts = load(f)["hosts"]
+            with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
+                    for host in hosts:
+                        user = "Administrator" if "window" in host.get("os").lower() else "root"
 
-                    for box in box_list:
-                        connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
                         connection.add_ssh_key(key)
                 except:
-                    
-                    for box in box_list:
-                        connection = Razdavat(box["ip"], password="GibM3Money123!", user="root")
+                    for host in hosts:
+                        user = "Administrator" if "window" in host.get("os").lower() else "root"
+
+                        connection = Razdavat(host["ip"], password="GibM3Money123!", user=user)
                         connection.add_ssh_key(key)
-                connection = Razdavat("192.168.1.38", password="password123", user="root")
-                connection.add_ssh_key(key)
+            
+                # connection = Razdavat("192.168.1.38", password="password123", user="root")
+                # connection.add_ssh_key(key)
 
         elif len(key) < 500:
             flash("Key is too short!!")
@@ -414,11 +410,10 @@ def delete_key():
     if key:
         if key.user_id == current_user.id:
             flash(f'Key: {key.id} has been deleted.')
-            with open("website/data/hosts.json", "r") as f:
-                hosts = load(f)["hosts"]
+            with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
                     for host in hosts:
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["os"] != "windows" else "Administrator")
                         connection.remove_ssh_key(key)
                 except:
                     for host in hosts:
@@ -428,6 +423,4 @@ def delete_key():
             db.session.delete(key)
             db.session.commit()
     return jsonify({})
-
-
 
