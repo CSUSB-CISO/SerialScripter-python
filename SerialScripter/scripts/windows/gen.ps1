@@ -1,1 +1,0 @@
-Write-Output "it worked you hoe" > C:\test.txt
