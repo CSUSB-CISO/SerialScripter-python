@@ -43,17 +43,6 @@ def home():
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
 
-
-@views.route("/test")
-def test():
-    # Insert some test data
-    with open("website/data/hosts.json", "r") as f:
-        box_list = load(f)["hosts"]
-    # z = [create_host_from_dict(box) for box in box_list]
-    z = [from_host_to_dict(host) for host in Host.query.all()]
-
-    return ""
-
 @views.after_request
 def apply_caching(response):
     response.headers["Server"] = "Apache/2.4.41 (Ubuntu)"
@@ -228,7 +217,15 @@ def pop_a_shell(ip: str) -> None:
         -r - make url random
         ssh <user>@<ip>
     """ 
-    p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh root@{ip}", shell=True, stdout=PIPE, stderr=STDOUT)
+    
+    user = "Administrator" if "window" in from_host_to_dict(Host.query.filter_by(ip=ip).first()).get("os").lower() else "root"
+    
+    p = Popen(
+        f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh {user}@{ip}",
+        shell=True, 
+        stdout=PIPE, 
+        stderr=STDOUT
+     )
     
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
@@ -278,20 +275,22 @@ def key_management():
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            with open("website/data/hosts.json", "r") as f:
-                hosts = load(f)["hosts"]
-                # try:
+            with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
+                try:
+                    for host in hosts:
+                        user = "Administrator" if "window" in host.get("os").lower() else "root"
 
-                #     for host in hosts:
-                #         connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
-                #         connection.add_ssh_key(key)
-                # except:
-                    
-                #     for host in hosts:
-                #         connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
-                #         connection.add_ssh_key(key)
-                connection = Razdavat("192.168.1.38", password="password123", user="root")
-                connection.add_ssh_key(key)
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
+                        connection.add_ssh_key(key)
+                except:
+                    for host in hosts:
+                        user = "Administrator" if "window" in host.get("os").lower() else "root"
+
+                        connection = Razdavat(host["ip"], password="GibM3Money123!", user=user)
+                        connection.add_ssh_key(key)
+            
+                # connection = Razdavat("192.168.1.38", password="password123", user="root")
+                # connection.add_ssh_key(key)
 
         elif len(key) < 500:
             flash("Key is too short!!")
