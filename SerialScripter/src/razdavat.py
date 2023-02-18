@@ -5,7 +5,8 @@ class Razdavat(paramiko.SSHClient):
         super().__init__()
         self.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.server = server
-        self.user = user or "root" if "windows" not in os.lower() else "Administrator"
+        
+        self.user = "root" if "windows" not in os.lower() else "Administrator" if not user else user
         self.os = os
 
 

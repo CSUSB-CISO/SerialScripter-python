@@ -83,6 +83,7 @@ class Recon:
 
     def save_box_data(self, db):
         for box in self.box_data:
+            print(box)
             host = create_host_from_dict(box)
             try:
                 db.session.add(host)
