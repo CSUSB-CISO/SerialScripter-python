@@ -98,8 +98,8 @@ class Host(db.Model):
     ip = db.Column(db.String)
     os = db.Column(db.String)
     hostname = db.Column(db.String)
-    changed_password = db.Column(db.Boolean)
-    added_ssh_key = db.Column(db.Boolean)
+    changed_password = db.Column(db.Boolean, server_default="f", default=False)
+    added_ssh_key = db.Column(db.Boolean, server_default="f", default=False)
 
 
     services = db.relationship('Service', back_populates='host')

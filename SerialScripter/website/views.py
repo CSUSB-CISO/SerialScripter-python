@@ -18,7 +18,8 @@ views = Blueprint('views', __name__)
 
 def user_agent(request):
     with open("config.json") as config:
-        return request.headers.get('User-Agent') == load(config).get("configs").get("secret-agent")
+        config = load(config)
+        return request.headers.get('User-Agent') == config.get("configs").get("secret-agent")
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -32,7 +33,8 @@ def home():
 
     if request.method == "POST":
         with open("config.json") as config:
-            Recon(load(config).get("configs").get("in-ip")).save_box_data(db)
+            config = load(config)
+            Recon(config.get("configs").get("in-ip")).save_box_data(db)
 
     # Load hosts
     try:
@@ -241,8 +243,13 @@ def pop_a_shell(ip: str) -> None:
         ssh <user>@<ip>
     """ 
     
-    user = "Administrator" if "window" in from_host_to_dict(Host.query.filter_by(ip=ip).first()).get("os").lower() else "root"
-    
+    try:
+        user = "Administrator" if "window" in from_host_to_dict(Host.query.filter_by(ip=ip).first()).get("OS").lower() else "root"
+        print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
+    except AttributeError:
+        print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
+
+        return "NO OS"
     p = Popen(
         f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh {user}@{ip}",
         shell=True, 
@@ -304,16 +311,19 @@ def key_management():
             with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
                     for host in hosts:
-                        user = "Administrator" if "window" in host.get("os").lower() else "root"
+                        user = "Administrator" if "window" in host.get("OS").lower() else "root"
 
                         connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
                         connection.add_ssh_key(key)
                 except:
                     for host in hosts:
-                        user = "Administrator" if "window" in host.get("os").lower() else "root"
+                        user = "Administrator" if "window" in host.get("OS").lower() else "root"
+                        with open("config.json") as config:
+                            config = load(config)
+                            password = config.get("configs").get("scheme") + str(int("192.168.1.99".split(".")[-1])*config.get("configs").get("magic-number"))
 
-                        connection = Razdavat(host["ip"], password="GibM3Money123!", user=user)
-                        connection.add_ssh_key(key)
+                            connection = Razdavat(host["ip"], password=password, user=user)
+                            connection.add_ssh_key(key)
             
 
         elif len(key) < 500:
@@ -406,7 +416,7 @@ def delete_key():
             with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
                     for host in hosts:
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["os"] != "windows" else "Administrator")
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["OS"] != "windows" else "Administrator")
                         connection.remove_ssh_key(key)
                 except:
                     for host in hosts:
