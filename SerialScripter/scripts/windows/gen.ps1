@@ -1,1 +1,1 @@
-Write-Output "it worked you hoe" > /opt/memento/test.txt
+Write-Output "it worked you hoe" > C:\test.txt

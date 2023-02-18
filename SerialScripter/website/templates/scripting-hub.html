@@ -88,12 +88,12 @@
                      {% if "Windows" in box.OS %}
                         <td>
                            <input class="boxesWindows" type="checkbox" id={{ box.name }} name={{ box.name }} >
-                           <label style="font-size: 20px;"for={{ box.name }}>   {{ box.name }} </label>
+                           <label style="font-size: 20px;"for={{ box.name }}>   {{ box.hostname }} </label>
                         </td>
                      {% else %}
                         <td>
                            <input class="boxesLinux" type="checkbox" id={{ box.name }} name={{ box.name }} >
-                           <label style="font-size: 20px;"for={{ box.name }}>   {{ box.name }} </label>
+                           <label style="font-size: 20px;"for={{ box.name }}>   {{ box.hostname }} </label>
                         </td>
                      {% endif %}
                         <td> 
@@ -102,6 +102,7 @@
                         <td> 
                            {{ box.OS }} 
                         </td> 
+                        <td></td>
                   </tr>
                {% endfor %}
                   <tr>
@@ -112,6 +113,10 @@
                         <td>
                            <input class="boxesWindows" type="checkbox" id="autoSelectWindows" onclick="checkAllBoxesWindows(this);"/>
                            <label style="font-size: 22px;" for="autoSelectWindows">   Check All Windows Boxes</label>
+                        </td>
+                        <td>
+                           <input class="run" type="checkbox" id="Deploy" name="Deploy">
+                           <label style="font-size: 20px" for="Deploy">Run Script</label>
                         </td>
                         <td>
                            <a class="nav-link active" href="#script-selection" data-toggle="tab">&larr; Previous</a>
