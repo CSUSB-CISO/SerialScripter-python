@@ -166,7 +166,7 @@ def scripting_hub():
             for box in selected_boxes:
                 try:
                     
-                    a = Razdavat(box["ip"], password="Password123!", os=box["OS"])
+                    a = Razdavat(box["ip"], password="password123", os=box["OS"])
                     # Only deploy the script to box if Run Script box is checked 
                     if (request.form.get('Deploy')): 
                         print("deployed")
