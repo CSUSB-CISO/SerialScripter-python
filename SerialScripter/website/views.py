@@ -34,7 +34,7 @@ def home():
     if request.method == "POST":
         with open("config.json") as config:
             config = load(config)
-            Recon(config.get("configs").get("in-ip")).save_box_data(db)
+            Recon(config.get("configs").get("out-ip")).save_box_data(db)
 
     # Load hosts
     try:
@@ -167,7 +167,7 @@ def scripting_hub():
                     with config("config.json") as config:
                         # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
                         password = config.get("configs").get("starting-pass")
-                        
+
                     a = Razdavat(box["ip"], password=password, os=box["OS"])
                     # Only deploy the script to box if Run Script box is checked 
                     if (request.form.get('Deploy')): 
@@ -316,16 +316,16 @@ def key_management():
                     for host in hosts:
                         user = "Administrator" if "window" in host.get("OS").lower() else "root"
 
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
+                        connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
                         connection.add_ssh_key(key)
                 except:
                     for host in hosts:
                         user = "Administrator" if "window" in host.get("OS").lower() else "root"
                         with open("config.json") as config:
                             config = load(config)
-                            password = config.get("configs").get("scheme") + str(int(host.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
-
-                            connection = Razdavat(host["ip"], password=password, user=user)
+                            # password = config.get("configs").get("scheme") + str(int(host.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
+                            password = config.get("configs").get("starting-pass")
+                            connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], password=password, user=user)
                             connection.add_ssh_key(key)
             
 
@@ -419,11 +419,11 @@ def delete_key():
             with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
                     for host in hosts:
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["OS"] != "windows" else "Administrator")
+                        connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["OS"] != "windows" else "Administrator")
                         connection.remove_ssh_key(key)
                 except:
                     for host in hosts:
-                        connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
+                        connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], password="GibM3Money123!", user="root")
                         connection.remove_ssh_key(key)
 
             db.session.delete(key)

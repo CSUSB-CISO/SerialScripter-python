@@ -3,7 +3,7 @@
     "in-ip": "192.168.220.0/24",
     "out-ip": "10.100.106.0/24",
     "secret-agent": "secret",
-    "starting-pass": "",
+    "starting-pass": "Ques0Fresc0!",
     "scheme": "@Sup3rSch3m4",
     "magic-number": 334
   },
