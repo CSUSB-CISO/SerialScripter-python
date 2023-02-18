@@ -163,9 +163,11 @@ def scripting_hub():
 
             deployed = True
             for box in selected_boxes:
-                try:
-                    
-                    a = Razdavat(box["ip"], password="Password123!", os=box["OS"])
+                try:   
+                    with config("config.json") as config:
+                        # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
+                        password = config.get("configs").get("starting-pass")
+                    a = Razdavat(box["ip"], password=password, os=box["OS"])
                     # Only deploy the script to box if Run Script box is checked 
                     if (request.form.get('Deploy')): 
                         print("deployed")
@@ -320,7 +322,7 @@ def key_management():
                         user = "Administrator" if "window" in host.get("OS").lower() else "root"
                         with open("config.json") as config:
                             config = load(config)
-                            password = config.get("configs").get("scheme") + str(int("192.168.1.99".split(".")[-1])*config.get("configs").get("magic-number"))
+                            password = config.get("configs").get("scheme") + str(int(host.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
 
                             connection = Razdavat(host["ip"], password=password, user=user)
                             connection.add_ssh_key(key)
