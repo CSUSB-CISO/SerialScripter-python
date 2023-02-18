@@ -5,7 +5,8 @@ from .models import IPs, Key, Host, from_host_to_dict, create_host_from_dict, Al
 api = Blueprint('api', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "secret"
+    with open("config.json") as config:
+        return request.headers.get('User-Agent') == load(config).get("configs").get("secret-agent")
 
 @api.route('/api/v1/wingoEDR/updateconfig', methods=['GET'])
 def update_config():

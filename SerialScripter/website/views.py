@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json
+from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file
 from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
@@ -13,12 +13,12 @@ from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
 from src.search import search, sort
-from sqlalchemy.exc import IntegrityError
 
 views = Blueprint('views', __name__)
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "secret"
+    with open("config.json") as config:
+        return request.headers.get('User-Agent') == load(config).get("configs").get("secret-agent")
 
     
 @views.route("/", methods=['GET', 'POST'])
@@ -31,16 +31,12 @@ def home():
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
 
     if request.method == "POST":
-        Recon("192.168.1.0/24").save_box_data(db)
-        print(Host.query.all())
-
-        # Recon("192.168.220.0/24").save_box_data()
+        with open("config.json") as config:
+            Recon(load(config).get("configs").get("in-ip")).save_box_data(db)
 
     # Load hosts
     try:
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
-
-            # Host.query.all()
     except:
         box_list = {}
 
@@ -233,6 +229,7 @@ def pop_a_shell(ip: str) -> None:
         ssh <user>@<ip>
     """ 
     p = Popen(f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh root@{ip}", shell=True, stdout=PIPE, stderr=STDOUT)
+    
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
     t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
@@ -383,11 +380,10 @@ def delete_key():
     if key:
         if key.user_id == current_user.id:
             flash(f'Key: {key.id} has been deleted.')
-            with open("website/data/hosts.json", "r") as f:
-                hosts = load(f)["hosts"]
+            with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
                     for host in hosts:
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["os"] != "windows" else "Administrator")
                         connection.remove_ssh_key(key)
                 except:
                     for host in hosts:
@@ -397,10 +393,4 @@ def delete_key():
             db.session.delete(key)
             db.session.commit()
     return jsonify({})
-
-@views.route("/delete/<name>", methods=["GET", "POST"])
-@login_required
-def delete_host(name: str):
-    db.session.delete(Host.query.filter_by(name=name).first())
-    db.session.commit()
 

@@ -1,0 +1,14 @@
+{
+  "configs": {
+    "in-ip": "192.168.1.0/24",
+    "out-ip": "10.0.0.0",
+    "secret-agent": "secret",
+    "starting-pass": "",
+    "scheme": "",
+    "magicNumber": 334
+  },
+  "metadata": {
+    "version": 1.0,
+    "notes": "Yo Mama!"
+  }
+}
