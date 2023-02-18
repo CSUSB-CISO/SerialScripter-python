@@ -120,44 +120,54 @@ def scripting_hub():
     # gather scripts from linux and windows' scripts directories
     scripts_list = listdir('scripts/windows/') + listdir('scripts/linux/') 
 
-    # load list of boxes from hosts.json 
+    # load list of boxes 
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
-
     if request.method == 'POST':
+
         # initializings vars
         scripts_checked = list()
         parameters_list = list()
         selected_boxes = list()
         
-
+        # iterates through all scripts in scripts directory
         for script in scripts_list:
-            # checks if checkbox corresponding to script name is checked
-            if request.form.get(script):
-                # only grabbing params if corresponding box is checked
 
-                # special exception for files withs no extension                
+            # checks if box corresponding to script name is checked
+            if request.form.get(script):
+
+                """
+                this checks for scripts without any extensions 
+                ex: gomemento is identified by gom
+
+                whatever parameters are inputted are saved and appended to parameters_list
+                
+                """ 
                 if len(script.split(".")) == 1:
                     parameters = request.form.getlist(script[0:3])
 
-                # parameters that are inputted within the website
                 else:    
                     parameters = request.form.getlist(script.split(".")[0])
-                print(f'\nParam: {parameters}\n')
-
 
                 # name of script that was checked
                 scripts_checked.append(script)
                 
+                """
+                    if parameter has spaces, flask returns a list with two values ["", "parameter space"]
+                    if no spaces it'll be only one value 
+                    thats the reason for try except
+                """
                 try:
                     parameters_list.append(parameters[1])
                 except IndexError:
                     parameters_list.append(parameters[0])
+
         for num_boxes, box in enumerate(box_list):
-            # gathering total num of boxes and gathering every box that was checked 
+            #  gather every box that was checked 
             if request.form.get(box["name"]):
                 selected_boxes.append(box)
         
+        # flashing messages on web server
         if not (scripts_checked and selected_boxes):
             flash("No scripts or boxes were checked...")
             flash("Nothing Deployed.")
@@ -166,20 +176,36 @@ def scripting_hub():
         elif not scripts_checked:
             flash("No scripts selected. Nothing Deployed.")
         else:
-            
-            for box in selected_boxes:
-                # a = Razdavat(box["ip"], password="password123", os=box["OS"])
-                for i, script in enumerate(scripts_checked):
-                    if len(parameters_list) == 1:
-                        # a.deploy(script, parameters_list[0])
-                        print(f'Script: {script}\n Parameters: {parameters_list[0]}')
-                    else:
-                        # a.deploy(script, parameters_list[i])
-                        print(f'Script: {script}\n Parameters: {parameters_list[i]}')
 
-            flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
- 
-    
+            deployed = True
+            for box in selected_boxes:
+                try:
+                    
+                    a = Razdavat(box["ip"], password="Password123!", os=box["OS"])
+                    # Only deploy the script to box if Run Script box is checked 
+                    if (request.form.get('Deploy')): 
+                        print("deployed")
+                        for i, script in enumerate(scripts_checked):
+                            if len(parameters_list) == 1:
+                                a.deploy(script, parameters_list[0])
+                            else:
+                                a.deploy(script, parameters_list[i])
+                    else:
+                        print("not deployed")
+                        for i, script in enumerate(scripts_checked):
+                            if len(parameters_list) == 1:
+                                a.put(script_name=script)
+                            else:
+                                a.put(script_name=script)
+                except: 
+                    deployed = False
+
+            if deployed:
+                    flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
+            else:
+                    flash(f"ERROR - Script not Deployed!")
+
+
     return render_template(
         "scripting-hub.html",
         scripts=scripts_list,
@@ -254,8 +280,13 @@ def delete_host(name: str):
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
 def key_management():
+
     if not user_agent(request):
         return render_template("404.html")
+    # load list of boxes 
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+    
+
     if request.method == 'POST':
         key = request.form.get('key')
         # print(key)
@@ -283,16 +314,16 @@ def key_management():
             db.session.commit()
             with open("website/data/hosts.json", "r") as f:
                 hosts = load(f)["hosts"]
-                # try:
+                try:
 
-                #     for host in hosts:
-                #         connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
-                #         connection.add_ssh_key(key)
-                # except:
+                    for box in box_list:
+                        connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root")
+                        connection.add_ssh_key(key)
+                except:
                     
-                #     for host in hosts:
-                #         connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
-                #         connection.add_ssh_key(key)
+                    for box in box_list:
+                        connection = Razdavat(box["ip"], password="GibM3Money123!", user="root")
+                        connection.add_ssh_key(key)
                 connection = Razdavat("192.168.1.38", password="password123", user="root")
                 connection.add_ssh_key(key)
 
@@ -398,9 +429,5 @@ def delete_key():
             db.session.commit()
     return jsonify({})
 
-@views.route("/delete/<name>", methods=["GET", "POST"])
-@login_required
-def delete_host(name: str):
-    db.session.delete(Host.query.filter_by(name=name).first())
-    db.session.commit()
+
 
