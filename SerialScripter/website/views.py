@@ -316,7 +316,7 @@ def key_management():
                     for host in hosts:
                         user = "Administrator" if "window" in host.get("OS").lower() else "root"
 
-                        connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
                         connection.add_ssh_key(key)
                 except:
                     for host in hosts:
@@ -325,7 +325,7 @@ def key_management():
                             config = load(config)
                             # password = config.get("configs").get("scheme") + str(int(host.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
                             password = config.get("configs").get("starting-pass")
-                            connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], password=password, user=user)
+                            connection = Razdavat(host["ip"], password=password, user=user)
                             connection.add_ssh_key(key)
             
 
@@ -419,11 +419,11 @@ def delete_key():
             with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
                 try:
                     for host in hosts:
-                        connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["OS"] != "windows" else "Administrator")
+                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["OS"] != "windows" else "Administrator")
                         connection.remove_ssh_key(key)
                 except:
                     for host in hosts:
-                        connection = Razdavat("10.100.10.1."+host["ip"].split(".")[-1], password="GibM3Money123!", user="root")
+                        connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
                         connection.remove_ssh_key(key)
 
             db.session.delete(key)
