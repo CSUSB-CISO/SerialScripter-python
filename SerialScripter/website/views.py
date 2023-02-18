@@ -167,6 +167,7 @@ def scripting_hub():
                     with config("config.json") as config:
                         # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
                         password = config.get("configs").get("starting-pass")
+                        
                     a = Razdavat(box["ip"], password=password, os=box["OS"])
                     # Only deploy the script to box if Run Script box is checked 
                     if (request.form.get('Deploy')): 
