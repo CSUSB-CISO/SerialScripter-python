@@ -4,7 +4,7 @@
    <div class="container">
       <div class="col-lg-12">
          <div class="page-header ">
-            <h1 class= "header-font-xxl">Manage: {{ box.name }}</h1>
+            <h1 class= "header-font-xxl">Manage: {{ box.hostname }}</h1>
          </div>
       </div>
    </div>
@@ -22,7 +22,7 @@
             <div class="tab-pane text-white active" id="quickstats">
                <br>
                <ul>
-                  <li class="header-font-xl">Host name: &ensp; {{ box.name}} </li>
+                  <li class="header-font-xl">Host name: &ensp; {{ box.hostname}} </li>
                   <br/>
                   <li class="header-font-xl">Box IP: &ensp; {{ box.ip }} </li>
                   <br/>
@@ -34,43 +34,6 @@
                <br>
             </div>
             <div class="tab-pane" id="portdetail">
-               <div class="row text-white">
-                  <!-- <div class="col-lg-6">
-                     <br>
-                     <p>Total ports on box: {{ box.total }}</p>
-                     <p>Ports in UP state: {{ box.up }}</p>
-                     <p>Ports in DOWN state: {{ box.down }}</p>
-                     <p>Ports in DISABLED state: {{ box.disabled }}</p>
-                  </div> -->
-                  <div class="col-lg-6">
-                     <br>
-                     {% if box.int10m %}
-                     <p>Total Ports operating at 10M: {{ box.int10m }}</p>
-                     {% endif %}
-                     {% if box.int100m %}
-                     <p>Total Ports operating at 100M: {{ box.int100m }}</p>
-                     {% endif %}
-                     {% if box.int1g %}
-                     <p>Total Ports operating at 1G: {{ box.int1g }}</p>
-                     {% endif %}
-                     {% if box.int10g %}
-                     <p>Total Ports operating at 10G: {{ box.int10g }}</p>
-                     {% endif %}
-                     {% if box.int25g %}
-                     <p>Total Ports operating at 25G: {{ box.int25g }}</p>
-                     {% endif %}
-                     {% if box.int40g %}
-                     <p>Total Ports operating at 40G: {{ box.int40g }}</p>
-                     {% endif %}
-                     {% if box.int100g %}
-                     <p>Total Ports operating at 100G: {{ box.int100g }}</p>
-                     {% endif %}
-                     <p></p>
-                     <!-- <p>Copper Ports: {{ box.copper }}</p>
-                     <p>SFP-based Ports: {{ box.sfp }}</p>
-                     <p>Virtual Ports: {{ box.virtual }}</p> -->
-                  </div>
-               </div>
                <div class="container">
                   <div class="form-inline">
                      <div class="page-header">
@@ -79,38 +42,15 @@
                      <table class="table table-box">
                         <thead>
                            <tr>
-                              <!-- <th scope="col">Interface Name</th>
-                              <th scope="col">Description</th>
-                              <th scope="col">MAC Address</th>
-                              <th scope="col">State</th>
-                              <th scope="col">Speed</th>
-                              <th scope="col">Duplex</th> -->
                               <th class= "column-hotpink" scope="col">Service Name</th>
                               <th class= "column-hotpink" scope="col">Port Number</th>
-                              <th class= "column-hotpink" scope="col">Service Status</th>
                            </tr>
                         </thead>
                         <tbody>
-                           <!-- {% for interface in interfaces %}
-                           <tr>
-                              <td>{{ interface.name }}</td>
-                              <td>{{ interface.description }}</td>
-                              <td>{{ interface.physical_address }}</td>
-                              <td>
-                                 {% if interface.oper_status == 'up' %}
-                                 <p class="text-success">Up</span>
-                                 {% else %}
-                                 <p class="text-danger">Down</span>
-                                 {% endif %}
-                              <td>{{ interface.oper_speed }}</td>
-                              <td>{{ interface.oper_duplex }}</td>
-                              </td>
-                           {% endfor %} -->
                            {% for item in box["services"]%}
                               <tr>
                                  <td> {{ item["service"] }} </td>
                                  <td> {{ item["port"] }} </td>
-                                 <td><span class="badge rounded-pill bg-success">Up</span></td>
                               </tr>
                            {% endfor %}
                         </tbody>

@@ -44,10 +44,13 @@ else
     		apk update
     		apk upgrade
     		apk add bash rsyslog
+	elif [ $(command -v slapt-get)]; then
+		slapt-get rsyslog
 		echo "$secondfinal" >> /etc/rsyslog.conf
 		echo "$final" >> /etc/rsyslog.conf
-		systemctl start rsyslog
-		systemctl enable rsyslog
-		systemctl mask rsyslog
+		service rsyslog start
+		service rsyslog enable
+	elif [$(command -v service)]; then
+		service rsyslog restart
 	fi
 fi

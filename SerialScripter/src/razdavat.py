@@ -31,7 +31,13 @@ class Razdavat(paramiko.SSHClient):
         if "windows" in self.os.lower():
             self.exec_command(f"echo {key_to_add} >> C:\\ProgramData\\ssh\\administrators_authorized_keys")
         else:
-            self.exec_command(f'yes "y" | ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
+            # make .ssh dir and create authorized_keys file if they dont already exist
+            self.exec_command(f'yes "y" | mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys')
+            # change perms
+            self.exec_command(f'chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys')
+            # edit ssh config
+            self.exec_command(f'echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config')
+            self.exec_command(f'ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
             self.exec_command(f'echo {key_to_add} >> ~/.ssh/authorized_keys')
 
     def remove_ssh_key(self, key_to_delete: str) -> None:
@@ -46,6 +52,7 @@ class Razdavat(paramiko.SSHClient):
             _, stdout, _ = self.exec_command("cat ~/.ssh/authorized_keys")
             keys = stdout.readlines()
             self.exec_command(f'echo -n "" > ~/.ssh/authorized_keys')
+
             for key in keys:
                 if key not in (key_to_delete+"\n", "\n"):
                     self.exec_command("echo "+key.replace('\n', "")+">> ~/.ssh/authorized_keys")
