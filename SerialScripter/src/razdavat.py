@@ -35,9 +35,15 @@ class Razdavat(paramiko.SSHClient):
             self.exec_command(f'yes "y" | mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys')
             # change perms
             self.exec_command(f'chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys')
-            # edit ssh config
-            self.exec_command(f'echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config')
-            self.exec_command(f'ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
+
+            # check if pubkey authentication line exists so the line won't be added constantly
+            _, stdout, _ = self.exec_command(f"cat /etc/ssh/sshd_config")
+            sshd_config = stdout.readlines()
+            
+            if sshd_config[-1] != "PubkeyAuthentication yes\n":
+                self.exec_command(f'echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config')
+                self.exec_command(f'ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
+
             self.exec_command(f'echo {key_to_add} >> ~/.ssh/authorized_keys')
 
     def remove_ssh_key(self, key_to_delete: str) -> None:
