@@ -4,7 +4,7 @@
 # magic_num=$2
 # last_octet=$3
 
-extension=$(($2 * $3))
+extension=$(($2 * $3))3
 if [ $# -ne 3 ]; then
     echo "Need three arguments: "
     echo "Usage: 1 = password scheme"

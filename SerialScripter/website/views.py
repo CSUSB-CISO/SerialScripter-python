@@ -160,25 +160,24 @@ def scripting_hub():
         elif not scripts_checked:
             flash("No scripts selected. Nothing Deployed.")
         else:
-
+            with open("config.json") as config:
+                config = load(config)
+                # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
+                password = config.get("configs").get("starting-pass")
+                
             deployed = True
             for box in selected_boxes:
                 try:   
-                    with config("config.json") as config:
-                        # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
-                        password = config.get("configs").get("starting-pass")
-
                     a = Razdavat(box["ip"], password=password, os=box["OS"])
                     # Only deploy the script to box if Run Script box is checked 
                     if (request.form.get('Deploy')): 
-                        print("deployed")
                         for i, script in enumerate(scripts_checked):
                             if len(parameters_list) == 1:
                                 a.deploy(script, parameters_list[0])
                             else:
                                 a.deploy(script, parameters_list[i])
                     else:
-                        print("not deployed")
+                        print(f"put onto {box['ip']}")
                         for i, script in enumerate(scripts_checked):
                             if len(parameters_list) == 1:
                                 a.put(script_name=script)
@@ -311,23 +310,21 @@ def key_management():
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-            with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
-                try:
-                    for host in hosts:
-                        user = "Administrator" if "window" in host.get("OS").lower() else "root"
 
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user=user)
-                        connection.add_ssh_key(key)
-                except:
-                    for host in hosts:
-                        user = "Administrator" if "window" in host.get("OS").lower() else "root"
-                        with open("config.json") as config:
-                            config = load(config)
-                            # password = config.get("configs").get("scheme") + str(int(host.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
-                            password = config.get("configs").get("starting-pass")
-                            connection = Razdavat(host["ip"], password=password, user=user)
-                            connection.add_ssh_key(key)
-            
+            with open("config.json") as config:
+                config = load(config)
+                # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
+                password = config.get("configs").get("starting-pass")
+
+            try:
+                for box in box_list:
+                    connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", password=password)
+                    connection.add_ssh_key(key)
+            except:
+                for box in box_list:
+                    connection = Razdavat(box["ip"], password=password, os=box["OS"])
+                    connection.add_ssh_key(key)
+
 
         elif len(key) < 500:
             flash("Key is too short!!")
@@ -413,18 +410,24 @@ def delete_key():
     key = Key.query.get(keyId)
     # print(key.data)
     # reassigns key to true or false depending on if the key actually exists in the database
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
     if key:
+        with open("config.json") as config:
+            config = load(config)
+            # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
+            password = config.get("configs").get("starting-pass")
+
         if key.user_id == current_user.id:
             flash(f'Key: {key.id} has been deleted.')
-            with [from_host_to_dict(host) for host in Host.query.all()] as hosts:
-                try:
-                    for host in hosts:
-                        connection = Razdavat(host["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", user="root" if host["OS"] != "windows" else "Administrator")
-                        connection.remove_ssh_key(key)
-                except:
-                    for host in hosts:
-                        connection = Razdavat(host["ip"], password="GibM3Money123!", user="root")
-                        connection.remove_ssh_key(key)
+            try:
+                for box in box_list:
+                    connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", os=box["OS"])
+                    connection.remove_ssh_key(key.data)
+            except:
+                for box in box_list:
+                    connection = Razdavat(box["ip"], password=password, os=box["OS"])
+                    connection.remove_ssh_key(key.data)
 
             db.session.delete(key)
             db.session.commit()
