@@ -1,6 +1,30 @@
-from sqlalchemy_schemadisplay import create_schema_graph
-from sqlalchemy import MetaData
+import sys
+sys.path.append('lib/search')
+import search
 
-graph = create_schema_graph(metadata=MetaData('sqlite:///data/database.db'),rankdir="LR")
-graph.set('scale', 20)
-graph.write_png('image_name.png')
+incidents = [
+    {
+            "Host": "host-69420",
+            "Name": "Net cat back door",
+            "User": "hunte",
+            "Process": "nc.exe",
+            "RemoteIP": "10.123.65.30",
+            "Cmd": "nc.exe --someoption"
+    },
+    {
+    
+            "Host": "host-69421",
+            "Name": "Net cat back door",
+            "User": "John",
+            "Process": "nc.exe",
+            "RemoteIP": "10.123.65.116",
+            "Cmd": "nc.exe --someoption"
+
+    }
+]
+
+search_string = "hunte"
+match_ratio = 0.6
+
+matches = search.find_matches(incidents, search_string, match_ratio)
+print(matches)

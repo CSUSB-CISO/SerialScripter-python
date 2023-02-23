@@ -12,7 +12,7 @@ from src.get_boxes import Recon
 from os import getlogin, listdir
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
-from src.search import search, sort
+#from src.search import search, sort
 
 views = Blueprint('views', __name__)
 

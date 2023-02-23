@@ -30,6 +30,13 @@ class Razdavat(paramiko.SSHClient):
     def add_ssh_key(self, key_to_add: str) -> None:
         if "windows" in self.os.lower():
             self.exec_command(f"echo {key_to_add} >> C:\\ProgramData\\ssh\\administrators_authorized_keys")
+
+            # Enable public key authentication in the SSH server config if it is not already enabled
+            _, stdout, _ = self.exec_command('powershell if (!(Get-Content "C:\\ProgramData\\ssh\\sshd_config") -match "^#PubkeyAuthentication yes") {Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"}')
+
+            # Restart the SSH server to apply the changes
+            _, stdout, _ = self.exec_command('net stop sshd && net start sshd')
+            stdout.read()
         else:
             self.exec_command(f'yes "y" | ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/host-{self.server.split(".")[-1]} -N ""')
             self.exec_command(f'echo {key_to_add} >> ~/.ssh/authorized_keys')
@@ -45,6 +52,7 @@ class Razdavat(paramiko.SSHClient):
         else:
             _, stdout, _ = self.exec_command("cat ~/.ssh/authorized_keys")
             keys = stdout.readlines()
+            print(keys)
             self.exec_command(f'echo -n "" > ~/.ssh/authorized_keys')
             for key in keys:
                 if key not in (key_to_delete+"\n", "\n"):
