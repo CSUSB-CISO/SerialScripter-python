@@ -26,14 +26,14 @@ class Razdavat(paramiko.SSHClient):
             )
         else:
             print("INVALID LOGIN TYPE")
-
     def add_ssh_key(self, key_to_add: str) -> None:
         if "windows" in self.os.lower():
+            print(key_to_add)
             self.exec_command(f"echo {key_to_add} >> C:\\ProgramData\\ssh\\administrators_authorized_keys")
 
             # Enable public key authentication in the SSH server config if it is not already enabled
-            _, stdout, _ = self.exec_command('powershell if (!(Get-Content "C:\\ProgramData\\ssh\\sshd_config") -match "^#PubkeyAuthentication yes") {Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"}')
-
+            # _, stdout, _ = self.exec_command('powershell if (!(Get-Content "C:\\ProgramData\\ssh\\sshd_config") -match "^#PubkeyAuthentication yes") {Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"}')
+            self.exec_command(f'Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"')
             # Restart the SSH server to apply the changes
             _, stdout, _ = self.exec_command('net stop sshd && net start sshd')
             stdout.read()
