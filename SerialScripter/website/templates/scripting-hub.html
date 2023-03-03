@@ -85,7 +85,7 @@
                
                {% for box in boxes %}
                   <tr>
-                     {% if "Windows" in box.OS %}
+                     {% if "windows" in box.OS.lower() %}
                         <td>
                            <input class="boxesWindows" type="checkbox" id={{ box.name }} name={{ box.name }} >
                            <label style="font-size: 20px;"for={{ box.name }}>   {{ box.hostname }} </label>

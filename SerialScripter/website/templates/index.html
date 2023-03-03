@@ -14,7 +14,10 @@
    <div class="container">
       <div class="col-lg-12">
          <div class="page-header">
-            <h1 class="header-font-xxl" >Box Overview</h1>
+            <form method="post" class="stuff-container">
+               <h1 class="header-font-xxl" >Box Overview</h1>
+               <input id="rescan" type="submit" value="Rescan Machines" class="btn btn-index" name="rescan">
+            </form>
          </div>
       </div>
    </div>
@@ -33,7 +36,11 @@
       </thead>
       <tbody>
          {% for box in boxes %}
-         <td>{{ emoji }} <a href="/{{ box.name }}" style="text-decoration:none"> {{ box.hostname }}</a></td>
+            {% if box.hostname %}
+               <td>{{ emoji }} <a href="/{{ box.name }}" style="text-decoration:none"> {{ box.hostname }}</a></td>
+            {% else %}
+               <td>{{ emoji }} <a href="/{{ box.name }}" style="text-decoration:none"> {{ box.name }}</a></td>
+            {% endif %}
             <td>{{ box.ip }}</td>
             <td style="padding-left:55px">{{ box.services|length }}</td>
             <td>{{ box.OS }}</td>
@@ -47,8 +54,10 @@
    {% endfor %}
    </tbody>
    </table>
-   <form method="post">
-      <input type="submit" value="Rescan Machines" class="btn btn-primary" name="RESCAN_BTN">
+   <form method="post" class="button-container">
+      <input id="csv" type="submit" value="Download CSV" class="btn btn-secondary" name="download_host_info">
+      <input id="csv" type="submit" value="Upload CSV" class="btn btn-secondary" name="upload_host_info">
+
    </form>
    </div>
    {% endblock %}

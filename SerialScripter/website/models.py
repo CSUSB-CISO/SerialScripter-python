@@ -35,6 +35,30 @@ class Service(db.Model):
     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
     host = db.relationship('Host', back_populates='services')
 
+# users that exist on each host
+class EnumeratedUser(db.Model):
+    __tablename__ = 'enumerated_users'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # each of these columns are attributes of an enumerated user from a specific box
+    username = db.Column(db.String)
+    fullname = db.Column(db.String)
+    enabled = db.Column(db.Boolean, server_default="f", default=False)
+    locked = db.Column(db.Boolean, server_default="f", default=False)
+    admin = db.Column(db.Boolean, server_default="f", default=False)
+    passwordExpired = db.Column(db.Boolean, server_default="f", default=False)
+    cantChangePass = db.Column(db.Boolean, server_default="f", default=False)
+    passwordAge = db.Column(db.Integer)
+    lastLogon = db.Column(db.String)
+    badPasswdAttempts = db.Column(db.Integer)
+    numLogons = db.Column(db.Integer)
+
+    # defines the relationship between host object and enumerated user
+    # which is one to many meaning host object can have many enumerated users, but the users can only be tied to one host 
+    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+    host = db.relationship('Host', back_populates='enumerated_users')
+
 class Share(db.Model):
     __tablename__ = 'shares'
 
@@ -58,12 +82,12 @@ class Permission(db.Model):
 
     users = db.relationship('RemoteUser', back_populates='permission')
 
+# users that are a part of shares
 class RemoteUser(db.Model):
     __tablename__ = 'remote_users'
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
-
     permission_id = db.Column(db.Integer, db.ForeignKey('permissions.id'))
     permission = db.relationship('Permission', back_populates='users')
 
@@ -93,6 +117,7 @@ class Firewall(db.Model):
 class Host(db.Model):
     __tablename__ = 'hosts'
 
+    # these columns are one to one
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
     ip = db.Column(db.String)
@@ -101,13 +126,16 @@ class Host(db.Model):
     changed_password = db.Column(db.Boolean, server_default="f", default=False)
     added_ssh_key = db.Column(db.Boolean, server_default="f", default=False)
 
-
+    # relationship() is defined as a one to many relationship meaning the host class can have many services, but each
+    # service can only be tied to one host
     services = db.relationship('Service', back_populates='host')
     isOn = db.Column(db.Boolean)
     docker = db.relationship('Docker', back_populates='host')
     tasks = db.relationship('Task', back_populates='host')
     firewall = db.relationship('Firewall', back_populates='host')
     shares = db.relationship('Share', back_populates='host')
+    enumerated_users = db.relationship('EnumeratedUser', back_populates='host')
+
 
 class Alert(db.Model):
     __tablename__ = 'alerts'
@@ -122,13 +150,28 @@ class Alert(db.Model):
     type = db.Column(db.String)
 
 
-
 def create_service_from_dict(service):
     # Create a Service object and set its attributes
     s = Service()
     s.port = service.get("port")
     s.name = service.get("service")
     return s
+
+def create_enumerated_user_from_dict(enumeratedUser):
+    eU = EnumeratedUser()
+    
+    eU.username = enumeratedUser.get("Username") 
+    eU.fullname = enumeratedUser.get("Fullname")
+    eU.enabled = enumeratedUser.get("Enabled")  
+    eU.locked = enumeratedUser.get("Locked")  
+    eU.admin = enumeratedUser.get("Admin")  
+    eU.passwordExpired = enumeratedUser.get("Passwdexpired")  
+    eU.cantChangePass = enumeratedUser.get("CantChangePasswd")  
+    eU.passwordAge = enumeratedUser.get("Passwdage") 
+    eU.lastLogon = enumeratedUser.get("Lastlogon") 
+    eU.numLogons = enumeratedUser.get("NumofLogons")
+
+    return eU 
 
 def create_docker_from_dict(docker):
     # Create a Docker object and set its attributes
@@ -190,6 +233,13 @@ def create_host_from_dict(dict):
     # Set the host.isOn attribute
     host.isOn = dict.get("isOn")
 
+    # creates new enumerated user tables for each user on specified box
+    try:
+        host.enumerated_users = [create_enumerated_user_from_dict(enumeratedUser) for enumeratedUser in dict.get("users")]
+        print("Created User table")
+    except:
+        print("No Users")
+
     # Create a Docker object for each docker in the dict
     # and add it to the host.docker list
     try:
@@ -248,6 +298,20 @@ def from_host_to_dict(host):
     # Create a dictionary for each firewall in the host's firewall list
     # and add it to the host_dict["firewall"] list
     host_dict["firewall"] = [{} for f in host.firewall]
+
+    host_dict["users"] = [
+        {
+            "username": u.username,
+            "fullname": u.fullname,
+            "enabled": u.enabled,
+            "locked": u.locked,
+            "admin": u.admin,
+            "passwordExpired": u.passwordExpired,
+            "cantChangePass": u.cantChangePass,
+            "passwordAge": u.passwordAge,
+            "lastLogon": u.lastLogon,
+            "numLogons": u.numLogons
+        } for u in host.enumerated_users]
 
     # Create a dictionary for each share in the host's shares list
     # and add it to the host_dict["shares"] list
