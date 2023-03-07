@@ -1,4 +1,3 @@
-import requests
 from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file
 from flask_login import login_required, current_user
 from json import load, loads, dumps
