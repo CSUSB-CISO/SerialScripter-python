@@ -1,9 +1,9 @@
 from nmap import PortScanner
 from os import popen 
 from json import dump
-# from website.models import create_host_from_dict
+from website.models import create_host_from_dict
 from re import compile
-# from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError
 class Recon:
     def __init__(self, range: str) -> None:
         self.range = range
