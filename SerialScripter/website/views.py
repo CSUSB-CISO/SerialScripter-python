@@ -16,6 +16,8 @@ import re
 
 
 #from src.search import search, sort
+from src.random_modules import from_json_to_csv, from_host_to_csv, upload_csv
+
 
 views = Blueprint('views', __name__)
 
@@ -33,17 +35,39 @@ def home():
     # Cringe feature jaylon wanted me to make
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
     "👿", "👾", "💥", "👨‍💻", "🦸‍♀️", "🦠"]
-
-    if request.method == "POST":
-        with open("config.json") as config:
-            config = load(config)
-            Recon(config.get("configs").get("out-ip")).save_box_data(db)
-
+    
     # Load hosts
     try:
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
     except:
         box_list = {}
+
+    if request.method == "POST":
+        with open("config.json") as config:
+            config = load(config)
+            config = config.get("configs")
+
+            if request.form.get("rescan"):
+                Recon(config.get("out-ip")).save_box_data(db)
+
+            elif request.form.get("download_host_info") or request.form.get("upload_host_info"):
+
+                try:
+                    filename = from_host_to_csv(box_list, config.get("UID"))
+
+                    if request.form.get("download_host_info"):
+                        return send_file(f'../{filename}', as_attachment=True)
+                
+                    elif request.form.get("upload_host_info"):
+                        try: 
+                            upload_csv(config.get("url"), config.get("port"), filename=filename)
+                        except:
+                            flash("Unable to upload csv. Check url/port settings")
+                except:
+                    flash("Unable to create csv. Hosts not enumerated")
+                
+
+
 
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
@@ -66,18 +90,54 @@ def box_management(name: str):
 
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
-    
-
     for i, box in enumerate(box_list):
         if box["name"] == name: # Return correct template based on searched box
-            total_ports = len(box["services"])
+            if request.method == "POST":
+                with open("config.json") as config:
+                    config = load(config)
+                    config = config.get("configs")
+
+                    # check if post request is coming from download or upload button on user pane 
+                    if request.form.get("users-download") or request.form.get("users-upload"):
+                        try:
+                            filename = from_json_to_csv(box, "users", config.get("UID"))
+                            # utilize different methods for upload and download methods
+                            if request.form.get("users-download"):
+                                return send_file(f'../{filename}', as_attachment=True)
+                            
+                            elif request.form.get("users-upload"):
+                                try: 
+                                    upload_csv(config.get("url"), config.get("port"), filename=filename)
+                                except:
+                                    flash("Unable to upload csv. Check url/port settings")
+                        except:
+                            flash("Unable to create csv. No users exist.")
+                            
+
+
+                    # check if post is from download or upload button on ports pane
+                    elif request.form.get("ports-download") or request.form.get("ports-upload"):
+                        try:
+                            filename = from_json_to_csv(box, "services", config.get("UID"))
+                            # utilize different methods for upload and download methods
+                            if request.form.get("ports-download"):
+                                return send_file(f'../{filename}', as_attachment=True)
+
+                            elif request.form.get("ports-upload"):
+                                try: 
+                                    upload_csv(config.get("url"), config.get("port"), filename=filename)
+                                except:
+                                    flash("Unable to upload csv. Check url/port settings")
+
+                        except:
+                            flash("Unable to create csv. No services exist.")   
+
 
             return render_template(
                 "manage.html",
                 title=name,
                 box=box_list[i],
-                ports=total_ports,
-                user=current_user
+                user=current_user,
             )
 
 

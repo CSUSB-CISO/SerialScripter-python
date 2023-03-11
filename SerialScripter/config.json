@@ -5,7 +5,10 @@
     "secret-agent": "secret",
     "starting-pass": "Password123!",
     "scheme": "@Sup3rSch3m4",
-    "magic-number": 334
+    "magic-number": 334,
+    "UID": 1,
+    "url": "http://192.168.1.9",
+    "port": "5000"
   },
   "metadata": {
     "version": 1.0,

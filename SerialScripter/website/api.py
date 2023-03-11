@@ -52,12 +52,14 @@ def inventory():
         return render_template("404.html")
     # hosts = [from_host_to_dict(host) for host in Host.query.all()]
 
-
+    # receives dictionary 
     print(request.data)
     a = loads(request.data)
     
+    # query hosts and grab host that has the name as the one given by the post request
     host = Host.query.filter_by(name=a["name"]).first()
 
+    # if host doesn't exist we add the table for it
     if not host:
         db.session.add(create_host_from_dict(a))
         db.session.commit()
