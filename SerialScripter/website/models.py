@@ -266,20 +266,7 @@ def from_host_to_dict(host):
 
     return host_dict
 
-# def search_alerts(search_terms):
-#     filters = []
-#     for term in search_terms:
-#         filters.append(or_(
-#             Alert.host.like(f'%{term}%'),
-#             Alert.name.like(f'%{term}%'),
-#             Alert.user.like(f'%{term}%'),
-#             Alert.process.like(f'%{term}%'),
-#             Alert.remote_ip.like(f'%{term}%'),
-#             Alert.cmd.like(f'%{term}%'),
-#             Alert.type.like(f'%{term}%')
-#         ))
 
-#     return Alert.query.filter(or_(*filters)).all()
 import re
 def search_alerts(search_string):
     search_terms = re.findall(r'([^\s:]+):([^\s]+)', search_string)
