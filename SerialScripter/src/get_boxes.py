@@ -42,6 +42,7 @@ class Recon:
                     os = "Linux"
                 box_data.append(
                         {
+                            "hostname": self.results["scan"][ip]["hostnames"][0]["name"],
                             "name": f'host-{ip.split(".")[-1]}',
                             "ip": ip,
                             "OS": os,
@@ -57,21 +58,13 @@ class Recon:
                             "firewall": [],
                             "shares": [
                                 {
-                                    "name": "",
-                                    "fullpath": "",
-                                    "permissions": [
-                                        {
-                                        "users": [
-                                            {
-                                            "username": ""
-                                            }
-                                        ]
-                                        }
-                                    ],
-                                    "SMBversion": ""
+                                    "Name": "", 
+                                    "Description": "",
+                                    "ShareState:": "",
+                                    "Path": "", 
+                                    "Temporary": "",
                                 }
                             ],
-                            "hostname": self.results["scan"][ip]["hostnames"][0]["name"]
                         }
                     )
 

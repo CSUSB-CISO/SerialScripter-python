@@ -1,0 +1,25 @@
+{%- extends "base.html" %}
+<body>
+    {% block content %}
+    <div class="container">
+        <div class="col-lg-12">
+           <div class="page-header">
+              <h1 class="header-font">Rsyslog Logs</small></h1>
+           </div>
+        </div>
+     </div>
+     <div class="container">
+        <div class="rsyslog-content">
+            <p>
+                Rsyslog Content:<br>
+                {% for line in logs %}
+                    {{ line }}
+                    <br>
+                {% endfor %}
+                
+            </p>
+        </div>
+    </div>
+    {% endblock %}
+
+ </body>

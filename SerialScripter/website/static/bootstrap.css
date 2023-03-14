@@ -4764,6 +4764,12 @@ fieldset:disabled .btn {
   bottom: 0;
 }
 
+.rsyslog-content {
+  color: white;
+  font-size: large;
+  text-align: center;
+}
+
 .script_list {
   position:relative ;
   padding-top: 50px;

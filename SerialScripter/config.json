@@ -3,11 +3,11 @@
     "in-ip": "192.168.1.0/24",
     "out-ip": "192.168.1.0/24",
     "secret-agent": "secret",
-    "starting-pass": "Password123!",
+    "starting-pass": "password123",
     "scheme": "@Sup3rSch3m4",
     "magic-number": 334,
-    "UID": 1,
-    "url": "http://192.168.1.9",
+    "UID": "1",
+    "url": "http://34.66.247.174",
     "port": "5000"
   },
   "metadata": {

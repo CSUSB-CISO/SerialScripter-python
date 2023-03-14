@@ -1,17 +1,26 @@
 from csv import writer
 from requests import post
 
-def from_json_to_csv(host: dict, keyname: str, UID: int):
+def from_json_to_csv(host: dict, keyname: str, UID: int, keys=() ):
     filename = f'{host["name"]}-{keyname}{UID}.csv'
 
     with open(f'{filename}', 'w', newline='') as csv_file:
         
         write_csv = writer(csv_file)
-        write_csv.writerow(host.get(f"{keyname}")[0].keys())
+        if keys:
+            write_csv.writerow(keys)
+            for item in host[f"{keyname}"]:
+                if item[keys[0]]:
+                    write_csv.writerow([item.get(key) for key in keys])
+                else:
+                    return
+        else:
+            write_csv.writerow(host.get(f"{keyname}")[0].keys())
+            for item in host[f"{keyname}"]:
+                write_csv.writerow(item.values())
     
     # Write the data rows
-        for user in host[f"{keyname}"]:
-            write_csv.writerow(user.values())
+
             
     return filename
 

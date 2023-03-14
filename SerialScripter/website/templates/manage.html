@@ -10,17 +10,34 @@
    </div>
    <div class="container">
       <div class="jumbotron" style="background-color:transparent;">
-         <ul class="nav nav-tabs">
-            <li class="nav-item active">
-               <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
-            </li>
-            <li class="nav-item">
-               <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
-            </li>
-            <li class="nav-item">
-               <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
-            </li>
-         </ul>
+            {% if "windows" in box.OS.lower() %}
+               <ul class="nav nav-tabs">
+                  <li class="nav-item active">
+                     <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#serviceinfo">Service Info</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
+                  </li>
+               </ul>
+            {% else %}
+               <ul class="nav nav-tabs">
+                  <li class="nav-item active">
+                     <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
+                  </li>
+               </ul>
+            {% endif %}
          <div id="myTabContent" class="tab-content">
             <div class="tab-pane text-white active" id="quickstats">
                <br>
@@ -36,7 +53,7 @@
                   <br/>
                   <li class="header-font-xl">Operating System: &ensp; {{ box.OS }} </li>
                   <br/>
-                  <li class="header-font-xl">Total ports detected on box: &ensp; {{ box.services|length }} </li>
+                  <li class="header-font-xl">Total services detected on box: &ensp; {{ box.services|length }} </li>
                   <br/>
                </ul>
                <br>
@@ -57,8 +74,10 @@
                         <tbody>
                            {% for item in box["services"]%}
                               <tr>
-                                 <td> {{ item["service"] }} </td>
-                                 <td> {{ item["port"] }} </td>
+                                 {% if item["service"] %}
+                                    <td> {{ item["service"] }} </td>
+                                    <td> {{ item["port"] }} </td>
+                                 {% endif %}
                               </tr>
                            {% endfor %}
                         </tbody>
@@ -66,6 +85,51 @@
                   <form method="post" class="button-container">
                      <input type="submit" value="Download CSV" class="btn btn-secondary" name="ports-download">
                      <input type="submit" value="Upload CSV" class="btn btn-secondary" name="ports-upload">
+                  </form>
+                  </div>
+               </div>
+            </div>
+            <div class="tab-pane" id="serviceinfo">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Detailed Service Information:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" style="width: 15%;" scope="col">Port</th>
+                              <th class= "column-hotpink" style="width: 25%;" scope="col">Service Name</th>
+                              <th class= "column-hotpink" style="width: 45%;" scope="col">Description</th>
+                              <th class= "column-hotpink" style="width: 15%;" scope="col">PID</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for item in box["services"]%}
+                              {% if item["AcceptStop"] and item["port"]%}
+                                    <tr>
+                                       <td> {{ item["port"] }} </td>
+                                       <td> {{ item["SCname"] }} </td>
+                                       <td> {{ item["DisplayName"] }} </td>
+                                       <td> {{ item["RunningPID"] }} </td>
+                                    </tr>
+                              {% endif %}
+                           {% endfor %}
+                           {% for item in box["services"] %}
+                              {% if item["AcceptStop"] and (item["port"]== 0) %}
+                                 <tr>
+                                    <td> n/a </td>
+                                    <td> {{ item["SCname"] }} </td>
+                                    <td> {{ item["DisplayName"] }} </td>
+                                    <td> {{ item["RunningPID"] }} </td>
+                                 </tr>
+                              {% endif %}
+                           {% endfor %}
+                        </tbody>
+                  </table>
+                  <form method="post" class="button-container">
+                     <input type="submit" value="Download CSV" class="btn btn-secondary" name="services-download">
+                     <input type="submit" value="Upload CSV" class="btn btn-secondary" name="services-upload">
                   </form>
                   </div>
                </div>
