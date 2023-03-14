@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
 from random import randint, choice
-from .models import Key, Host, from_host_to_dict, create_host_from_dict, Alert, search_alerts
+from .models import Key, Host, from_host_to_dict, Alert, or_, and_ #, create_host_from_dict,  search_alerts
 from . import db
 from src.razdavat import Razdavat
 from threading import Thread
@@ -12,6 +12,9 @@ from src.get_boxes import Recon
 from os import getlogin, listdir, system, path
 from subprocess import Popen, PIPE, STDOUT
 from socket import socket
+import re
+
+
 #from src.search import search, sort
 from src.random_modules import from_json_to_csv, from_host_to_csv, upload_csv
 import syslog
@@ -277,6 +280,16 @@ def scripting_hub():
     )
 
 
+@views.route("/test")
+def test():
+
+    matching_alerts = search_alerts("(hunte or john) and sshd.exe")
+    for alert in matching_alerts:
+        print(alert.host)
+        
+    return ""
+
+
 @views.route("/open-shell/<ip>", methods=["GET"])
 @login_required
 def pop_a_shell(ip: str) -> None:
@@ -324,6 +337,7 @@ def pop_a_shell(ip: str) -> None:
     
     try:
         user = "Administrator" if "window" in from_host_to_dict(Host.query.filter_by(ip=ip).first()).get("OS").lower() else "root"
+        # print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
     except AttributeError:
         print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
 
@@ -539,4 +553,65 @@ def delete_key():
 
 
     return jsonify({})
+from sqlalchemy import or_, and_
+from difflib import SequenceMatcher
+
+def search_alerts(query):
+    alerts = Alert.query.all()
+    search_terms = query.split()
+
+    # Parse the OR conditions into a list of lists
+    or_conditions = []
+    current_or_condition = []
+    for term in search_terms:
+        if term.lower() == "or":
+            or_conditions.append(current_or_condition)
+            current_or_condition = []
+        else:
+            current_or_condition.append(term)
+    or_conditions.append(current_or_condition)
+
+    # Loop through each alert and check for matches
+    matching_alerts = []
+    for alert in alerts:
+        # Check if the alert matches any of the OR conditions
+        or_match = False
+        for condition in or_conditions:
+            and_match = True
+            for term in condition:
+                if not (
+                    SequenceMatcher(None, term.lower(), alert.host.lower()).ratio() < 0.5
+                    and SequenceMatcher(None, term.lower(), alert.name.lower()).ratio() < 0.5
+                    and SequenceMatcher(None, term.lower(), alert.user.lower()).ratio() < 0.5
+                    and SequenceMatcher(None, term.lower(), alert.process.lower()).ratio() < 0.5
+                    and SequenceMatcher(None, term.lower(), alert.remote_ip.lower()).ratio() < 0.5
+                    and SequenceMatcher(None, term.lower(), alert.cmd.lower()).ratio() < 0.5
+                ):
+                    and_match = False
+                    break
+            if and_match:
+                or_match = True
+                break
+        if not or_match:
+            continue
+
+        # Check if the alert matches any of the AND conditions
+        and_match = True
+        for term in search_terms:
+            if term.lower() == "or":
+                continue
+            if not (
+                SequenceMatcher(None, term.lower(), alert.host.lower()).ratio() < 0.5
+                or SequenceMatcher(None, term.lower(), alert.name.lower()).ratio() < 0.5
+                or SequenceMatcher(None, term.lower(), alert.user.lower()).ratio() < 0.5
+                or SequenceMatcher(None, term.lower(), alert.process.lower()).ratio() < 0.5
+                or SequenceMatcher(None, term.lower(), alert.remote_ip.lower()).ratio() < 0.5
+                or SequenceMatcher(None, term.lower(), alert.cmd.lower()).ratio() < 0.5
+            ):
+                and_match = False
+                break
+        if and_match:
+            matching_alerts.append(alert)
+
+    return matching_alerts
 
