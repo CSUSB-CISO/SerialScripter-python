@@ -9,16 +9,13 @@ from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
 from src.get_boxes import Recon
-from os import getlogin, listdir, system, path
-from subprocess import Popen, PIPE, STDOUT
+from os import getlogin, listdir, system, path, walk, scandir
+from subprocess import Popen, PIPE, STDOUT, run
 from socket import socket
-import re
-
+from time import sleep
 
 #from src.search import search, sort
-from src.random_modules import from_json_to_csv, from_host_to_csv, upload_csv
-import syslog
-
+from src.common import from_json_to_csv, from_host_to_csv, upload_csv, log_list
 
 views = Blueprint('views', __name__)
 
@@ -443,30 +440,53 @@ def visualize():
 @views.route("/rsyslog", methods=["GET", "POST"])
 @login_required
 def rsyslog():
-
+    if not user_agent(request):
+        return render_template("404.html")
     # for rsyslog conf
 
 # *.*     @localhost:5000/log
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
-# Set up the rsyslog server
-    if not path.exists('rsyslog.log'):
-        system('touch rsyslog.log')
-    syslog.openlog(ident='FlaskApp', logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL1)
+    host_list = [box.get("hostname") for box in box_list if box.get("hostname")]
 
-    # append log from post request
-    if request.method == "POST":
-        message = request.get_data(as_text=True)
-        syslog.syslog(syslog.LOG_INFO, message)
-        with open('rsyslog.log', 'a') as f:
-            f.write(message)
-
-    with open('rsyslog.log', 'r') as f:
-
-        return render_template(
+    try:
+        log_file = log_list()
+    except FileNotFoundError:
+        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+        flash(f"Log file does not exist")     
+    
+    return render_template(
             "rsyslog.html",
-            logs=f.readlines(),
-            user=current_user
+            log = log_file,
+            hosts = host_list,
+            user=current_user,
         )
+
+
+@views.route("/rsyslog/<sort>", methods=["GET"])
+@login_required
+def rsyslog_sort(sort: str):
+    if not user_agent(request):
+        return render_template("404.html")
+    
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+    host_list = [box.get("hostname") for box in box_list if box.get("hostname")]
+
+    try:
+        log_file = log_list(sort)
+        if not log_file:
+            log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+    except FileNotFoundError:
+        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+        flash(f"Log file does not exist")     
+
+    return render_template(
+            "rsyslog.html",
+            log = log_file,
+            hosts = host_list,
+            user=current_user,
+        )
+
 
 @views.route('/incidents', methods=["GET", "POST"])
 @login_required

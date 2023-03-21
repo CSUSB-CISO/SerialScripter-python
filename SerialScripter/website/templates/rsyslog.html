@@ -8,18 +8,76 @@
            </div>
         </div>
      </div>
-     <div class="container">
-        <div class="rsyslog-content">
-            <p>
-                Rsyslog Content:<br>
-                {% for line in logs %}
-                    {{ line }}
-                    <br>
-                {% endfor %}
-                
-            </p>
+     <div class="container scroll-line">
+        <div class="rsyslog-content ">
+            <table class="table table-box">
+                <thead class="thead-width">
+                  <tr>
+                    <th>
+                      <a class="column-hotpink" href="/rsyslog/flip_timestamp">Timestamp</a>
+                    </th>
+                      <th>
+                        <div class="dropdown-center">
+                          <button class="column-hotpink dropdown-toggle" type="button" id="severity_levels" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Facility.Severity
+                          </button>
+                          <div class="dropdown-menu" aria-labelledby="severity_levels">
+                            <a class="dropdown-item" href="/rsyslog/emerg">emerg</a>
+                            <a class="dropdown-item" href="/rsyslog/alert">alert</a>
+                            <a class="dropdown-item" href="/rsyslog/crit">crit</a>
+                            <a class="dropdown-item" href="/rsyslog/err">err</a>
+                            <a class="dropdown-item" href="/rsyslog/warn">warning</a>
+                            <a class="dropdown-item" href="/rsyslog/notice">notice</a>
+                            <a class="dropdown-item" href="/rsyslog/info">info</a>
+                          </div>
+                        </div>
+                      </th>
+                     <th>
+                      <div class="dropdown-center">
+                          <button class="column-hotpink dropdown-toggle" type="button" id="hostname" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Host Name
+                          </button>
+                          <div class="dropdown-menu" aria-labelledby="hostname">
+                            {% for host in hosts %}
+                             <a class="dropdown-item" href="/rsyslog/{{ host }}">{{ host }}</a>
+                            {% endfor %}
+                         </div>
+                     </th>
+                     <th class="column-hotpink"  style="width: auto;" scope="col">
+                         Syslogtag-PID
+                     </th>
+                     <th class="column-hotpink" style="width: auto;" scope="col" >
+                         Log Message
+                     </th>
+                 </tr>
+                 </thead>
+                 <tbody>
+                     {% for line in log %}
+                     <tr>
+                        <td>
+                           {{ line["timestamp"] }}
+                        </td>                        
+                        <td>
+                           {{ line["log_level"] }}
+                        </td>
+                        <td>
+                           {{ line["hostname"] }}
+                        </td>
+                        <td>
+                           {{ line["syslogtag_pid"] }}
+                        </td>
+                        <td>
+                           {{ line["log_message"] }}
+                        </td>
+                     </tr>
+                     {% endfor %}
+
+                 </tbody>
+            </table>
+            <form id="timestamp-form" method="post" action="/rsyslog">
+                <input type="hidden" name="sort_column" value="timestamp">
+            </form>
         </div>
     </div>
     {% endblock %}
-
  </body>
