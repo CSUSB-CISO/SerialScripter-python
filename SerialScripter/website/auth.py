@@ -17,7 +17,6 @@ def user_agent(request):
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if not user_agent(request):
-        flash(f"ALERT - Unauthorized Request From IP: {request.remote_addr}")
         logging_serial(f"ALERT - Unauthorized Request From IP: {request.remote_addr}", "Warning", "User-Agent")
         return render_template("apache.html")
     if request.method == 'POST':
@@ -75,7 +74,7 @@ def sign_up():
             db.session.commit()
             login_user(new_user, remember=True)
             flash('Account created!', category='success')
-            logging_serial(f"Created new user, name: {first_name}")
+            logging_serial(f"Created new user, name: {first_name}", "Warning", "Sign-Up")
             return redirect(url_for('views.home'))
 
     return render_template("sign_up.html", user=current_user)

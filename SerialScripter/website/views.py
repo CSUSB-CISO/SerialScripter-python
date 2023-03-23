@@ -16,7 +16,7 @@ from flask_paginate import Pagination, get_page_parameter
 
 
 #from src.search import search, sort
-from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list
+from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time
 
 views = Blueprint('views', __name__)
 
@@ -30,8 +30,6 @@ def user_agent(request):
 @login_required
 def home():
     if not user_agent(request):
-        flash(f"ALERT - Unauthorized Request From IP: {request.remote_addr}")
-        logging_serial(f"ALERT - Unauthorized Request From IP: {request.remote_addr}", False, "/")
         return render_template("apache.html")
     # Cringe feature jaylon wanted me to make
     emoji_list = ["🫣", "🫡", "🤔", "🙂", "🫠", "🥲", "🤑", "🤐", "😶‍🌫️", "😮‍💨", "😵", "🤯", "🥸", "😲", "😈", 
@@ -79,7 +77,7 @@ def home():
 
 
     # Startup index.html
-    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
+    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user, timestamp=get_current_time())
 
 @views.after_request
 def apply_caching(response):
@@ -562,22 +560,26 @@ def serial_logs():
         # amount of lines per page determined by file size
         if line_count > 100:
             per_page = 100
+            pagination = Pagination(page=page, total=line_count, per_page=per_page)
+            offset = (page - 1) * per_page
+            # offest + lines per page creates a range to iterate through
+            log_file = get_serial_log_list(offset=slice(offset, offset+per_page))
         else:
-        # at most 3 pages will be displayed when file is smaller than 5000 lines
-            per_page = line_count//3
-        
-        # determine start position
-        offset = (page - 1) * per_page
-
-        # offest + lines per page creates a range to iterate through
-        log_file = get_serial_log_list(offset=slice(offset, offset+per_page))
+            offset = (page - 1) * line_count
+            pagination = Pagination(page=page, total=line_count, per_page=line_count)
+            # offest + lines per page creates a range to iterate through
+            log_file = get_serial_log_list(offset=slice(offset, offset+line_count))
+            # determine start position
 
         # depending on the number of pages and lines allowed per page a group of links to the different pages is created.
-        pagination = Pagination(page=page, total=line_count, per_page=per_page)
 
     except FileNotFoundError:
-        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
-        flash(f"Log file does not exist")     
+        log_file = [{"timestamp": "the-time",
+                    "err_succ": "Fail",
+                    "module": "Missing",
+                    "log_content": "No logs!"}]
+        pagination = Pagination(page=page, total=0, per_page=0)
+        flash(f"Log file does not exist")      
     
     return render_template(
             "serial-logs.html",

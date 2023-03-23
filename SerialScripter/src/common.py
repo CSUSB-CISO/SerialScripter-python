@@ -191,7 +191,7 @@ def get_serial_log_list(offset=slice(None, None)):
                     "log_content": parsed_line[3]
                 })
             except Exception as e:
-                logging_serial(e, False, "get-logs")
+                logging_serial(e, False, "get-serial-logs")
     return log_list
 
 # depending on if password has been changed or not the password will be generated
