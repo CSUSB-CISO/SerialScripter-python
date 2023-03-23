@@ -31,6 +31,10 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     port = db.Column(db.Integer)
     name = db.Column(db.String)
+    shortName = db.Column(db.String)
+    descriptiveName = db.Column(db.String)
+    running = db.Column(db.Boolean)
+    PID = db.Column(db.Integer)
 
     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
     host = db.relationship('Host', back_populates='services')
@@ -63,33 +67,23 @@ class Share(db.Model):
     __tablename__ = 'shares'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    fullpath = db.Column(db.String)
-    SMBversion = db.Column(db.String)
+    Name = db.Column(db.String) 
+    Description = db.Column(db.String)
+    ShareState = db.Column(db.String)
+    Path = db.Column(db.String) 
+    Temporary = db.Column(db.String)
 
     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
     host = db.relationship('Host', back_populates='shares')
 
-    permissions = db.relationship('Permission', back_populates='share')
-
-class Permission(db.Model):
-    __tablename__ = 'permissions'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    share_id = db.Column(db.Integer, db.ForeignKey('shares.id'))
-    share = db.relationship('Share', back_populates='permissions')
-
-    users = db.relationship('RemoteUser', back_populates='permission')
-
 # users that are a part of shares
-class RemoteUser(db.Model):
-    __tablename__ = 'remote_users'
+# class RemoteUser(db.Model):
+#     __tablename__ = 'remote_users'
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String)
-    permission_id = db.Column(db.Integer, db.ForeignKey('permissions.id'))
-    permission = db.relationship('Permission', back_populates='users')
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String)
+#     permission_id = db.Column(db.Integer, db.ForeignKey('permissions.id'))
+#     permission = db.relationship('Permission', back_populates='users')
 
 class Docker(db.Model):
     __tablename__ = 'dockers'
@@ -155,6 +149,10 @@ def create_service_from_dict(service):
     s = Service()
     s.port = service.get("port")
     s.name = service.get("service")
+    s.shortName = service.get("SCname")
+    s.descriptiveName = service.get("DisplayName")
+    s.running = service.get("AcceptStop")
+    s.PID = service.get("RunningPID")
     return s
 
 def create_enumerated_user_from_dict(enumeratedUser):
@@ -194,24 +192,26 @@ def create_firewall_from_dict(firewall):
 def create_share_from_dict(share):
     # Create a Share object and set its attributes
     s = Share()
-    s.name = share.get("name")
-    s.fullpath = share.get("fullpath")
-    s.SMBversion = share.get("SMBversion")
-    s.permissions = [create_permission_from_dict(permission) for permission in share.get("permissions")]
+    s.Name = share.get("Name") 
+    s.Description = share.get("Description")
+    s.ShareState = share.get("ShareState")
+    s.Path = share.get("Path") 
+    s.Temporary = share.get("Temporary")
+    
     return s
 
-def create_permission_from_dict(permission):
-    # Create a Permission object and set its attributes
-    p = Permission()
-    p.users = [create_remote_user_from_dict(user) for user in permission.get("users")]
-    # Set attributes of p here
-    return p
+# def create_permission_from_dict(permission):
+#     # Create a Permission object and set its attributes
+#     p = Permission()
+#     p.users = [create_remote_user_from_dict(user) for user in permission.get("users")]
+#     # Set attributes of p here
+#     return p
 
-def create_remote_user_from_dict(user):
-    # Create a RemoteUser object and set its attributes
-    u = RemoteUser()
-    u.username = user.get("username")
-    return u
+# def create_remote_user_from_dict(user):
+#     # Create a RemoteUser object and set its attributes
+#     u = RemoteUser()
+#     u.username = user.get("username")
+#     return u
 
 def create_host_from_dict(dict):
     # Create host object and set its attributes
@@ -282,7 +282,15 @@ def from_host_to_dict(host):
     }
     # Create a dictionary for each service in the host's services list
     # and add it to the host_dict["services"] list
-    host_dict["services"] = [{"port": s.port, "service": s.name} for s in host.services]
+    host_dict["services"] = [
+        {
+        "port": s.port,
+        "service": s.name,
+        "SCname": s.shortName,
+        "DisplayName": s.descriptiveName,
+        "AcceptStop": s.running,
+        "RunningPID": s.PID,
+        } for s in host.services]
 
     # Set the host_dict["isOn"] attribute
     host_dict["isOn"] = host.isOn
@@ -317,15 +325,12 @@ def from_host_to_dict(host):
     # and add it to the host_dict["shares"] list
     host_dict["shares"] = [
         {
-            "name": s.name, "fullpath": s.fullpath, "SMBversion": s.SMBversion, "permissions": [
-                {
-                    "users": [
-                        {
-                            "username": u.username
-                        } for u in p.users
-                    ] 
-                } for p in s.permissions
-            ]
+            "Name": s.Name, 
+            "Description": s.Description,
+            "ShareState:": s.ShareState,
+            "Path": s.Path, 
+            "Temporary": s.Temporary,
+
         } for s in host.shares]
 
     return host_dict

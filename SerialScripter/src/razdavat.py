@@ -15,28 +15,31 @@ class Razdavat(paramiko.SSHClient):
                 server,
                 username=self.user,
                 key_filename=key_path,
-                port=port
+                port=port,
+                timeout=10
             )
         elif password:
             self.connect(
                 server,
                 username=self.user,
                 password=password,
-                port=port
+                port=port,
+                timeout=10
             )
         else:
             print("INVALID LOGIN TYPE")
     def add_ssh_key(self, key_to_add: str) -> None:
-        if "windows" in self.os.lower():
-            print(key_to_add)
-            self.exec_command(f"echo {key_to_add} >> C:\\ProgramData\\ssh\\administrators_authorized_keys")
+        if "windowssss" in self.os.lower():
+            # print(key_to_add)
+            # self.exec_command(f"echo {key_to_add} >> C:\\ProgramData\\ssh\\administrators_authorized_keys")
 
-            # Enable public key authentication in the SSH server config if it is not already enabled
-            # _, stdout, _ = self.exec_command('powershell if (!(Get-Content "C:\\ProgramData\\ssh\\sshd_config") -match "^#PubkeyAuthentication yes") {Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"}')
-            self.exec_command(f'Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"')
-            # Restart the SSH server to apply the changes
-            _, stdout, _ = self.exec_command('net stop sshd && net start sshd')
-            stdout.read()
+            # # Enable public key authentication in the SSH server config if it is not already enabled
+            # # _, stdout, _ = self.exec_command('powershell if (!(Get-Content "C:\\ProgramData\\ssh\\sshd_config") -match "^#PubkeyAuthentication yes") {Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"}')
+            # self.exec_command(f'Add-Content -Path "C:\\ProgramData\\ssh\\sshd_config" -Value "PubkeyAuthentication yes"')
+            # # Restart the SSH server to apply the changes
+            # _, stdout, _ = self.exec_command('net stop sshd && net start sshd')
+            # stdout.read()
+            pass
         else:
             # make .ssh dir and create authorized_keys file if they dont already exist
             self.exec_command(f'yes "y" | mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys')

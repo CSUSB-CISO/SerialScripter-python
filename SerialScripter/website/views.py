@@ -9,15 +9,13 @@ from src.razdavat import Razdavat
 from threading import Thread
 from queue import Queue
 from src.get_boxes import Recon
-from os import getlogin, listdir
-from subprocess import Popen, PIPE, STDOUT
+from os import getlogin, listdir, system, path, walk, scandir
+from subprocess import Popen, PIPE, STDOUT, run
 from socket import socket
-import re
-
+from time import sleep
 
 #from src.search import search, sort
-from src.random_modules import from_json_to_csv, from_host_to_csv, upload_csv
-
+from src.common import from_json_to_csv, from_host_to_csv, upload_csv, log_list
 
 views = Blueprint('views', __name__)
 
@@ -113,12 +111,10 @@ def box_management(name: str):
                         except:
                             flash("Unable to create csv. No users exist.")
                             
-
-
                     # check if post is from download or upload button on ports pane
                     elif request.form.get("ports-download") or request.form.get("ports-upload"):
                         try:
-                            filename = from_json_to_csv(box, "services", config.get("UID"))
+                            filename = from_json_to_csv(box, "services", config.get("UID"), ("service", "port"))
                             # utilize different methods for upload and download methods
                             if request.form.get("ports-download"):
                                 return send_file(f'../{filename}', as_attachment=True)
@@ -131,6 +127,22 @@ def box_management(name: str):
 
                         except:
                             flash("Unable to create csv. No services exist.")   
+
+                    # check if post request is coming from download or upload button on user pane 
+                    elif request.form.get("services-download") or request.form.get("services-upload"):
+                        try:
+                            filename = from_json_to_csv(box, "services", config.get("UID"))
+                            # utilize different methods for upload and download methods
+                            if request.form.get("services-download"):
+                                return send_file(f'../{filename}', as_attachment=True)
+                            
+                            elif request.form.get("services-upload"):
+                                try: 
+                                    upload_csv(config.get("url"), config.get("port"), filename=filename)
+                                except:
+                                    flash("Unable to upload csv. Check url/port settings")
+                        except:
+                            flash("Unable to create csv. No services exist.")
 
 
             return render_template(
@@ -235,6 +247,7 @@ def scripting_hub():
                     # Only deploy the script to box if Run Script box is checked 
                     if (request.form.get('Deploy')): 
                         for i, script in enumerate(scripts_checked):
+                            print(f"Script Name: {script}\n Parameter: {parameters_list}")
                             if len(parameters_list) == 1:
                                 a.deploy(script, parameters_list[0])
                             else:
@@ -246,7 +259,8 @@ def scripting_hub():
                                 a.put(script_name=script)
                             else:
                                 a.put(script_name=script)
-                except: 
+                except Exception as e: 
+                    print(e)
                     deployed = False
 
             if deployed:
@@ -322,9 +336,8 @@ def pop_a_shell(ip: str) -> None:
         user = "Administrator" if "window" in from_host_to_dict(Host.query.filter_by(ip=ip).first()).get("OS").lower() else "root"
         # print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
     except AttributeError:
-        # print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
+        print(from_host_to_dict(Host.query.filter_by(ip=ip).first()))
 
-        return "NO OS"
     p = Popen(
         f"./gotty --timeout 10 -p {port} -t --tls-crt website/data/cert.pem --tls-key website/data/key.pem -w -r ssh {user}@{ip}",
         shell=True, 
@@ -340,7 +353,6 @@ def pop_a_shell(ip: str) -> None:
     
     # Get return value from Queue
     url = que.get()
-
     return redirect(url) # Redirect to randomly created gotty instance
 
 @views.route("/delete/<name>", methods=["GET", "POST"])
@@ -348,6 +360,8 @@ def pop_a_shell(ip: str) -> None:
 def delete_host(name: str):
     db.session.delete(Host.query.filter_by(name=name).first())
     db.session.commit()
+    return jsonify({})
+
 
 @views.route("/key-management", methods=["GET", "POST"])
 @login_required
@@ -389,15 +403,17 @@ def key_management():
                 # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
                 password = config.get("configs").get("starting-pass")
 
-            try:
-                for box in box_list:
-                    connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", password=password)
-                    connection.add_ssh_key(key)
-            except:
-                for box in box_list:
-                    connection = Razdavat(box["ip"], password=password, os=box["OS"])
-                    connection.add_ssh_key(key)
-
+            # for box in box_list:
+            #     connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", password=password)
+            #     connection.add_ssh_key(key)
+            for box in box_list:
+                if box["ip"].split('.')[-1] != "1":
+                    try:
+                        print(f"Adding ssh-key to: {box['ip']}")
+                        connection = Razdavat(box["ip"], password=password, os=box["OS"])
+                        connection.add_ssh_key(key)
+                    except Exception as e:
+                        print(e)
 
         elif len(key) < 500:
             flash("Key is too short!!")
@@ -420,6 +436,57 @@ def visualize():
     # print(box_list)
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("visualize.html", hosts=box_list, user=current_user)
+
+@views.route("/rsyslog", methods=["GET", "POST"])
+@login_required
+def rsyslog():
+    if not user_agent(request):
+        return render_template("404.html")
+    # for rsyslog conf
+
+# *.*     @localhost:5000/log
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
+    host_list = [box.get("hostname") for box in box_list if box.get("hostname")]
+
+    try:
+        log_file = log_list()
+    except FileNotFoundError:
+        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+        flash(f"Log file does not exist")     
+    
+    return render_template(
+            "rsyslog.html",
+            log = log_file,
+            hosts = host_list,
+            user=current_user,
+        )
+
+
+@views.route("/rsyslog/<sort>", methods=["GET"])
+@login_required
+def rsyslog_sort(sort: str):
+    if not user_agent(request):
+        return render_template("404.html")
+    
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+    host_list = [box.get("hostname") for box in box_list if box.get("hostname")]
+
+    try:
+        log_file = log_list(sort)
+        if not log_file:
+            log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+    except FileNotFoundError:
+        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+        flash(f"Log file does not exist")     
+
+    return render_template(
+            "rsyslog.html",
+            log = log_file,
+            hosts = host_list,
+            user=current_user,
+        )
+
 
 @views.route('/incidents', methods=["GET", "POST"])
 @login_required
@@ -493,6 +560,8 @@ def delete_key():
 
         if key.user_id == current_user.id:
             flash(f'Key: {key.id} has been deleted.')
+            db.session.delete(key)
+            db.session.commit()
             try:
                 for box in box_list:
                     connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", os=box["OS"])
@@ -502,8 +571,7 @@ def delete_key():
                     connection = Razdavat(box["ip"], password=password, os=box["OS"])
                     connection.remove_ssh_key(key.data)
 
-            db.session.delete(key)
-            db.session.commit()
+
     return jsonify({})
 from sqlalchemy import or_, and_
 from difflib import SequenceMatcher
