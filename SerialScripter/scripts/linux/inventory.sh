@@ -249,6 +249,21 @@ function login() {
 	printf "$(w)\n\n"
 }
 
+function DiscoverListenerTool() {
+	if [ $(which lsof) ]; then
+		printf "lsof"
+		exit 0
+	fi
+	if [ $(which netstat) ]; then
+		printf "netstat"
+		exit 0
+	fi
+	if [ $(which ss) ]; then
+		printf "ss"
+		exit 0
+	fi
+}
+
 function ports() {
 	if [  -z "$1" ]; then
 		section="${BLUE}LISTENING CONNECTIONS${NC}"
@@ -274,28 +289,67 @@ function ports() {
 		fi
 	}
 
+	listeningtool=$(DiscoverListenerTool)
+
+	case "$listeningtool" in
+		"lsof")
+			portlisten=$(lsof -i -P -n | grep LISTEN | awk '{print $9}' | cut -d':' -f2- | sort -u)
+			for i in $portlisten; do
+				tmp=$(expr $i + 1 2>/dev/null)
+				if [ $? == 2 ]; then
+					printf "\n"
+				else
+					if [[ ! -z "$1" ]]; then
+						var=$(lsof -iTCP:$i -sTCP:LISTEN | awk '{print $2}' | tail -n1)
+						printf "{\"port\":$i,"
+						motherprocess "$var"
+					else
+						var=$(lsof -iTCP:$i -sTCP:LISTEN | awk '{print $2}' | tail -n1)
+						printf "\nPort: ${RED}$i${NC} Owning process: $var \n"
+						motherprocess "$var"
+					fi	
+				fi
+			done
+			;;
+		"netstat")
+			var=$(netstat -l -p -n -t -d -e | grep -v "tcp6" | grep "^tcp" | awk '{print $4}')
+			for i in $var; do
+				portfromcut=$(echo $i | cut -d':' -f2)
+				tmp=$(expr $i + 1 2>/dev/null)
+				if [ $? == 2 ]; then
+					printf "\n"
+				else
+					if [[ ! -z "$1" ]]; then
+						var=$(fuser $portfromcut/tcp 2>/dev/null)
+						printf "{\"port\":$portfromcut,"
+						motherprocess "$var"
+					else
+						var=$(fuser $portfromcut/tcp 2>/dev/null)
+						printf "\nPort: ${RED}$portfromcut${NC} Owning process: $var \n"
+						motherprocess "$var"
+					fi	
+				fi
+			done
+			;;
+		"ss")
+			var=$(ss -tlpn -4 | grep LISTEN)
+			while read -r line; do
+				# Extract listening port and PID using awk
+				port=$(echo "$line" | awk '{print $4}')
+				pid=$(echo "$line" | awk -F'[=,]' '{print $3}')
+
+				if [[ ! -z "$1" ]]; then
+					printf "{\"port\":$port,"
+					motherprocess "$pid"
+				else
+					printf "\nPort: ${RED}$port${NC} Owning process: $pid \n"
+					motherprocess "$pid"
+				fi
+			done <<< "$ss_output"
+			;;
+	esac
 	#ports
 	#find open ports lsof -i -P -n | grep LISTEN | awk '{print $9}' | cut -d':' -f2-
-	portlisten=$(lsof -i -P -n | grep LISTEN | awk '{print $9}' | cut -d':' -f2- | sort -u)
-	for i in $portlisten; do
-		tmp=$(expr $i + 1 2>/dev/null)
-		if [ $? == 2 ]; then
-			printf "\n"
-		else
-			#TO DO 
-			#also print the command used for last process, just in case
-			#
-			if [[ ! -z "$1" ]]; then
-				var=$(lsof -iTCP:$i -sTCP:LISTEN | awk '{print $2}' | tail -n1)
-				printf "{\"port\":$i,"
-				motherprocess "$var"
-			else
-				var=$(lsof -iTCP:$i -sTCP:LISTEN | awk '{print $2}' | tail -n1)
-				printf "\nPort: ${RED}$i${NC} Owning process: $var \n"
-				motherprocess "$var"
-			fi	
-		fi
-	done
 }
 #put those ports into lsof -iTCP:53 -sTCP:LISTEN to find process
 #ps -o ppid= -p pid
@@ -410,63 +464,154 @@ function file() {
 #					                     #
 #########################################
 
+function UserAdminCheck() {
+	user=$1
+	#check if user is in sudoers
+	grep "^$user" /etc/sudoers 1>/dev/null
+	if [ $? == 0 ]; then
+		printf "true"
+		exit 0
+	fi
+	#check if user is in admin group
+	for i in $(grep -E '^%' /etc/sudoers); do
+		if [[ $(echo $i | grep -Eo '%') ]]; then
+			group=$(echo $i | cut -d'%' -f2)
+			users=$(grep -E "^$group" /etc/group)
+			userswithsudo=$(echo $users | rev | cut -d':' -f1 | rev)
+			if [[ $(echo $userswithsudo | grep "$user") ]]; then
+				printf "true"
+				exit 0
+			fi
+		fi
+	done
+	printf "false"
+}
+
+function LockedCheck() {
+	lockedpre=$(echo "$1" | grep "nologin" 1>/dev/null && echo -n "true") 
+	lockedpre2=$(echo "$1" | cut -d':' -f2 | grep "*" 1>/dev/null && echo -n "true")	
+	if [[ "$lockedpre" == "true" ]] || [[ "$lockedpre2" == "true" ]]; then
+		echo -n "true"
+	else
+		echo -n "false"
+	fi
+}
+
+function PasswdExpiredCheck() {
+	if [[ $(which chage) ]]; then
+		passwdexpires=$(chage -l $1 | grep "Password expires" | cut -d':' -f2)
+		if [[ $(echo $passwdexpires | grep "never") ]]; then
+			echo -n "false"
+		else
+			echo -n "true"
+		fi
+	fi
+	
+	# ADD this l8er bb girl
+	#
+	#grep "$1" /etc/shadow | cut -d':' -f8 | grep "99999" 1>/dev/null
+	#if [[ "$passwdage" == "99999" ]]; then
+	#	echo -n "true"
+	#else
+	#	echo -n "false"
+	#fi
+}
+
+function LastPassChangeCheck() {
+	if [[ $(which chage) ]]; then
+		lastpasschange=$(chage -l $1 | grep "Last password change" | cut -d':' -f2)
+		echo -n "$lastpasschange"
+	fi
+	# ADD this l8er bb girl
+	#
+	#grep "$1" /etc/shadow | cut -d':' -f8 | grep "99999" 1>/dev/null
+	#if [[ "$passwdage" == "99999" ]]; then
+	#	echo -n "true"
+	#else
+	#	echo -n "false"
+	#fi
+}
+
 function CompileUserInfo() {
 	#For CCDC user stuff:
-        # Username
-        # Fullname
-        # Enabled
-        # Locked
-        # Admin
-        # Passwdexpired
-        # CantChangePasswd 
-        # Passwdage
-        # Lastlogon
-        # BadPasswdAttempts
-        # NumofLogons
-        users=$(cat /etc/passwd)
-        for i in $users; do
-                userline=$(grep "$i" /etc/passwd)
-				#username
-				username=$(echo "$i" | cut -d':' -f1)
-                #fullname
-				realname=$(echo "$i" | cut -d':' -f5)
-				#enabled
-				enabledpre=$(grep "$i" /etc/passwd | grep 'sh$' && echo "true")
-				enabled=$(echo "$enabledpre" | cut -d' ' -f2)
-				#locked
-				lockedpre=$(grep "$i" /etc/passwd | grep "nologin" && echo "true" || grep "$i" /etc/passwd | cut -d':' -f2 | grep -o "*" && echo "true")
-				locked=$(echo "$lockedpre" | cut -d' ' -f2)
+        # Username ✓
+        # Fullname ✓
+        # Enabled ✓
+        # Locked ✓
+        # Admin ✓
+        # Passwdexpired ✓
+        # CantChangePasswd null
+        # Passwdage ✓
+        # Lastlogon ✓
+        # BadPasswdAttempts null<right now>
+        # NumofLogons ✓
 
-				
-                #for no login, get second field and do or check on shell
-                #same for locked
-                #admin invoke other function for checking through sudoers and group, or create modified
-                #passwdexpired check /etc/shadow
-                cantchangepasswd='null'
-                passwordage='null'
-                lastlogon=$(lastlog -u $i | tail -n 1 | rev | cut -d' ' -f1-7 | rev)
-                #other lastlog stuff to get passwd attempts or use grep
-                #same for this
-				printf "{}"
-        done
+	userinfoblock=""
+	users=$(cat /etc/passwd | tr ' ' '-')
+	for i in $users; do
+			#username
+			username=$(echo "$i" | cut -d':' -f1)
+			userinfoblock+="{\"Username\":\"$username\","
+			#fullname
+			realname=$(echo "$i" | cut -d':' -f5)
+			userinfoblock+="\"Fullname\":\"$realname\","
+			#enabled
+			enabledpre=$(echo "$i" | grep 'sh$' 1>/dev/null && echo -n "true" || echo -n "false")
+			userinfoblock+="\"Enabled\":$enabledpre,"
+			#locked
+			locked=$(LockedCheck "$i")
+			userinfoblock+="\"Locked\":$locked,"
 
+			adminstatus=$(UserAdminCheck $username)
+			userinfoblock+="\"Admin\":$adminstatus,"
+
+			passwdexpired=$(PasswdExpiredCheck $username)
+			userinfoblock+="\"Passwdexpired\":$passwdexpired,"
+			
+			userinfoblock+="\"CantChangePasswd\":false,"
+
+			lastpasschange=$(LastPassChangeCheck $username)
+			userinfoblock+="\"Passwdage\":\"$lastpasschange\","
+
+			#lastlog
+			lastlogdate=$(lastlog -u $username | awk '{ s = ""; for (i=4; i <= NF; i++) s = s $i " "; print s }' | tail -n 1)
+			userinfoblock+="\"Lastlogon\":\"$lastlogdate\","
+			
+			userinfoblock+="\"BadPasswdAttempts\":\"null\","
+
+			#login count
+			logincount=$(last $i | grep $i | wc -l)
+			userinfoblock+="\"NumofLogons\":\"$logincount\"},"
+	done
+	echo -n "$userinfoblock"
 }
 
 GetOS() {
 	if [ -x $(which hostnamectl) ]; then
 		OS=$(hostnamectl | grep "Operating System" | cut -d':' -f2)
+		OS+=" $(hostnamectl | grep "Kernel" | cut -d':' -f2)"
 		printf "$OS"
 	else
 		OS=$(cat /etc/*-release | grep PRETTY_NAME | cut -d'=' -f2)
+		OS+=" $(uname -r)"
+		printf "$OS"
 	fi
 }
 
 GetIP() {
-	cards=$(lshw -class network | grep "logical name:" | sed 's/logical name://')
-	for n in $cards; do
-		ip4=$(/sbin/ip -o -4 addr list $n | awk '{print $4}' | cut -d/ -f1)
+	ipreg=$(echo $1 | cut -d'.' -f1-3)
+	if [[ -z $(which lshw) ]]; then
+		ip4=$(ip -brief a 2>/dev/null | grep -E "$ipreg" | awk '{print $3}' | cut -d'/' -f1 || ifconfig 2>/dev/null | grep -E "$ipreg" | awk '{print $2}')
 		printf "$ip4"
-	done
+		exit 0
+	else 
+		cards=$(lshw -class network | grep "logical name:" | sed 's/logical name://')
+		for n in $cards; do
+			ip4=$(/sbin/ip -o -4 addr list $n | awk '{print $4}' | cut -d/ -f1)
+			echo -n $ip4 | grep -E "$ipreg" 2>/dev/null 
+		done
+		exit 0
+	fi
 }
 
 GetUsers() {
@@ -503,66 +648,69 @@ PostToServ() {
 }
 
 DSuck() {
-	docs=$(docker ps -a)
-	if [[ -z "$docs" ]]; then
-		printf "null"
+	#or docker ps --format "{{.ID}}"
+	docinfo=""
+	for i in $(docker ps | awk '{print $1}' | grep -vi "container"); do
+		jname=$(docker inspect --format='{{.Config.Image}}' $i)
+		jstatus=$(docker inspect --format='{{.State.Status}}' $i)
+		jhealth=$(docker inspect --format='{{.State.Health.Status}}' $i)
+		jID=$(echo $i)
+		cmds=$(docker inspect --format='{{.Config.Cmd}}' $i)
+		jcmds=$(echo ${cmds::-1} | cut -b 2-)
+		ports=$(docker inspect --format='{{.NetworkSettings.Ports}}' $i)
+		jports=$(echo ${ports::-1} | cut -b 5-)
+		docinfo+="{\"name\":\"$jname\",\"status\":\"$jstatus\",\"health\":\"$jhealth\",\"id\":\"$jID\",\"cmd\":\"$jcmds\",\"ports\":\"$jports\"},"
+	done
+	echo -n "$docinfo"
+}
+
+function PrepareArrays() {
+	if [[ $(echo -e "$1" | wc -l) -gt 0 ]]; then
+		printf "${1::-1}"
 	else 
-		var=$(echo $docs | cut -d' ' -f1,4)
-		echo $var
+		printf "$1"
 	fi
 }
 
 function ExportToJSON() {
 	OS=$(GetOS)
 	IP=""
-	IPS=$(GetIP)
-	if [[ $(echo $IPS | wc -l) -gt 1 ]]; then
-		for i in $IPS; do
-			IP+="$i-:-"
-		done
-		IP=$IPS
-	fi
-	
-	docks=""
-	if [ -x "$(command -v Docker)" ]; then
-  		echo 'Error: Docker is not installed.'
-  	else 
-  		echo 'Docker installed'
-		dockerCon=$(DSuck)
-	fi
-
-	
-
-
+	IPS=$(GetIP $ip)
+	#if [[ $(echo $IPS | wc -l) -gt 1 ]]; then
+	#	for i in $IPS; do
+	#		IP+="$i-:-"
+	#	done
+	#	IP=$IPS
+	#fi
 
 	printf "\n\n${BLUE}Exporting to JSON...\n\n${NC}"
-	JSON='{"name":"%s","hostname":"%s","ip":"%s","OS":"%s","services":[%s]}'
-	#create array with format of
-	#\{ "port": 80, "service": "http"},
-	#from the cracked lsof function
+	#json format with or without docker containers
+	which docker 1>/dev/null 2>&1 && JSON='{"name":"%s","hostname":"%s","ip":"%s","OS":"%s","services":[%s], "containers":[%s], "users": [%s]}' || JSON='{"name":"%s","hostname":"%s","ip":"%s","OS":"%s","services":[%s], "users": [%s]}'
+
+
+	#FOR SHARES JUST WAIT TO SEE IF PARSING CAN BE DIFFERENT FOR LINUX
+	#then just grep through /etc/samba/smb.conf and smbclient tools
+
 	hostname=$(hostname)
 	nameIP=$(echo $IPS | rev | cut -d '.' -f1 | rev)
 	name="host-$nameIP"
 	services=$(ports "json")
+	checkedservices=$(PrepareArrays $services)
+	userinfo=$(CompileUserInfo)
+	which docker 1>/dev/null 2>&1 && containerinfo=$(DSuck)
+	checkedcontainerinfo=$(PrepareArrays $containerinfo)
 	#echo -e "${services::-1}\n\n"
-	if [[ $(echo -e "${services}" | wc -l) -gt 0 ]]; then
-		postdata=$(printf "$JSON" "$name" "$hostname" "$IPS" "$OS" "${services::-1}")
-		PostToServ "$postdata"
-	else 
-		$services='{"port": "NULL", "service": "NULL"}'
-		postdata=$(printf "$JSON" "$name" "$hostname" "$IPS" "$OS" "$services")
-		PostToServ "$postdata"
-	fi
+	postdata=$(printf "$JSON" "$name" "$hostname" "$IPS" "$OS" "${checkedservices}" "${userinfo::-1}")
+	echo $postdata
+	PostToServ "$postdata"
 }
-
-
 
 #banner
 ip=$2
 useragent=$3
 #ExportToJSON
 
-while getopts 'banner:host:user:login:ports:services:cron:log:file:all:ExportToJSON' option; do
+while getopts 'banner:host:user:login:ports:services:cron:log:file:all:ExportToJSON:CompileUserInfo' option; do
 	case "$option" in
 		b)banner; exit 0 ;;
 		v)host; exit 0 ;;
@@ -576,6 +724,7 @@ while getopts 'banner:host:user:login:ports:services:cron:log:file:all:ExportToJ
 		f)file; exit 0 ;;
 		e)ExportToJSON; exit 0 ;;
 		a)a= banner; host; user; login; ports; service; cron; dockercheck; log; file; exit 0 ;;
+		i)CompileUserInfo; exit 0 ;;
 		h) usage; exit 0 ;;
 	esac
 done

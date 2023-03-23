@@ -67,11 +67,13 @@ class Share(db.Model):
     __tablename__ = 'shares'
 
     id = db.Column(db.Integer, primary_key=True)
-    Name = db.Column(db.String) 
-    Description = db.Column(db.String)
-    ShareState = db.Column(db.String)
-    Path = db.Column(db.String) 
-    Temporary = db.Column(db.String)
+    NetName = db.Column(db.String) 
+    Remark = db.Column(db.String) 
+    Path = db.Column(db.String)
+    Type = db.Column(db.Integer)
+    Permissions = db.Column(db.Integer) 
+    MaxUses = db.Column(db.Integer)
+    CurrentUses = db.Column(db.Integer)
 
     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
     host = db.relationship('Host', back_populates='shares')
@@ -118,7 +120,8 @@ class Host(db.Model):
     os = db.Column(db.String)
     hostname = db.Column(db.String)
     changed_password = db.Column(db.Boolean, server_default="f", default=False)
-    added_ssh_key = db.Column(db.Boolean, server_default="f", default=False)
+    is_connected = db.Column(db.Boolean, server_default="f", default=False)
+    time_connected = db.Column(db.String, default="")
 
     # relationship() is defined as a one to many relationship meaning the host class can have many services, but each
     # service can only be tied to one host
@@ -163,11 +166,11 @@ def create_enumerated_user_from_dict(enumeratedUser):
     eU.enabled = enumeratedUser.get("Enabled")  
     eU.locked = enumeratedUser.get("Locked")  
     eU.admin = enumeratedUser.get("Admin")  
-    eU.passwordExpired = enumeratedUser.get("Passwdexpired")  
+    eU.passwordExpired = enumeratedUser.get("PasswdExpired")  
     eU.cantChangePass = enumeratedUser.get("CantChangePasswd")  
-    eU.passwordAge = enumeratedUser.get("Passwdage") 
-    eU.lastLogon = enumeratedUser.get("Lastlogon") 
-    eU.numLogons = enumeratedUser.get("NumofLogons")
+    eU.passwordAge = enumeratedUser.get("PasswdAge") 
+    eU.lastLogon = enumeratedUser.get("LastLogon") 
+    eU.numLogons = enumeratedUser.get("NumOfLogons")
 
     return eU 
 
@@ -192,11 +195,14 @@ def create_firewall_from_dict(firewall):
 def create_share_from_dict(share):
     # Create a Share object and set its attributes
     s = Share()
-    s.Name = share.get("Name") 
-    s.Description = share.get("Description")
-    s.ShareState = share.get("ShareState")
+
+    s.NetName = share.get("NetName")  
+    s.Remark = share.get("Remark")  
     s.Path = share.get("Path") 
-    s.Temporary = share.get("Temporary")
+    s.Type = share.get("Type") 
+    s.Permissions = share.get("Permissions")  
+    s.MaxUses = share.get("MaxUses") 
+    s.CurrentUses = share.get("CurrentUses") 
     
     return s
 
@@ -221,8 +227,9 @@ def create_host_from_dict(dict):
     host.ip = dict.get("ip")
     host.os = dict.get("OS")
     host.hostname = dict.get("hostname")
-    host.changed_password = dict.get("isOn")
-    host.added_ssh_key = dict.get("isOn")
+    host.changed_password = dict.get("isChanged")
+    host.is_connected = dict.get("isConnected")
+    host.time_connected = dict.get("timeConnected")
 
     # Create a Service object for each service in the dict
     # and add it to the host.services list
@@ -277,8 +284,9 @@ def from_host_to_dict(host):
         "ip": host.ip,
         "OS": host.os,
         "hostname": host.hostname,
-        "changed_password": host.changed_password,
-        "added_ssh_key": host.added_ssh_key
+        "isChanged": host.changed_password,
+        "isConnected": host.is_connected,
+        "timeConnected": host.time_connected
     }
     # Create a dictionary for each service in the host's services list
     # and add it to the host_dict["services"] list
@@ -309,27 +317,29 @@ def from_host_to_dict(host):
 
     host_dict["users"] = [
         {
-            "username": u.username,
-            "fullname": u.fullname,
-            "enabled": u.enabled,
-            "locked": u.locked,
-            "admin": u.admin,
-            "passwordExpired": u.passwordExpired,
-            "cantChangePass": u.cantChangePass,
-            "passwordAge": u.passwordAge,
-            "lastLogon": u.lastLogon,
-            "numLogons": u.numLogons
+            "Username": u.username,
+            "Fullname": u.fullname,
+            "Enabled": u.enabled,
+            "Locked": u.locked,
+            "Admin": u.admin,
+            "PasswdExpired": u.passwordExpired,
+            "CantChangePasswd": u.cantChangePass,
+            "PasswdAge": u.passwordAge,
+            "LastLogon": u.lastLogon,
+            "NumOfLogons": u.numLogons
         } for u in host.enumerated_users]
 
     # Create a dictionary for each share in the host's shares list
     # and add it to the host_dict["shares"] list
     host_dict["shares"] = [
         {
-            "Name": s.Name, 
-            "Description": s.Description,
-            "ShareState:": s.ShareState,
-            "Path": s.Path, 
-            "Temporary": s.Temporary,
+            "NetName": s.NetName,
+            "Remark": s.Remark,
+            "Path": s.Path,
+            "Type": s.Type,
+            "Permissions": s.Permissions,
+            "MaxUses": s.MaxUses,
+            "CurrentUses": s.CurrentUses,
 
         } for s in host.shares]
 

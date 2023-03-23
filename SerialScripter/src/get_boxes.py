@@ -52,17 +52,21 @@ class Recon:
                                     "service": self.results["scan"][ip]["tcp"][port]["name"]
                                 } for port in self.results["scan"][ip]["tcp"]
                             ],
-                            "isOn": True,
+                            "isOn": False,
+                            "isChanged": False,
+                            "isConnected": "",
                             "docker": [],
                             "tasks": [{}],
                             "firewall": [],
                             "shares": [
                                 {
-                                    "Name": "", 
-                                    "Description": "",
-                                    "ShareState:": "",
+                                    "NetName": "",  
+                                    "Remark": "",  
                                     "Path": "", 
-                                    "Temporary": "",
+                                    "Type": "", 
+                                    "Permissions": "",  
+                                    "MaxUses": "", 
+                                    "CurrentUses": "", 
                                 }
                             ],
                         }

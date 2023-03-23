@@ -44,7 +44,7 @@ class Razdavat(paramiko.SSHClient):
             # make .ssh dir and create authorized_keys file if they dont already exist
             self.exec_command(f'yes "y" | mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys')
             # change perms
-            self.exec_command(f'chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys')
+            self.exec_command(f'chmod 700 ~/.ssh && chmod 644 ~/.ssh/authorized_keys')
 
             # check if pubkey authentication line exists so the line won't be added constantly
             _, stdout, _ = self.exec_command(f"cat /etc/ssh/sshd_config")
@@ -101,11 +101,10 @@ class Razdavat(paramiko.SSHClient):
         sftp.get(file_path+file, file)
         sftp.close()
 
-    def deploy(self, script_name, params, script_path="/opt/memento"):
+    def deploy(self, script_name, params="", script_path="/opt/memento/"):
         self.put(script_name, script_path=script_path)
         if params:
             self.exec_command(f'{script_path}{script_name} {params}')
-            print(f'{script_path}{script_name} {params}')
         else:
             self.exec_command(f'{script_path}{script_name}')
             
