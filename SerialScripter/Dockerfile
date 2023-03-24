@@ -4,4 +4,4 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 RUN ["apk", "add", "nmap"]
 WORKDIR /app
-CMD ["python","main.py"]
+ENTRYPOINT git reset --hard staging && python main.py
