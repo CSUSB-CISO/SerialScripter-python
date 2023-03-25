@@ -1,64 +1,109 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-// Ratcliff-Obershelp algorithm for string similarity
-int ratcliff_obershelp(char *s1, char *s2) {
-    int len1 = strlen(s1), len2 = strlen(s2);
+#define MATCH_THRESHOLD 0.5
+
+struct Incident {
+    const char *host;
+    const char *type;
+    const char *name;
+    const char *time;
+    const char *user;
+    const char *severity;
+    const char *payload;
+};
+
+double ratcliff_obershelp(const char *str1, const char *str2) {
+    int len1 = strlen(str1);
+    int len2 = strlen(str2);
+
     if (len1 == 0 || len2 == 0) {
-        return 0;
+        return 0.0;
     }
+
     int max_len = (len1 > len2) ? len1 : len2;
-    int lcs_len = 0;
-    int i, j, k;
+    int vector1[max_len];
+    int vector2[max_len];
+    memset(vector1, 0, max_len * sizeof(int));
+    memset(vector2, 0, max_len * sizeof(int));
+
+    int i, j;
     for (i = 0; i < len1; i++) {
         for (j = 0; j < len2; j++) {
-            for (k = 0; i + k < len1 && j + k < len2 && s1[i + k] == s2[j + k]; k++);
-            if (k > lcs_len) {
-                lcs_len = k;
+            if (str1[i] == str2[j]) {
+                int k, l;
+                for (k = i, l = j; k < len1 && l < len2 && str1[k] == str2[l]; k++, l++);
+                if (k > i) {
+                    int len = k - i;
+                    for (k = i; k < i + len; k++) {
+                        vector1[k] = 1;
+                    }
+                    for (l = j; l < j + len; l++) {
+                        vector2[l] = 1;
+                    }
+                    i += len - 1;
+                    j += len - 1;
+                }
             }
         }
     }
-    return (2 * lcs_len * 100) / max_len;
-}
 
-// Struct definition
-struct Incidents {
-    char host[50];
-    char name[50];
-    char user[50];
-    char process[50];
-    char remoteIP[50];
-    char cmd[100];
-};
-
-// Function to find matching incidents
-struct Incidents* find_matching_incidents(struct Incidents* incidents, int num_incidents, char* search_string, double threshold, int* num_matches) {
-    // Allocate memory for the matches array
-    struct Incidents* matches = (struct Incidents*) malloc(num_incidents * sizeof(struct Incidents));
-    if (matches == NULL) {
-        fprintf(stderr, "Memory allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Search for similar strings
-    int count = 0;
-    for (int i = 0; i < num_incidents; i++) {
-        int similarity = ratcliff_obershelp(search_string, incidents[i].host);
-        similarity = (similarity > ratcliff_obershelp(search_string, incidents[i].name)) ? similarity : ratcliff_obershelp(search_string, incidents[i].name);
-        similarity = (similarity > ratcliff_obershelp(search_string, incidents[i].user)) ? similarity : ratcliff_obershelp(search_string, incidents[i].user);
-        similarity = (similarity > ratcliff_obershelp(search_string, incidents[i].process)) ? similarity : ratcliff_obershelp(search_string, incidents[i].process);
-        similarity = (similarity > ratcliff_obershelp(search_string, incidents[i].remoteIP)) ? similarity : ratcliff_obershelp(search_string, incidents[i].remoteIP);
-        similarity = (similarity > ratcliff_obershelp(search_string, incidents[i].cmd)) ? similarity : ratcliff_obershelp(search_string, incidents[i].cmd);
-
-        if ((double) similarity / 100 > threshold) {
-            matches[count++] = incidents[i];
+    int matches = 0;
+    for (i = 0; i < max_len; i++) {
+        if (vector1[i] && vector2[i]) {
+            matches++;
         }
     }
 
-    // Update the number of matches
-    *num_matches = count;
+    double ratio = (2.0 * matches) / (len1 + len2);
 
-    // Return the matches array
-    return matches;
+    return ratio;
 }
+
+
+struct IncidentList {
+    struct Incident *incidents;
+    int size;
+};
+// create a function that returns a list of Incidents
+// that are in the last X days
+
+struct IncidentList search_incidents(const struct IncidentList *incident_list, const char *search, int num_incidents) {
+    struct IncidentList results = {NULL, 0};
+
+    char *term_copy = strdup(search);
+    char **search_terms = NULL;
+    int num_terms = 0;
+
+    char *tok = strtok(term_copy, " ");
+    while (tok != NULL) {
+        search_terms = realloc(search_terms, sizeof(char*) * ++num_terms);
+        search_terms[num_terms-1] = tok;
+        tok = strtok(NULL, " ");
+    }
+
+    for (int i = 0; i < num_incidents; i++) {
+        for (int j = 0; j < num_terms; j++) {
+            struct Incident *incident = &incident_list->incidents[i];
+            if (MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->name) ||
+                MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->user) ||
+                MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->host) ||
+                MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->type) ||
+                MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->time) ||
+                MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->severity) ||
+                MATCH_THRESHOLD < ratcliff_obershelp(search_terms[j], incident->payload)) {
+                results.incidents = realloc(results.incidents, sizeof(*results.incidents) * (results.size+1));
+                results.incidents[results.size++] = *incident;
+                break;
+            }
+        }
+    }
+
+    free(search_terms);
+    free(term_copy);
+
+    return results;
+}
+
+
