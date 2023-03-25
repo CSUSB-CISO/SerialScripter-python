@@ -29,6 +29,8 @@
             <th class="column-hotpink" scope="col">IP</th>
             <th class="column-hotpink" scope="col">Services</th>
             <th class="column-hotpink" scope="col">OS</th>
+            <th class="column-hotpink" scope="col">Is Changed</th>
+            <th class="column-hotpink" scope="col">Is Connected</th>
             <th class="column-hotpink" scope="col">Pop-A-Shell</th>
             <th class="column-hotpink" scope="col">Delete Box</th>
 
@@ -44,6 +46,21 @@
             <td>{{ box.ip }}</td>
             <td style="padding-left:55px">{{ box.services|length }}</td>
             <td>{{ box.OS }}</td>
+            {% if box["isChanged"] %}
+               <td><span class="badge rounded-pill bg-success">True</span></td>
+            {% else %}
+               <td><span class="badge rounded-pill bg-danger">False</span></td>
+            {% endif %}
+            {% if box.get('timeConnected') %}
+               {% if (timestamp.split(':')[1])|int - (box.get('timeConnected').split(':')[1])|int > 1  %}
+                  <td><span class="badge rounded-pill bg-success">True</span></td>
+               {% else %}
+                  <td><span class="badge rounded-pill bg-danger">False</span></td>
+               {% endif %}
+               
+            {% else %}
+               <td><span class="badge rounded-pill bg-danger">False</span></td>
+            {% endif %}
             <td> <a href="/open-shell/{{ box.ip }}" target="_blank">Open in Bash</a></td> 
             <td style="text-align: center; vertical-align: middle; padding-right: 50px;">               
                <button type="button" onClick="deleteHost('{{ box.name }}')">

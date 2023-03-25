@@ -1,0 +1,76 @@
+{%- extends "base.html" %}
+<div>
+   <body>
+       {% block content %}
+       <div class="container">
+           <div class="col-lg-12">
+              <div class="page-header">
+                 <h1 class="header-font">Serial Logs</small></h1>
+              </div>
+           </div>
+       </div>
+       <div class="container scroll-line">
+           <div class="serial-logs-content">
+               <table class="table table-script ">
+                     <thead class="thead-width">
+                        <tr>
+                           <th class="column-hotpink" style="width: 10%;" scope="col" >
+                              Timestamp
+                           </th>
+                           <th class="column-hotpink" style="width: 10%;" scope="col" >
+                              Success/Error
+                           </th>
+                           <th style="width: 10%;">
+                              <div class="dropdown-center">
+                                 <button class="column-hotpink dropdown-toggle" type="button" id="modules" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Module
+                                 </button>
+                                 <div class="dropdown-menu scroll-table" aria-labelledby="modules">
+                                    <a class="dropdown-item" href="/serial-logs/Scripting-Hub">Scripting-Hub</a>
+                                    <a class="dropdown-item" href="/serial-logs/Key-Management">Key-Management</a>
+                                    <a class="dropdown-item" href="/serial-logs/Delete-Key">Delete-Key</a>
+                                    <a class="dropdown-item" href="/serial-logs/User-Agent">User-Agent</a>
+                                    <a class="dropdown-item" href="/serial-logs/ischanged">Is Changed</a>
+                                    <a class="dropdown-item" href="/serial-logs/heartbeat">Heartbeat</a>
+                                    <a class="dropdown-item" href="/serial-logs/inventory">Inventory</a>
+                                 </div>
+                              </div>
+                           </th>
+                           <th class="column-hotpink" style="width: 30%;" scope="col">
+                              Log Content
+                           </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in log %}
+                        <tr>
+                           <td>
+                              {{ line["timestamp"] }}
+                           </td>                        
+                           {% if line["err_succ"] == "True" %}
+                              <td><span class="badge rounded-pill bg-success">Success</span></td>
+                           {% elif line["err_succ"] == "False" %}
+                              <td><span class="badge rounded-pill bg-danger">Error</span></td>
+                           {% else %}
+                              <td><span class="badge rounded-pill bg-warning">Warning</span></td>
+                           {% endif %}
+                           <td>
+                              {{ line["module"] }}
+                           </td>
+                           <td>
+                              {{ line["log_content"] }}
+                           </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+               </table>
+
+               <div class="pagination">   
+                  {{ pagination.links }}
+               </div>
+           </div>
+
+       </div>
+       {% endblock %}
+   </body>
+</div>

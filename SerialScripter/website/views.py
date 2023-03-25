@@ -12,10 +12,11 @@ from src.get_boxes import Recon
 from os import getlogin, listdir, system, path, walk, scandir
 from subprocess import Popen, PIPE, STDOUT, run
 from socket import socket
-from time import sleep
+from flask_paginate import Pagination, get_page_parameter
+
 
 #from src.search import search, sort
-from src.common import from_json_to_csv, from_host_to_csv, upload_csv, log_list
+from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time
 
 views = Blueprint('views', __name__)
 
@@ -37,7 +38,12 @@ def home():
     # Load hosts
     try:
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
-    except:
+
+        # for box in box_list:
+        #     if box.get("changed_password"):
+        #         print(box)
+    except Exception as e:
+        logging_serial(e, False, "host-enum")
         box_list = {}
 
     if request.method == "POST":
@@ -59,16 +65,19 @@ def home():
                     elif request.form.get("upload_host_info"):
                         try: 
                             upload_csv(config.get("url"), config.get("port"), filename=filename)
-                        except:
+                        except Exception as e:
                             flash("Unable to upload csv. Check url/port settings")
-                except:
+                            logging_serial(e, False, "upload-csv")
+
+                except Exception as e:
                     flash("Unable to create csv. Hosts not enumerated")
+                    logging_serial(e, False, "convert-csv")
                 
 
 
 
     # Startup index.html
-    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user)
+    return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user, timestamp=get_current_time())
 
 @views.after_request
 def apply_caching(response):
@@ -106,10 +115,13 @@ def box_management(name: str):
                             elif request.form.get("users-upload"):
                                 try: 
                                     upload_csv(config.get("url"), config.get("port"), filename=filename)
-                                except:
+                                except Exception as e:
                                     flash("Unable to upload csv. Check url/port settings")
-                        except:
+                                    logging_serial(e, False, "upload-csv")
+                        except Exception as e:
                             flash("Unable to create csv. No users exist.")
+                            logging_serial(e, False, "convert-csv")
+
                             
                     # check if post is from download or upload button on ports pane
                     elif request.form.get("ports-download") or request.form.get("ports-upload"):
@@ -122,11 +134,14 @@ def box_management(name: str):
                             elif request.form.get("ports-upload"):
                                 try: 
                                     upload_csv(config.get("url"), config.get("port"), filename=filename)
-                                except:
+                                except Exception as e:
                                     flash("Unable to upload csv. Check url/port settings")
+                                    logging_serial(e, False, "upload-csv")
 
-                        except:
-                            flash("Unable to create csv. No services exist.")   
+                        except Exception as e:
+                            flash("Unable to create csv. No services exist.")
+                            logging_serial(e, False, "convert-csv")
+
 
                     # check if post request is coming from download or upload button on user pane 
                     elif request.form.get("services-download") or request.form.get("services-upload"):
@@ -139,10 +154,13 @@ def box_management(name: str):
                             elif request.form.get("services-upload"):
                                 try: 
                                     upload_csv(config.get("url"), config.get("port"), filename=filename)
-                                except:
+                                except Exception as e:
                                     flash("Unable to upload csv. Check url/port settings")
-                        except:
+                                    logging_serial(e, False, "upload-csv")
+
+                        except Exception as e:
                             flash("Unable to create csv. No services exist.")
+                            logging_serial(e, False, "convert-csv")
 
 
             return render_template(
@@ -235,39 +253,40 @@ def scripting_hub():
         elif not scripts_checked:
             flash("No scripts selected. Nothing Deployed.")
         else:
-            with open("config.json") as config:
-                config = load(config)
-                # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
-                password = config.get("configs").get("starting-pass")
-                
-            deployed = True
+
             for box in selected_boxes:
-                try:   
-                    a = Razdavat(box["ip"], password=password, os=box["OS"])
-                    # Only deploy the script to box if Run Script box is checked 
-                    if (request.form.get('Deploy')): 
-                        for i, script in enumerate(scripts_checked):
-                            print(f"Script Name: {script}\n Parameter: {parameters_list}")
-                            if len(parameters_list) == 1:
-                                a.deploy(script, parameters_list[0])
-                            else:
-                                a.deploy(script, parameters_list[i])
-                    else:
-                        print(f"put onto {box['ip']}")
-                        for i, script in enumerate(scripts_checked):
-                            if len(parameters_list) == 1:
-                                a.put(script_name=script)
-                            else:
-                                a.put(script_name=script)
-                except Exception as e: 
-                    print(e)
-                    deployed = False
+                if box.get("ip").split('.')[-1] != "1":
+                    try:   
+                        rhost = Razdavat(box["ip"], password=get_password(box), os=box["OS"])
+                        # Only deploy the script to box if Run Script box is checked 
+                        if (request.form.get('Deploy')): 
+                            for i, script in enumerate(scripts_checked):
 
-            if deployed:
-                    flash(f"Deployed {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
-            else:
-                    flash(f"ERROR - Script not Deployed!")
+                                # deploy script and check if no parameters exist
+                                if len(parameters_list) == 1 and parameters_list[0] == "":
+                                    rhost.deploy(script, parameters_list[0])
+                                    logging_serial(f"Deployed script: '{script}' to IP: {box.get('ip')}", True, "Scripting-Hub")
 
+                                # deploy script and check if there are parameters
+                                elif len(parameters_list) == 1:
+                                    rhost.deploy(script, parameters_list[0])
+                                    logging_serial(f"Deployed script: '{script}' with Parameter\s: '{parameters_list[0]}' to IP: {box.get('ip')}", True, "Scripting-Hub")
+                                
+                                # deploy scripts one by one and append parameter as needed
+                                else:
+                                    rhost.deploy(script, parameters_list[i])
+                                    logging_serial(f"Deployed script: '{script}' with Parameter\s: '{parameters_list[i]}' to IP: {box.get('ip')}", True, "Scripting-Hub")
+
+                        else:
+                            # put script onto box without running it and log it
+                            for i, script in enumerate(scripts_checked):
+                                rhost.put(script_name=script)
+                                logging_serial(f"Put script '{script}' on IP: {box.get('ip')}", True, "Scripting-Hub")
+
+                    except Exception as e: 
+                        logging_serial(f'{str(e)} for IP: {box.get("ip")}', False, "Scripting-Hub")
+
+            flash(f"Attempted to deploy {len(scripts_checked)}/{len(scripts_list)} scripts to {len(selected_boxes)}/{num_boxes+1} boxes.")
 
     return render_template(
         "scripting-hub.html",
@@ -397,23 +416,20 @@ def key_management():
             new_key = Key(data=key, user_id=current_user.id)
             db.session.add(new_key)
             db.session.commit()
-
-            with open("config.json") as config:
-                config = load(config)
-                # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
-                password = config.get("configs").get("starting-pass")
-
             # for box in box_list:
             #     connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", password=password)
             #     connection.add_ssh_key(key)
             for box in box_list:
-                if box["ip"].split('.')[-1] != "1":
+                if box.get("ip").split('.')[-1] != "1" and "windows" not in box.get("OS").lower():
                     try:
-                        print(f"Adding ssh-key to: {box['ip']}")
-                        connection = Razdavat(box["ip"], password=password, os=box["OS"])
+                        connection = Razdavat(box["ip"], password=get_password(box), os=box["OS"])
                         connection.add_ssh_key(key)
+                        logging_serial(f"Added ssh-key from {key.split()[2].split('@')[1]} to: {box['ip']}", True, "Key-Management")
                     except Exception as e:
-                        print(e)
+                        if "Errno" in str(e):
+                            logging_serial(e, False, "Key-Management")
+                        else:
+                            logging_serial(f"{e} {box.get('ip')}", False, "Key-Management")
 
         elif len(key) < 500:
             flash("Key is too short!!")
@@ -442,23 +458,43 @@ def visualize():
 def rsyslog():
     if not user_agent(request):
         return render_template("404.html")
-    # for rsyslog conf
 
-# *.*     @localhost:5000/log
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
     host_list = [box.get("hostname") for box in box_list if box.get("hostname")]
 
     try:
-        log_file = log_list()
+        # get current page number
+        page = request.args.get(get_page_parameter(), type=int, default=1)
+
+        # total num of lines in file
+        line_count = get_log_lines("/var/log/rsyslog.log")
+
+        # amount of lines per page determined by file size
+        if line_count > 5000:
+            per_page = 5000
+        else:
+        # at most 3 pages will be displayed when file is smaller than 5000 lines
+            per_page = line_count//3
+        
+        # determine start position
+        offset = (page - 1) * per_page
+
+        # offest + lines per page creates a range to iterate through
+        log_file = get_rsyslog_list(offset=slice(offset, offset+per_page))
+
+        # depending on the number of pages and lines allowed per page a group of links to the different pages is created.
+        pagination = Pagination(page=page, total=line_count, per_page=per_page)
+
     except FileNotFoundError:
-        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
         flash(f"Log file does not exist")     
     
     return render_template(
             "rsyslog.html",
             log = log_file,
             hosts = host_list,
+            pagination=pagination,
             user=current_user,
         )
 
@@ -469,24 +505,88 @@ def rsyslog_sort(sort: str):
     if not user_agent(request):
         return render_template("404.html")
     
-    box_list = [from_host_to_dict(host) for host in Host.query.all()]
-    host_list = [box.get("hostname") for box in box_list if box.get("hostname")]
+    host_list = [box.get("hostname") for box in [from_host_to_dict(host) for host in Host.query.all()] if box.get("hostname")]
 
     try:
-        log_file = log_list(sort)
+        # total num of lines in file
+        line_count = get_log_lines("/var/log/rsyslog.log")
+
+        # amount of lines per page determined by file size
+        if line_count > 5000:
+            per_page = 5000
+        else:
+        # at most 3 pages will be displayed when file is smaller than 5000 lines
+            per_page = line_count//3        
+
+        
+        page = request.args.get(get_page_parameter(), type=int, default=1)
+        offset = (page - 1) * per_page
+
+        filtered_log_file = filter_log_list(sort_by=sort, offset=slice(offset, offset+per_page))
+
         if not log_file:
-            log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
+            log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
+            line_count = 0
+            flash(f"Logs do not contain: {sort}")
+
+        pagination = Pagination(page=page, total=line_count, per_page=per_page)
+
+
     except FileNotFoundError:
-        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'timestamp': 'time', 'log_level': 'user.notice', 'log_message': "Keyboard Cowboys"}]
-        flash(f"Log file does not exist")     
+        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
+        flash(f"Log file does not exist")    
 
     return render_template(
             "rsyslog.html",
             log = log_file,
             hosts = host_list,
+            pagination=pagination,
             user=current_user,
         )
 
+@views.route("/serial-logs", methods=["GET", "POST"])
+@login_required
+def serial_logs():
+    if not user_agent(request):
+        return render_template("404.html")
+
+    try:
+        # get current page number
+        page = request.args.get(get_page_parameter(), type=int, default=1)
+
+        # total num of lines in file
+        line_count = get_log_lines("serial_logs.log")
+
+        # amount of lines per page determined by file size
+        if line_count > 100:
+            per_page = 100
+            pagination = Pagination(page=page, total=line_count, per_page=per_page)
+            offset = (page - 1) * per_page
+            # offest + lines per page creates a range to iterate through
+            log_file = get_serial_log_list(offset=slice(offset, offset+per_page))
+        else:
+            offset = (page - 1) * line_count
+            pagination = Pagination(page=page, total=line_count, per_page=line_count)
+            # offest + lines per page creates a range to iterate through
+            log_file = get_serial_log_list(offset=slice(offset, offset+line_count))
+            # determine start position
+
+        # depending on the number of pages and lines allowed per page a group of links to the different pages is created.
+
+    except FileNotFoundError:
+        log_file = [{"timestamp": "the-time",
+                    "err_succ": "Fail",
+                    "module": "Missing",
+                    "log_content": "No logs!"}]
+        pagination = Pagination(page=page, total=0, per_page=0)
+        flash(f"Log file does not exist")      
+    
+    return render_template(
+            "serial-logs.html",
+            log = log_file,
+            pagination=pagination,
+            user=current_user,
+        )
 
 @views.route('/incidents', methods=["GET", "POST"])
 @login_required
@@ -548,31 +648,29 @@ def delete_key():
     # access the actual pair by using the keyId key
     keyId = key['keyId']
     key = Key.query.get(keyId)
-    # print(key.data)
+
     # reassigns key to true or false depending on if the key actually exists in the database
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
     if key:
-        with open("config.json") as config:
-            config = load(config)
-            # password = config.get("configs").get("scheme") + str(int(box.get("ip").split(".")[-1])*config.get("configs").get("magic-number"))
-            password = config.get("configs").get("starting-pass")
 
         if key.user_id == current_user.id:
             flash(f'Key: {key.id} has been deleted.')
             db.session.delete(key)
             db.session.commit()
-            try:
-                for box in box_list:
-                    connection = Razdavat(box["ip"], key_path=f"/home/{getlogin()}/.ssh/id_rsa.pub", os=box["OS"])
-                    connection.remove_ssh_key(key.data)
-            except:
-                for box in box_list:
-                    connection = Razdavat(box["ip"], password=password, os=box["OS"])
-                    connection.remove_ssh_key(key.data)
-
-
+            for box in box_list:
+                try:
+                    if box.get("ip").split('.')[-1] != "1" and "windows" not in box.get("OS").lower():
+                        connection = Razdavat(box["ip"], password=get_password(box), os=box["OS"])
+                        connection.remove_ssh_key(key.data)
+                        logging_serial(f"Removed {key.data.split()[2].split('@')[1]}'s public key from: {box['ip']}", True, "Delete-Key")
+                except Exception as e:
+                    if "Errno" in str(e):
+                        logging_serial(e, False, "Delete-Key")
+                    else:
+                        logging_serial(f"{e} {box.get('ip')}", False, "Delete-Key")
     return jsonify({})
+
 from sqlalchemy import or_, and_
 from difflib import SequenceMatcher
 

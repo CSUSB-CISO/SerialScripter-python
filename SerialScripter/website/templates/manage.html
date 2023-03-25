@@ -154,28 +154,28 @@
                         <tbody>
                            {% for user in box["users"]%}
                               <tr>
-                                 <td> {{ user["username"] }} </td>
-                                 {% if user["enabled"] %}
+                                 <td> {{ user["Username"] }} </td>
+                                 {% if user["Enabled"] %}
                                     <td><span class="badge rounded-pill bg-success">True</span></td>
                                  {% else %}
                                     <td><span class="badge rounded-pill bg-danger">False</span></td>
                                  {% endif %}
 
-                                 {% if user["admin"] %}
+                                 {% if user["Admin"] %}
                                     <td><span class="badge rounded-pill bg-success">True</span></td>
                                  {% else %}
                                     <td><span class="badge rounded-pill bg-danger">False</span></td>
                                  {% endif %}
 
-                                 <!-- <td> {{ user["passwordAge"] }} </td> -->
-                                 {% if user["numLogons"] == 0 %}
+                                 {% if user["NumOfLogons"] == 0 %}
                                     <td> Never Logged In </td>
-                                    <!-- <td> {{ user["lastLogon"] }} </td> -->
                                     <td> Never Logged In </td>
-                                 {% else  %}
-                                    <!-- <td> {{ user["lastLogon"] }} </td> -->
-                                    <td> {{ user["numLogons"] }} </td>
-                                    <td> {{ user["lastLogon"].split("T")[-1].split("-")[0] }} </td>
+                                 {% elif user["NumOfLogons"] == None %}
+                                    <td> {{ user["NumOfLogons"] }} </td>
+                                    <td> {{ user["LastLogon"] }} </td>
+                                 {% elif "T" in user["LastLogon"]%}
+                                    <td> {{ user["NumOfLogons"] }} </td>
+                                    <td> {{ user["LastLogon"].split("T")[1].split("-")[0] }} </td>
                                  {% endif %}
                               </tr>
                            {% endfor %}

@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, jsonify
 from json import load, loads, dumps
 from . import db
 from .models import IPs, Key, Host, from_host_to_dict, create_host_from_dict, Alert, search_alerts
+from src.common import logging_serial, get_current_time
+from datetime import datetime
 api = Blueprint('api', __name__)
 
 def user_agent(request):
@@ -12,6 +14,26 @@ def user_agent(request):
 def update_config():
     if not user_agent(request):
         return render_template("404.html")
+    return jsonify({})
+
+@api.route('/api/v1/linux/ischanged', methods=['POST'])
+def is_changed():
+    
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
+    try:
+        for box in box_list:
+            # query hosts and grab host that has the name as the one given by the post request
+            if box.get("ip") == request.remote_addr:
+                host = Host.query.filter_by(name=box["name"]).first()
+                host.changed_password = True
+                logging_serial(f"Password changed on host: {box['hostname']}, IP: {box['ip']}", True, "ischanged")
+
+    except Exception as e:
+        logging_serial(e, False, "ischanged")
+
+    db.session.commit()
+
     return jsonify({})
 
 @api.route('/api/v1/wingoEDR/systemhealth/diskspace', methods=['POST'])
@@ -38,12 +60,35 @@ def errors():
 def heartbeat():
     if not user_agent(request):
         return render_template("404.html")
-    return jsonify({"Hello": loads(request.data)["IP"]})
+    
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+    ip = request.remote_addr
+
+    try:
+        print(f"{request.remote_addr}\n")
+        for box in box_list:
+            # query hosts and grab host that has the name as the one given by the post request
+            if box.get('ip') == ip:
+                host = Host.query.filter_by(name=box["name"]).first()
+                if not host.is_connected:
+                    host.is_connected = True
+                host.time_connected = get_current_time()
+
+                logging_serial(f"Host: {box['ip']} connected to WingoEDR and is communicating with Serial Scripter!", True, "heartbeat")
+
+    except Exception as e:
+        logging_serial(str(e), False, "heartbeat")
+
+    db.session.commit()
+
+    return jsonify({})
 
 @api.route('/api/v1/common/incidentalert', methods=['POST'])
 def incidentalert():
     if not user_agent(request):
         return render_template("404.html")
+    
+    print(f'Alert:\n{request.data}')
     return jsonify({"incidents":[]})
 
 @api.route('/api/v1/common/inventory', methods=['POST', 'GET'])
@@ -53,7 +98,7 @@ def inventory():
     # hosts = [from_host_to_dict(host) for host in Host.query.all()]
 
     # receives dictionary 
-    print(request.data)
+    # print(request.data)
     a = loads(request.data)
     
     # query hosts and grab host that has the name as the one given by the post request
@@ -72,12 +117,10 @@ def inventory():
         db.session.add(create_host_from_dict(a))
         db.session.commit()
 
-    
+    # return jsonify({"hosts": [from_host_to_dict(host) for host in Host.query.all()]})
+    logging_serial(f"Received inventory from IP: {a['ip']}", True, "inventory")
 
-    # with open("website/data/hosts.json", "w") as f:
-    #     f.write(json_to_write)
-
-    return jsonify({"hosts": [from_host_to_dict(host) for host in Host.query.all()]})
+    return jsonify({})
  
 
 @api.route('/blacklist_ip/<ip_address>')
