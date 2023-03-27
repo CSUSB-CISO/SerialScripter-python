@@ -1,5 +1,5 @@
 import ctypes
-lib = ctypes.cdll.LoadLibrary('./libsearch.so')  # replace with the path to the compiled C code
+lib = ctypes.cdll.LoadLibrary('./lib/search_incidents/libsearch.so')  # replace with the path to the compiled C code
 
 class Incident(ctypes.Structure):
     _fields_ = [

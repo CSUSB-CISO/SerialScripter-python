@@ -13,7 +13,7 @@ from os import getlogin, listdir, system, path, walk, scandir
 from subprocess import Popen, PIPE, STDOUT, run
 from socket import socket
 from flask_paginate import Pagination, get_page_parameter
-
+from lib.search_incidents.search import Search
 
 #from src.search import search, sort
 from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time
@@ -592,51 +592,15 @@ def serial_logs():
 @login_required
 def incidents():
     with open("website/data/incidents.json", "r") as f:
-        incidents = load(f)["Alerts"]
+        incidents = load(f)["Incidents"]
 
     search_words = request.args.get("search")
 
-    switch = {
-        "ip": "RemoteIP",
-        "host": "Host",
-        "name": "Name",
-        "user": "User",
-        "process": "Process",
-        "cmd": "Cmd"
-    }
-
     if search_words:
-        match_all = "and" in search_words
+        results = Search(incidents, search_words).result
 
-        queries = list()
-        filters = list()
-
-
-        for term in search_words.split():
-            if term == "and" or term.startswith("sort_by"):
-                continue
-            try:
-                x = term.split(":")
-                if len(x) > 1:
-                    filters.append(x[0])
-                    queries.append(x[1])
-                else:
-                    filters.append("")
-                    queries.append(x[1])
-            except:
-                queries.append(term)
-        filters = tuple(map(lambda a: switch[a] if a else "", filters))
-        results = search(incidents, search_words=queries, filters=filters, match_all=match_all) 
-        
-        if results:
-            incidents = results
-        
-        if search_words.startswith("sort_by"):
-            try:
-                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:search_words.index(" ")]])
-            except:
-                incidents = sort(incidents, by=switch[search_words[search_words.index(":")+1:]])
-
+        return render_template("incidents.html", incidents=results, user=current_user)
+            
     # Pass current user to only allow authenticated view of the network and box_list (hosts.json object to graph)
     return render_template("incidents.html", incidents=incidents, user=current_user)
 
@@ -670,66 +634,3 @@ def delete_key():
                     else:
                         logging_serial(f"{e} {box.get('ip')}", False, "Delete-Key")
     return jsonify({})
-
-from sqlalchemy import or_, and_
-from difflib import SequenceMatcher
-
-def search_alerts(query):
-    alerts = Alert.query.all()
-    search_terms = query.split()
-
-    # Parse the OR conditions into a list of lists
-    or_conditions = []
-    current_or_condition = []
-    for term in search_terms:
-        if term.lower() == "or":
-            or_conditions.append(current_or_condition)
-            current_or_condition = []
-        else:
-            current_or_condition.append(term)
-    or_conditions.append(current_or_condition)
-
-    # Loop through each alert and check for matches
-    matching_alerts = []
-    for alert in alerts:
-        # Check if the alert matches any of the OR conditions
-        or_match = False
-        for condition in or_conditions:
-            and_match = True
-            for term in condition:
-                if not (
-                    SequenceMatcher(None, term.lower(), alert.host.lower()).ratio() < 0.5
-                    and SequenceMatcher(None, term.lower(), alert.name.lower()).ratio() < 0.5
-                    and SequenceMatcher(None, term.lower(), alert.user.lower()).ratio() < 0.5
-                    and SequenceMatcher(None, term.lower(), alert.process.lower()).ratio() < 0.5
-                    and SequenceMatcher(None, term.lower(), alert.remote_ip.lower()).ratio() < 0.5
-                    and SequenceMatcher(None, term.lower(), alert.cmd.lower()).ratio() < 0.5
-                ):
-                    and_match = False
-                    break
-            if and_match:
-                or_match = True
-                break
-        if not or_match:
-            continue
-
-        # Check if the alert matches any of the AND conditions
-        and_match = True
-        for term in search_terms:
-            if term.lower() == "or":
-                continue
-            if not (
-                SequenceMatcher(None, term.lower(), alert.host.lower()).ratio() < 0.5
-                or SequenceMatcher(None, term.lower(), alert.name.lower()).ratio() < 0.5
-                or SequenceMatcher(None, term.lower(), alert.user.lower()).ratio() < 0.5
-                or SequenceMatcher(None, term.lower(), alert.process.lower()).ratio() < 0.5
-                or SequenceMatcher(None, term.lower(), alert.remote_ip.lower()).ratio() < 0.5
-                or SequenceMatcher(None, term.lower(), alert.cmd.lower()).ratio() < 0.5
-            ):
-                and_match = False
-                break
-        if and_match:
-            matching_alerts.append(alert)
-
-    return matching_alerts
-
