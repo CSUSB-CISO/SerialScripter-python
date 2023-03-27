@@ -16,9 +16,6 @@
                      <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
                   </li>
                   <li class="nav-item">
-                     <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
-                  </li>
-                  <li class="nav-item">
                      <a class="nav-link active" data-toggle="tab" href="#serviceinfo">Service Info</a>
                   </li>
                   <li class="nav-item">
@@ -55,6 +52,8 @@
                   <br/>
                   <li class="header-font-xl">Total services detected on box: &ensp; {{ box.services|length }} </li>
                   <br/>
+                  <li class="header-font-xl"> Serial Code: &ensp; {{ serial_code }} </li>
+                  <br/>
                </ul>
                <br>
             </div>
@@ -67,16 +66,16 @@
                      <table class="table table-box">
                         <thead>
                            <tr>
-                              <th class= "column-hotpink" scope="col">Service Name</th>
                               <th class= "column-hotpink" scope="col">Port Number</th>
+                              <th class= "column-hotpink" scope="col">Service Name</th>
                            </tr>
                         </thead>
                         <tbody>
                            {% for item in box["services"]%}
                               <tr>
                                  {% if item["service"] %}
-                                    <td> {{ item["service"] }} </td>
                                     <td> {{ item["port"] }} </td>
+                                    <td> {{ item["service"] }} </td>
                                  {% endif %}
                               </tr>
                            {% endfor %}

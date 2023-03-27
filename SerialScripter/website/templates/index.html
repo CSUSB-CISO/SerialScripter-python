@@ -22,7 +22,7 @@
       </div>
    </div>
    <div class="container">
-      <table class="table table-box">
+      <table class="no-scroll table table-box">
       <thead>
          <tr>
             <th class="column-hotpink" scope="col">Host Name</th>
@@ -52,12 +52,11 @@
                <td><span class="badge rounded-pill bg-danger">False</span></td>
             {% endif %}
             {% if box.get('timeConnected') %}
-               {% if (timestamp.split(':')[1])|int - (box.get('timeConnected').split(':')[1])|int > 1  %}
+               {% if (timestamp.split(':')[1])|int - (box.get('timeConnected').split(':')[1])|int < 3 and (timestamp.split(':')[0]) == (box.get('timeConnected').split(':')[0]) %}
                   <td><span class="badge rounded-pill bg-success">True</span></td>
                {% else %}
                   <td><span class="badge rounded-pill bg-danger">False</span></td>
                {% endif %}
-               
             {% else %}
                <td><span class="badge rounded-pill bg-danger">False</span></td>
             {% endif %}

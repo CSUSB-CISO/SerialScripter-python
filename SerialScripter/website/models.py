@@ -133,7 +133,6 @@ class Host(db.Model):
     shares = db.relationship('Share', back_populates='host')
     enumerated_users = db.relationship('EnumeratedUser', back_populates='host')
 
-
 class Alert(db.Model):
     __tablename__ = 'alerts'
 
@@ -236,44 +235,42 @@ def create_host_from_dict(dict):
     try:
         host.services = [create_service_from_dict(service) for service in dict.get("services")]
     except TypeError:
-        print("No services")
+        pass
     # Set the host.isOn attribute
     host.isOn = dict.get("isOn")
 
     # creates new enumerated user tables for each user on specified box
     try:
         host.enumerated_users = [create_enumerated_user_from_dict(enumeratedUser) for enumeratedUser in dict.get("users")]
-        print("Created User table")
     except:
-        print("No Users")
-
+        pass
     # Create a Docker object for each docker in the dict
     # and add it to the host.docker list
     try:
         host.docker = [create_docker_from_dict(docker) for docker in dict.get("docker")]
     except TypeError as e:
-        print("No dockers ")
+        pass
 
     # Create a Task object for each task in the dict
     # and add it to the host.tasks list
     try:
         host.tasks = [create_task_from_dict(task) for task in dict.get("tasks")]
     except TypeError as e:
-        print("No tasks")
+        pass
     # Create a Firewall object for each firewall in the dict
     # and add it to the host.firewall list
 
     try:
         host.firewall = [create_firewall_from_dict(firewall) for firewall in dict.get("firewall")]
     except TypeError as e:
-        print("No Firewall")
+        pass
 
     # create a Share object for each dictionary in the "shares" list
 
     try:
         host.shares = [create_share_from_dict(share) for share in dict.get("shares")]
     except TypeError as e:
-        print("No shares ")
+        pass
 
     return host
 

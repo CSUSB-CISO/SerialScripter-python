@@ -112,7 +112,8 @@ body {
   background-color: var(--bs-body-bg);
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  overflow-x: hidden;
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
 hr {
@@ -354,6 +355,7 @@ svg {
 table {
   caption-side: bottom;
   border-collapse: collapse;
+  width: inherit;
 }
 
 caption {
@@ -368,6 +370,10 @@ th {
   text-align: -webkit-match-parent;
 }
 
+td {
+  word-wrap: break-word;
+}
+
 thead,
 tbody,
 tfoot,
@@ -377,10 +383,6 @@ th {
   border-color: inherit;
   border-style: solid;
   border-width: 0;
-}
-
-.thead-width {
-  width: 100%;
 }
 
 label {
@@ -597,14 +599,10 @@ progress {
 }
 
 .scroll-line {
-  overflow-x: auto;
-  position: relative;
-  bottom: 0;
+  overflow-x:scroll !important;
 }
-
-.scroll-table {
-  overflow: visible;
-  white-space: nowrap;
+.no-scroll {
+  overflow: visible !important;
 }
 
 .display-5 {
@@ -711,9 +709,17 @@ progress {
   padding-left: calc(var(--bs-gutter-x) * 0.5);
   margin-right: auto;
   margin-left: auto;
-  max-width: 100%; 
-  white-space: nowrap;
+  max-width: 960px;
+}
 
+.container-rsyslog{
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 0;
+  width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+  margin-right: auto;
+  margin-left: auto;
 }
 
 @media (min-width: 576px) {
@@ -1841,12 +1847,36 @@ progress {
   --bs-table-active-bg: rgba(0, 0, 0, 0.1);
   --bs-table-hover-color: #fff;
   --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
+  overflow:auto;
+  margin-bottom: 1rem;
+  color: var(--bs-table-color);
+  vertical-align: top;
+  min-width: inherit;
+  border-color: var(--bs-table-border-color);
+  max-width: inherit;  
   width: 100%;
+  table-layout: fixed;
+}
+
+.rsyslog-table {
+  --bs-table-color: #fff;
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--bs-border-color);
+  --bs-table-accent-bg: transparent;
+  --bs-table-striped-color: #fff;
+  --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
+  --bs-table-active-color: #fff;
+  --bs-table-active-bg: rgba(0, 0, 0, 0.1);
+  --bs-table-hover-color: #fff;
+  --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
+  overflow:hidden;
   margin-bottom: 1rem;
   color: var(--bs-table-color);
   vertical-align: top;
   border-color: var(--bs-table-border-color);
+  min-width: inherit;
 }
+
 .table > :not(caption) > * > * {
   padding: 0.5rem 0.5rem;
   background-color: var(--bs-table-bg);
@@ -2050,7 +2080,6 @@ progress {
 @media (max-width: 1399.98px) {
   .table-responsive-xxl {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 }
 .form-label {

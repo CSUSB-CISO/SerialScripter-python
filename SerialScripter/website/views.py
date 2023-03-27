@@ -14,9 +14,11 @@ from subprocess import Popen, PIPE, STDOUT, run
 from socket import socket
 from flask_paginate import Pagination, get_page_parameter
 from lib.search_incidents.search import Search
+from pyparsing import Combine, alphas, nums, SkipTo, Regex, Word, restOfLine, Suppress, ParseException
+
 
 #from src.search import search, sort
-from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time
+from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time, get_filtered_line_count
 
 views = Blueprint('views', __name__)
 
@@ -40,7 +42,7 @@ def home():
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
         # for box in box_list:
-        #     if box.get("changed_password"):
+        #     if box.get("isChanged"):
         #         print(box)
     except Exception as e:
         logging_serial(e, False, "host-enum")
@@ -72,10 +74,7 @@ def home():
                 except Exception as e:
                     flash("Unable to create csv. Hosts not enumerated")
                     logging_serial(e, False, "convert-csv")
-                
-
-
-
+                    
     # Startup index.html
     return render_template("index.html", boxes=box_list, lastupdate=datetime.now(), emoji=choice(emoji_list), user=current_user, timestamp=get_current_time())
 
@@ -93,6 +92,7 @@ def box_management(name: str):
     """
     
     if not user_agent(request):
+        logging_serial(f"ALERT - Unauthorized Request From IP: {request.remote_addr}", "Warning", "User-Agent")
         return render_template("404.html")
 
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
@@ -167,6 +167,7 @@ def box_management(name: str):
                 "manage.html",
                 title=name,
                 box=box_list[i],
+                serial_code=get_password(box_list[i]),
                 user=current_user,
             )
 
@@ -499,47 +500,86 @@ def rsyslog():
         )
 
 
-@views.route("/rsyslog/<sort>", methods=["GET"])
+@views.route("/rsyslog/<filter>", methods=["GET"])
 @login_required
-def rsyslog_sort(sort: str):
+def rsyslog_sort(filter: str):
     if not user_agent(request):
         return render_template("404.html")
     
-    host_list = [box.get("hostname") for box in [from_host_to_dict(host) for host in Host.query.all()] if box.get("hostname")]
+    # acquire list of hostnames
+    hostnames_list = [box.get("hostname") for box in [from_host_to_dict(host) for host in Host.query.all()] if box.get("hostname")]
+    
+    # create list of severities
+    severities_list = ["emerg", "alert", "crit", "err", "warn", "notice", "info"]
+    
+    log_format = (Combine(Word(alphas + nums + '-_') + '.' + Word(alphas + nums + '-_') ) + 
+              SkipTo(Regex('\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}')).suppress() + Regex('\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}') +
+              SkipTo(Regex('\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}')).suppress() + Regex('\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}') + 
+              Regex('\w+') + SkipTo(':') + Suppress(':') +
+              restOfLine)
+    
+    # returns current page num
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    
 
     try:
+        in_message = False
+        if filter in hostnames_list:
+            index = 4
+            filtered_log_lines_total = get_filtered_line_count("/var/log/rsyslog.log", filter, index_occurred=index)
+
+        elif filter in severities_list:
+            index = 1
+            filtered_log_lines_total = get_filtered_line_count("/var/log/rsyslog.log", filter, index_occurred=index)
+
+        else:
+            in_message = True
+            filtered_log_lines_total = get_filtered_line_count("/var/log/rsyslog.log", filter, mode=2)
+
         # total num of lines in file
-        line_count = get_log_lines("/var/log/rsyslog.log")
+        total_lines = get_log_lines("/var/log/rsyslog.log")
+        
+        increment = 2000
 
         # amount of lines per page determined by file size
-        if line_count > 5000:
-            per_page = 5000
+        if filtered_log_lines_total < 2000:
+            per_page = filtered_log_lines_total
         else:
         # at most 3 pages will be displayed when file is smaller than 5000 lines
             per_page = line_count//3        
 
+        # total num of lines in file
+        total_lines = get_log_lines("/var/log/rsyslog.log")
         
-        page = request.args.get(get_page_parameter(), type=int, default=1)
-        offset = (page - 1) * per_page
+        filtered_log_file = filter_log_list("/var/log/rsyslog.log", filter=filter, start=0, end=increment, page_num=page, max=total_lines, filtered_log=[], log_format=log_format, filtered_log_lines_total=filtered_log_lines_total, in_message=in_message)
 
-        filtered_log_file = filter_log_list(sort_by=sort, offset=slice(offset, offset+per_page))
+        if not filtered_log_file:
+            filtered_log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
+            total_lines = 0
+            flash(f"Logs do not contain: {filter}")
 
         if not log_file:
             log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
             line_count = 0
             flash(f"Logs do not contain: {sort}")
 
-        pagination = Pagination(page=page, total=line_count, per_page=per_page)
+        if not filtered_log_file:
+            filtered_log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
+            total_lines = 0
+            flash(f"Logs do not contain: {filter}")
 
+        pagination = Pagination(page=page, total=filtered_log_lines_total, per_page=per_page)
 
-    except FileNotFoundError:
-        log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
-        flash(f"Log file does not exist")    
+    except Exception as e:
+        filtered_log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
+        pagination = Pagination(page=page, total=0, per_page=0)
+        flash(f"Log file does not exist") 
+        print(e)   
 
     return render_template(
             "rsyslog.html",
-            log = log_file,
-            hosts = host_list,
+            log = filtered_log_file,
+            hosts = hostnames_list,
             pagination=pagination,
             user=current_user,
         )
@@ -584,6 +624,62 @@ def serial_logs():
     return render_template(
             "serial-logs.html",
             log = log_file,
+            pagination=pagination,
+            user=current_user,
+        )
+
+@views.route("/serial-logs/<filter>", methods=["GET", "POST"])
+@login_required
+def filter_serial_logs(filter: str):
+    if not user_agent(request):
+        return render_template("404.html")
+
+    try:
+        # get current page number
+        page = request.args.get(get_page_parameter(), type=int, default=1)
+
+        index = 3
+        mode = 3
+        # total num of lines in file
+        total_lines = get_log_lines("serial_logs.log")
+        filtered_log_lines_total = get_filtered_line_count("serial_logs.log", filter, index, mode=mode)
+
+        increment = 2500
+
+        log_format = (Regex('\d{2}:\d{2}:\d{2}\s+\w{2}') + Word(alphas + nums + '-_') + 
+                  Word(alphas + nums + '-_') + SkipTo(Regex('\w{1}')).suppress() + restOfLine)
+
+        # amount of lines per page determined by file size
+        if filtered_log_lines_total < 2500:
+            per_page = filtered_log_lines_total
+        else:
+            per_page = 2500
+
+        filtered_log_file = filter_log_list("serial_logs.log", filter=filter, start=0, end=increment, page_num=page, max=total_lines, filtered_log=[], log_format=log_format, mode=1, filtered_log_lines_total=filtered_log_lines_total)
+        
+        if not filtered_log_file:
+            filtered_log_file = [{"timestamp": "the-time",
+                    "err_succ": "Fail",
+                    "module": "Missing",
+                    "log_content": "No logs!"}]
+            pagination = Pagination(page=page, total=0, per_page=0)
+            flash(f"Serial Logs does not contain: {filter}")      
+        else:
+            pagination = Pagination(page=page, total=filtered_log_lines_total, per_page=per_page)
+
+        # depending on the number of pages and lines allowed per page a group of links to the different pages is created.
+
+    except FileNotFoundError:
+        filtered_log_file = [{"timestamp": "the-time",
+                    "err_succ": "Fail",
+                    "module": "Missing",
+                    "log_content": "No logs!"}]
+        pagination = Pagination(page=page, total=0, per_page=0)
+        flash(f"Log file does not exist")      
+    
+    return render_template(
+            "serial-logs.html",
+            log = filtered_log_file,
             pagination=pagination,
             user=current_user,
         )
