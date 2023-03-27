@@ -521,7 +521,6 @@ def rsyslog_sort(filter: str):
     # returns current page num
     page = request.args.get(get_page_parameter(), type=int, default=1)
     
-
     try:
         in_message = False
         if filter in hostnames_list:
@@ -545,23 +544,13 @@ def rsyslog_sort(filter: str):
         if filtered_log_lines_total < 2000:
             per_page = filtered_log_lines_total
         else:
-        # at most 3 pages will be displayed when file is smaller than 5000 lines
-            per_page = line_count//3        
+        # at most 3 pages will be displayed when file is smaller than 2000 lines
+            per_page = 2000        
 
         # total num of lines in file
         total_lines = get_log_lines("/var/log/rsyslog.log")
         
-        filtered_log_file = filter_log_list("/var/log/rsyslog.log", filter=filter, start=0, end=increment, page_num=page, max=total_lines, filtered_log=[], log_format=log_format, filtered_log_lines_total=filtered_log_lines_total, in_message=in_message)
-
-        if not filtered_log_file:
-            filtered_log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
-            total_lines = 0
-            flash(f"Logs do not contain: {filter}")
-
-        if not log_file:
-            log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
-            line_count = 0
-            flash(f"Logs do not contain: {sort}")
+        filtered_log_file = filter_log_list("/var/log/rsyslog.log", filter=filter, start=0, end=increment, page_num=page, max=total_lines, filtered_log=[], log_format=log_format, per_page=per_page, in_message=in_message)
 
         if not filtered_log_file:
             filtered_log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]

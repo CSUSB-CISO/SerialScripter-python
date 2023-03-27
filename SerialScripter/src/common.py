@@ -111,8 +111,7 @@ def get_rsyslog_list(offset=slice(None, None)):
     with open(rsyslog_logs_file, 'r') as f:
 
         # read the file bottom up as newest lines will append to the end of the file
-        reversed_list =  f.readlines()
-        reversed_list.reverse()
+        reversed_list =  list(reversed(f.readlines()))
 
         # iterate through specified lines in log file to reduce overhead 
         for line in reversed_list[offset]:
@@ -137,7 +136,7 @@ def get_rsyslog_list(offset=slice(None, None)):
     return log_file
 
 # filter a log file 
-def filter_log_list(filename: str, filter: str, start:int, end: int, page_num: int, max: int, filtered_log_lines_total: int, log_format, mode=0, filtered_log=[], iterate=1, in_message=False):
+def filter_log_list(filename: str, filter: str, start:int, end: int, page_num: int, max: int, per_page: int, log_format, mode=0, filtered_log=[], iterate=1, in_message=False):
     
     # open log file and grab lines
     with open(filename, 'r') as f:
@@ -148,8 +147,6 @@ def filter_log_list(filename: str, filter: str, start:int, end: int, page_num: i
         reversed_list.reverse()
 
         increment = end-start
-
-        print(in_message)
 
         # iterate through specified lines in log file to reduce overhead 
         for line in reversed_list[start:end]:
@@ -219,13 +216,17 @@ def filter_log_list(filename: str, filter: str, start:int, end: int, page_num: i
         try:
             # prevent index error
             if end < max:
-            # if occurrence is found but for wrong page num
-                if filtered_log and page_num != iterate or len(filtered_log) < filtered_log_lines_total:
-                    filtered_log = filter_log_list(filename, filter=filter, start=start+increment, end=end+increment, page_num=page_num, max=max, filtered_log=filtered_log, filtered_log_lines_total=filtered_log_lines_total, log_format=log_format, mode=mode, in_message=in_message, iterate=iterate+1)
+                # if occurrences are found but there aren't enough matches to fill up the page then continue incrementing to acquire more matches 
+                if len(filtered_log) < per_page:
+                    filtered_log = filter_log_list(filename, filter=filter, start=start+increment, end=end+increment, page_num=page_num, max=max, filtered_log=filtered_log, per_page=per_page, log_format=log_format, mode=mode, in_message=in_message, iterate=iterate)
+                
+                # if len is met, but it does not match the current page number then call the function again and clear the existing log list
+                elif page_num != iterate:
+                    filtered_log = filter_log_list(filename, filter=filter, start=start+increment, end=end+increment, page_num=page_num, max=max, filtered_log=[], per_page=per_page, log_format=log_format, mode=mode, in_message=in_message, iterate=iterate+1)
 
                 # if there were no matches for given offset, increment offset and try again
                 elif not filtered_log:
-                    filtered_log = filter_log_list(filename, filter=filter, start=start+increment, end=end+increment, page_num=page_num, max=max, filtered_log=filtered_log, filtered_log_lines_total=filtered_log_lines_total, log_format=log_format, mode=mode, in_message=in_message) 
+                    filtered_log = filter_log_list(filename, filter=filter, start=start+increment, end=end+increment, page_num=page_num, max=max, filtered_log=filtered_log, per_page=per_page, log_format=log_format, mode=mode, in_message=in_message) 
         
         # catch exception to prevent from crashing
         except Exception as e:
