@@ -9,77 +9,77 @@
               </div>
            </div>
        </div>
-       <div class="container scroll-line">
-           <div class="rsyslog-content">
-               <table class="table table-script ">
-                   <thead class="thead-width">
+       <div class="container">
+            <table class="table table-script no-scroll">
+                <thead>
+                  <tr>
+                     <th class="column-hotpink" scope="col" >
+                        Timestamp
+                    </th>
+                      <th >
+                        <div class="dropdown-center">
+                          <button class="column-hotpink dropdown-toggle" type="button" id="severity_levels" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Facility.Severity
+                          </button>
+                          <div class="dropdown-menu" aria-labelledby="severity_levels">
+                            <a class="dropdown-item" href="/rsyslog/emerg">emerg</a>
+                            <a class="dropdown-item" href="/rsyslog/alert">alert</a>
+                            <a class="dropdown-item" href="/rsyslog/crit">crit</a>
+                            <a class="dropdown-item" href="/rsyslog/err">err</a>
+                            <a class="dropdown-item" href="/rsyslog/warning">warning</a>
+                            <a class="dropdown-item" href="/rsyslog/notice">notice</a>
+                            <a class="dropdown-item" href="/rsyslog/info">info</a>
+                            <a class="dropdown-item" href="/rsyslog/USER:">Commands</a>
+                          </div>
+                        </div>
+                      </th>
+                      <th class="column-hotpink" scope="col">
+                        IP Address
+                    </th>
+                     <th >
+                      <div class="dropdown-center">
+                          <button class="column-hotpink dropdown-toggle" type="button" id="hostname" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Host Name
+                          </button>
+                          <div class="dropdown-menu" aria-labelledby="hostname">
+                            {% for host in hosts %}
+                             <a class="dropdown-item" href="/rsyslog/{{ host }}">{{ host }}</a>
+                            {% endfor %}
+                         </div>
+                     </th>
+                     <th class="column-hotpink" scope="col">
+                         Syslogtag-PID
+                     </th>
+                     <th class="column-hotpink" scope="col">
+                         Log Message
+                     </th>
+                 </tr>
+                 </thead>
+                 <tbody>
+                     {% for line in log %}
                      <tr>
-                        <th class="column-hotpink" style="width: 10%;" scope="col" >
-                           Timestamp
-                       </th>
-                         <th style="width: 10%;">
-                           <div class="dropdown-center">
-                             <button class="column-hotpink dropdown-toggle" type="button" id="severity_levels" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                               Facility.Severity
-                             </button>
-                             <div class="dropdown-menu scroll-table" aria-labelledby="severity_levels">
-                               <a class="dropdown-item" href="/rsyslog/emerg">emerg</a>
-                               <a class="dropdown-item" href="/rsyslog/alert">alert</a>
-                               <a class="dropdown-item" href="/rsyslog/crit">crit</a>
-                               <a class="dropdown-item" href="/rsyslog/err">err</a>
-                               <a class="dropdown-item" href="/rsyslog/warn">warning</a>
-                               <a class="dropdown-item" href="/rsyslog/notice">notice</a>
-                               <a class="dropdown-item" href="/rsyslog/info">info</a>
-                             </div>
-                           </div>
-                         </th>
-                         <th class="column-hotpink"  style="width: 15%;" scope="col">
-                           IP Address
-                       </th>
-                        <th style="width: 20%;">
-                         <div class="dropdown-center">
-                             <button class="column-hotpink dropdown-toggle" type="button" id="hostname" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                               Host Name
-                             </button>
-                             <div class="dropdown-menu" aria-labelledby="hostname">
-                               {% for host in hosts %}
-                                <a class="dropdown-item" href="/rsyslog/{{ host }}">{{ host }}</a>
-                               {% endfor %}
-                            </div>
-                        </th>
-                        <th class="column-hotpink"  style="width: 25%;" scope="col">
-                            Syslogtag-PID
-                        </th>
-                        <th class="column-hotpink" style="width: 30%;" scope="col">
-                            Log Message
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        {% for line in log %}
-                        <tr>
-                           <td>
-                              {{ line["timestamp"] }}
-                           </td>                        
-                           <td>
-                              {{ line["log_level"] }}
-                           </td>
-                           <td>
-                              {{ line["IP"] }}
-                           </td>
-                           <td>
-                              {{ line["hostname"] }}
-                           </td>
-                           <td>
-                              {{ line["syslogtag_pid"] }}
-                           </td>
-                           <td>
-                              {{ line["log_message"] }}
-                           </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-               </table>
+                        <td>
+                           {{ line["timestamp"] }}
+                        </td>                        
+                        <td>
+                           {{ line["log_level"] }}
+                        </td>
+                        <td>
+                           {{ line["IP"] }}
+                        </td>
+                        <td>
+                           {{ line["hostname"] }}
+                        </td>
+                        <td>
+                           {{ line["syslogtag_pid"] }}
+                        </td>
+                        <td>
+                           {{ line["log_message"] }}
+                        </td>
+                     </tr>
+                     {% endfor %}
+                 </tbody>
+            </table>
 
                <div class="pagination">   
                   {{ pagination.links }}

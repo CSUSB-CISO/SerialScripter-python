@@ -62,19 +62,13 @@ def heartbeat():
         return render_template("404.html")
     
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
-    ip = request.remote_addr
 
     try:
-        print(f"{request.remote_addr}\n")
         for box in box_list:
             # query hosts and grab host that has the name as the one given by the post request
-            if box.get('ip') == ip:
+            if box.get('ip') == request.remote_addr:
                 host = Host.query.filter_by(name=box["name"]).first()
-                if not host.is_connected:
-                    host.is_connected = True
                 host.time_connected = get_current_time()
-
-                logging_serial(f"Host: {box['ip']} connected to WingoEDR and is communicating with Serial Scripter!", True, "heartbeat")
 
     except Exception as e:
         logging_serial(str(e), False, "heartbeat")
@@ -112,13 +106,13 @@ def inventory():
         if not a.get("services"):
             a["services"] = from_host_to_dict(host)["services"]
         a["ip"] = from_host_to_dict(host)["ip"]
+        a["timeConnected"] = get_current_time()
         db.session.delete(Host.query.filter_by(name=a["name"]).first())
         db.session.commit()
         db.session.add(create_host_from_dict(a))
         db.session.commit()
 
     # return jsonify({"hosts": [from_host_to_dict(host) for host in Host.query.all()]})
-    logging_serial(f"Received inventory from IP: {a['ip']}", True, "inventory")
 
     return jsonify({})
  

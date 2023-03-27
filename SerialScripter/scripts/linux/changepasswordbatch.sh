@@ -53,9 +53,9 @@ else
   lastoctect=$(echo $actualip | cut -d'.' -f4)
   num=$((token * lastoctect))
   echo "username,password" > users.csv
+  new_password="Coolguy!${num}"
 
   for user in $users; do
-    new_password="Coolguy!${num}"
     # Change the password for each user
     echo "$user:$new_password" | chpasswd
     echo "$user,$new_password"
