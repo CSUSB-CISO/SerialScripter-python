@@ -39,6 +39,9 @@
                   <li class="nav-item">
                      <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
                   </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#docker">Docker Containers</a>
+                  </li>
                </ul>
             {% endif %}
          <div id="myTabContent" class="tab-content">
@@ -91,6 +94,39 @@
                      <input type="submit" value="Download CSV" class="btn btn-secondary" name="ports-download">
                      <input type="submit" value="Upload CSV" class="btn btn-secondary" name="ports-upload">
                   </form>
+                  </div>
+               </div>
+            </div>
+            <div class="tab-pane" id="docker">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Detailed Port Information:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Name</th>
+                              <th class= "column-hotpink" scope="col">Status</th>
+                              <th class= "column-hotpink" scope="col">Health</th>
+                              <th class= "column-hotpink" scope="col">ID</th>
+                              <th class= "column-hotpink" scope="col">Command Used</th>
+                              <th class= "column-hotpink" scope="col">Ports</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for item in box["containers"]%}
+                              <tr>
+                                 <td>{{ item["name"] }}</td>
+                                 <td>{{ item["status"] }}</td>
+                                 <td>{{ item["health"] }}</td>
+                                 <td>{{ item["dockerId"] }}</td>
+                                 <td>{{ item["cmd"] }}</td>
+                                 <td>{{ item["ports"] }}</td>
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
                   </div>
                </div>
             </div>

@@ -78,13 +78,19 @@ class Share(db.Model):
     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
     host = db.relationship('Host', back_populates='shares')
 
-# class Docker(db.Model):
-#     __tablename__ = 'dockers'
+class Docker(db.Model):
+    __tablename__ = 'dockers'
 
-#     id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    status = db.Column(db.String)
+    health = db.Column(db.String)
+    dockerId = db.Column(db.String)
+    cmd = db.Column(db.String)
+    ports = db.Column(db.String)
 
-#     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-#     host = db.relationship('Host', back_populates='docker')
+    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+    host = db.relationship('Host', back_populates='dockers')
 
 
 class Application(db.Model):
@@ -132,7 +138,7 @@ class Host(db.Model):
     # service can only be tied to one host
     services = db.relationship('Service', back_populates='host')
     isOn = db.Column(db.Boolean)
-    # docker = db.relationship('Docker', back_populates='host')
+    dockers = db.relationship('Docker', back_populates='host')
     # tasks = db.relationship('Task', back_populates='host')
     firewalls = db.relationship('Firewall', back_populates='host')
     applications = db.relationship('Application', back_populates='host')
@@ -180,11 +186,19 @@ def create_enumerated_user_from_dict(enumeratedUser):
 
     return eU 
 
-# def create_docker_from_dict(docker):
-#     # Create a Docker object and set its attributes
-#     d = Docker()
-#     # Set attributes of d here
-#     return d
+def create_docker_from_dict(docker):
+    # Create a Docker object and set its attributes
+    d = Docker()
+    # Set attributes of d here
+
+    d.name = docker.get("name")
+    d.status = docker.get("status")
+    d.health = docker.get("health")
+    d.dockerId = docker.get("dockerId")
+    d.cmd = docker.get("cmd")
+    d.ports = docker.get("ports")
+
+    return d
 
 def create_application_from_dict(application):
 
@@ -270,11 +284,13 @@ def create_host_from_dict(dict):
         pass
     # Create a Docker object for each docker in the dict
     # and add it to the host.docker list
-    # try:
-    #     host.docker = [create_docker_from_dict(docker) for docker in dict.get("docker")]
-    # except TypeError as e:
-    #     pass
+    try:
+        host.docker = [create_docker_from_dict(docker) for docker in dict.get("containers")]
+    except TypeError as e:
+        pass
 
+    
+    # create application object from dict
     try:
         host.applications = [create_application_from_dict(application) for application in dict.get("InstalledSoftware")]
     except Exception as e:
@@ -386,5 +402,16 @@ def from_host_to_dict(host):
             "CurrentUses": s.CurrentUses,
 
         } for s in host.shares]
+
+    host_dict["containers"] = [
+        {
+            "name": d.name,
+            "status": d.status,
+            "health": d.health,
+            "dockerId": d.dockerId,
+            "cmd": d.cmd,
+            "ports": d.ports,
+
+        } for d in host.dockers]
 
     return host_dict
