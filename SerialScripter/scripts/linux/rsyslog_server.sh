@@ -36,7 +36,6 @@ else
 	fi
 fi
 
-mkdir /var/log/rsyslog
 echo 'module(load="imudp")' >> /etc/rsyslog.conf 
 echo 'input(type="imudp" port="514")' >> /etc/rsyslog.conf
 echo '$template TraditionalFormatWithPRI,"%pri-text%: %timegenerated% %fromhost-ip% %HOSTNAME% %syslogtag%%msg:::drop-last-lf%\n' >> /etc/rsyslog.conf
