@@ -82,7 +82,7 @@ class Docker(db.Model):
     __tablename__ = 'dockers'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    Name = db.Column(db.String)
     status = db.Column(db.String)
     health = db.Column(db.String)
     dockerId = db.Column(db.String)
@@ -191,7 +191,7 @@ def create_docker_from_dict(docker):
     d = Docker()
     # Set attributes of d here
 
-    d.name = docker.get("name")
+    d.Name = docker.get("name")
     d.status = docker.get("status")
     d.health = docker.get("health")
     d.dockerId = docker.get("dockerId")
@@ -405,7 +405,7 @@ def from_host_to_dict(host):
 
     host_dict["containers"] = [
         {
-            "name": d.name,
+            "name": d.Name,
             "status": d.status,
             "health": d.health,
             "dockerId": d.dockerId,
