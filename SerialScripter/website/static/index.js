@@ -10,6 +10,18 @@ function deleteKey(keyId) {
     });
 }
 
+function deleteHost(hostname) {
+    // fetch the end point created in views.py
+    console.log(hostname)
+    fetch("/delete/"+hostname, {
+        method: "POST",
+        // creates a json object that we can access as a dict in python containing the keyId that we need
+    }).then((_res) => {
+        // refreshes the page
+        window.location.href = "/";
+    });
+}
+
 function checkAllBoxesLinux(source) {
     var checkboxes = document.querySelectorAll('input[class="boxesLinux"]');
 

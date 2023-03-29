@@ -16,22 +16,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -79,22 +79,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -118,22 +118,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -193,22 +193,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -260,22 +260,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "C:",
+          "fullpath": "C:/",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": "Administrator"
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": "1.1"
         }
       ],
       "hostname": "dexter"
@@ -296,22 +296,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -339,22 +339,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -394,22 +394,22 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
       "shares": [
         {
-          "name": {},
-          "fullpath": {},
+          "name": "",
+          "fullpath": "",
           "permissions": [
             {
               "users": [
                 {
-                  "username": {}
+                  "username": ""
                 }
               ]
             }
           ],
-          "SMBversion": {}
+          "SMBversion": ""
         }
       ]
     },
@@ -449,24 +449,8 @@
       ],
       "isOn": true,
       "docker": [],
-      "tasks": [{}],
+      "tasks": [""],
       "firewall": [],
-      "shares": [
-        {
-          "name": {},
-          "fullpath": {},
-          "permissions": [
-            {
-              "users": [
-                {
-                  "username": {}
-                }
-              ]
-            }
-          ],
-          "SMBversion": {}
-        }
-      ],
       "hostname": "localhost.localdomain"
     },
     {

@@ -10,44 +10,60 @@
    </div>
    <div class="container">
       <div class="jumbotron" style="background-color:transparent;">
-         <ul class="nav nav-tabs">
-            <li class="nav-item active">
-               <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
-            </li>
-            <li class="nav-item">
-               <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
-            </li>
-            {% if users %}
-               <li class="nav-item">
-                  <a class="nav-link active" data-toggle="tab" href="#windowsusers">Windows Users</a>
-               </li>
+            {% if "windows" in box.OS.lower() %}
+               <ul class="nav nav-tabs">
+                  <li class="nav-item active">
+                     <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#serviceinfo">Service Info</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#firewall">Firewall</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#software">Installed Software</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
+                  </li>
+               </ul>
+            {% else %}
+               <ul class="nav nav-tabs">
+                  <li class="nav-item active">
+                     <a class="nav-link active" data-toggle="tab" href="#quickstats">Quick Stats</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#portdetail">Port Detail</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
+                  </li>
+               </ul>
             {% endif %}
-         </ul>
          <div id="myTabContent" class="tab-content">
             <div class="tab-pane text-white active" id="quickstats">
                <br>
                <ul>
-                  <li class="header-font-xl">Host name: &ensp; {{ box.name}} </li>
-                  <br/>
+                  {% if box.hostname %}
+                     <li class="header-font-xl">Host name: &ensp; {{ box.hostname }} </li>
+                     <br/>
+                  {% else %}
+                     <li class="header-font-xl">Host name: &ensp; {{ box.name }} </li>
+                     <br/>
+                  {% endif %}
                   <li class="header-font-xl">Box IP: &ensp; {{ box.ip }} </li>
                   <br/>
                   <li class="header-font-xl">Operating System: &ensp; {{ box.OS }} </li>
                   <br/>
-                  <li class="header-font-xl">Total ports detected on box: &ensp; {{ ports }} </li>
+                  <li class="header-font-xl">Total services detected on box: &ensp; {{ box.services|length }} </li>
+                  <br/>
+                  <li class="header-font-xl"> Serial Code: &ensp; {{ serial_code }} </li>
                   <br/>
                </ul>
                <br>
             </div>
             <div class="tab-pane" id="portdetail">
-               <!-- <div class="row text-white"> -->
-                  <!-- <div class="col-lg-6">
-                     <br>
-                     <p>Total ports on box: {{ box.total }}</p>
-                     <p>Ports in UP state: {{ box.up }}</p>
-                     <p>Ports in DOWN state: {{ box.down }}</p>
-                     <p>Ports in DISABLED state: {{ box.disabled }}</p>
-                  </div> -->
-               <!-- </div> -->
                <div class="container">
                   <div class="form-inline">
                      <div class="page-header">
@@ -56,95 +72,191 @@
                      <table class="table table-box">
                         <thead>
                            <tr>
-                              <!-- <th scope="col">Interface Name</th>
-                              <th scope="col">Description</th>
-                              <th scope="col">MAC Address</th>
-                              <th scope="col">State</th>
-                              <th scope="col">Speed</th>
-                              <th scope="col">Duplex</th> -->
-                              <th class= "column-hotpink" scope="col">Service Name</th>
                               <th class= "column-hotpink" scope="col">Port Number</th>
-                              <th class= "column-hotpink" scope="col">Service Status</th>
+                              <th class= "column-hotpink" scope="col">Service Name</th>
                            </tr>
                         </thead>
                         <tbody>
-                           <!-- {% for interface in interfaces %}
-                           <tr>
-                              <td>{{ interface.name }}</td>
-                              <td>{{ interface.description }}</td>
-                              <td>{{ interface.physical_address }}</td>
-                              <td>
-                                 {% if interface.oper_status == 'up' %}
-                                 <p class="text-success">Up</span>
-                                 {% else %}
-                                 <p class="text-danger">Down</span>
-                                 {% endif %}
-                              <td>{{ interface.oper_speed }}</td>
-                              <td>{{ interface.oper_duplex }}</td>
-                              </td>
-                           {% endfor %} -->
                            {% for item in box["services"]%}
                               <tr>
-                                 <td> {{ item["service"] }} </td>
-                                 <td> {{ item["port"] }} </td>
-                                 <td><span class="badge rounded-pill bg-success">Up</span></td>
+                                 {% if item["service"] %}
+                                    <td> {{ item["port"] }} </td>
+                                    <td> {{ item["service"] }} </td>
+                                 {% endif %}
                               </tr>
                            {% endfor %}
                         </tbody>
                   </table>
+                  <form method="post" class="button-container">
+                     <input type="submit" value="Download CSV" class="btn btn-secondary" name="ports-download">
+                     <input type="submit" value="Upload CSV" class="btn btn-secondary" name="ports-upload">
+                  </form>
                   </div>
                </div>
             </div>
-            {% if users %}
-               <div class="tab-pane" id="windowsusers">
-                  <div class="container">
-                     <div class="form-inline">
-                        <div class="page-header">
-                           <h2 class="header-font-xl">Users Enumerated: {{ users }}</h2>
-                        </div>
-                        <table class="table table-box">
-                           <thead>
-                              <tr>
-                                 <th class= "column-hotpink" scope="col">Username</th>
-                                 <th class= "column-hotpink" scope="col">Full name</th>
-                                 <th class= "column-hotpink" scope="col">Enabled</th>
-                                 <!-- <th class= "column-hotpink" scope="col">Locked</th> -->
-                                 <th class= "column-hotpink" scope="col">Admin</th>
-                                 <!-- <th class= "column-hotpink" scope="col">Pass no expire</th> -->
-                                 <th class= "column-hotpink" scope="col">Passwd Age</th>
-                                 <th class= "column-hotpink" scope="col">Last Logon</th>
-                                 <th class= "column-hotpink" scope="col">Bad Passwd Attempts</th>
-                                 <th class= "column-hotpink" scope="col">Num Logons</th>
-                              </tr>
-                           </thead>
-                           <tbody>
-                              {% for user in user_properties["users"] %}
-                                 <tr>
-                                    <td> {{ user["Username"] }} </td>
-                                    <td> {{ user["Fullname"] }} </td>
-                                    {% if user["Enabled"] == "True" %}
-                                       <td><span class="badge rounded-pill bg-success">True</span></td>
-                                    {% else %}
-                                       <td><span class="badge rounded-pill bg-danger">False</span></td>
-                                    {% endif %}
-                                    {% if user["Admin"] == "True" %}
-                                       <td><span class="badge rounded-pill bg-success">True</span></td>
-                                    {% else %}
-                                       <td><span class="badge rounded-pill bg-danger">False</span></td>
-                                    {% endif %}
-                                    <td> {{ user["Passwdage"] }} </td>
-                                    <td> {{ user["LastLogon"] }} </td>
-                                    <td> {{ user["BadPasswdAttempts"] }} </td>
-                                    <td> {{ user["NumofLogons"] }} </td>
-                                    <!-- <td><span class="badge rounded-pill bg-danger">True</span></td> -->
-                                 </tr>
-                              {% endfor %}
-                           </tbody>
-                     </table>
+            <div class="tab-pane" id="serviceinfo">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Detailed Service Information:</h2>
                      </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" style="width: 15%;" scope="col">Port</th>
+                              <th class= "column-hotpink" style="width: 25%;" scope="col">Service Name</th>
+                              <th class= "column-hotpink" style="width: 45%;" scope="col">Description</th>
+                              <th class= "column-hotpink" style="width: 15%;" scope="col">PID</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for item in box["services"]%}
+                              {% if item["AcceptStop"] and item["port"]%}
+                                    <tr>
+                                       <td> {{ item["port"] }} </td>
+                                       <td> {{ item["SCname"] }} </td>
+                                       <td> {{ item["DisplayName"] }} </td>
+                                       <td> {{ item["RunningPID"] }} </td>
+                                    </tr>
+                              {% endif %}
+                           {% endfor %}
+                           {% for item in box["services"] %}
+                              {% if item["AcceptStop"] and (item["port"]== 0) %}
+                                 <tr>
+                                    <td> n/a </td>
+                                    <td> {{ item["SCname"] }} </td>
+                                    <td> {{ item["DisplayName"] }} </td>
+                                    <td> {{ item["RunningPID"] }} </td>
+                                 </tr>
+                              {% endif %}
+                           {% endfor %}
+                        </tbody>
+                  </table>
+                  <form method="post" class="button-container">
+                     <input type="submit" value="Download CSV" class="btn btn-secondary" name="services-download">
+                     <input type="submit" value="Upload CSV" class="btn btn-secondary" name="services-upload">
+                  </form>
                   </div>
                </div>
-            {% endif %}
+            </div>
+            <div class="tab-pane" id="firewall">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Firewall Information:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Name</th>
+                              <th class= "column-hotpink" scope="col">Local Ports</th>
+                              <th class= "column-hotpink" scope="col">Remote Ports</th>
+                              <th class= "column-hotpink" scope="col">Remote Addresses</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for firewall in box.get["FirewallList"] %}
+                              <tr>
+                                 <td>{{ firewall.get("Name") }}</td>
+                                 <td>{{ firewall.get("LocalPorts") }}</td>
+                                 <td>{{ firewall.get("RemotePorts") }}</td>
+                                 <td>{{ firewall.get("RemoteAddresses") }}</td>
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <div class="tab-pane" id="software">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Installed Software:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Name</th>
+                              <th class= "column-hotpink" scope="col">Version</th>
+                              <th class= "column-hotpink" scope="col">Install Path</th>
+                              <th class= "column-hotpink" scope="col">Uninstall String</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for software in box.get["InstalledSoftware"] %}
+                              <tr>
+                                 <td>{{ software.get("Name") }}</td>
+                                 <td>{{ software.get("Version") }}</td>
+                                 <td>{{ software.get("InstallPath") }}</td>
+                                 <td>{{ software.get("UninstallString") }}</td>
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <div class="tab-pane" id="users">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Enumerated Users:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Username</th>
+                              <th class= "column-hotpink" scope="col">Enabled</th>
+                              <th class= "column-hotpink" scope="col">Admin/Root</th>
+                              <th class= "column-hotpink" scope="col">Number of Logons</th>
+                              <th class= "column-hotpink" scope="col">Last Login</th>
+                              <th class= "column-hotpink" scope="col">Bad Login Attempts</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for user in box["users"] %}
+                              <tr>
+                                 <td> {{ user["Username"] }} </td>
+                                 {% if user["Enabled"] %}
+                                    <td><span class="badge rounded-pill bg-success">True</span></td>
+                                 {% else %}
+                                    <td><span class="badge rounded-pill bg-danger">False</span></td>
+                                 {% endif %}
+
+                                 {% if user["Admin"] %}
+                                    <td><span class="badge rounded-pill bg-success">True</span></td>
+                                 {% else %}
+                                    <td><span class="badge rounded-pill bg-danger">False</span></td>
+                                 {% endif %}
+
+                                 {% if "windows" not in box["OS"].lower() %}
+                                    <td style="text-align: center;"> {{ user["NumOfLogons"] }} </td>
+                                    <td> {{ user["LastLogon"] }} </td>                                 
+                                    <td style="text-align: center;"> {{ user["BadPasswdAttempts"] }} </td>                                 
+                                 {% elif user["NumOfLogons"] == 0 %}
+                                    <td> Never Logged In </td>
+                                    <td> Never Logged In </td>
+                                    <td> Never Logged In </td>
+                                 {% elif user["NumOfLogons"] == None %}
+                                    <td> {{ user["NumOfLogons"] }} </td>
+                                    <td> {{ user["LastLogon"] }} </td>
+                                    <td style="text-align: center;"> {{ user["BadPasswdAttempts"] }} </td>                                 
+                                 {% elif "T" in user["LastLogon"]%}
+                                    <td> {{ user["NumOfLogons"] }} </td>
+                                    <td> {{ user["LastLogon"].split("T")[1].split("-")[0] }} </td>
+                                    <td style="text-align: center;"> {{ user["BadPasswdAttempts"] }} </td>                                 
+                                 {% endif %}
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                  </table>
+                  <form method="post" class="button-container">
+                     <input type="submit" value="Download CSV" class="btn btn-secondary" name="users-download">
+                     <input type="submit" value="Upload CSV" class="btn btn-secondary" name="users-upload">
+                  </form>
+               </div>
+            </div>
          </div>
       </div>
    </div>

@@ -3,17 +3,21 @@ from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
-
+from json import load
+from src.common import logging_serial
 
 auth = Blueprint('auth', __name__)
 
 
 def user_agent(request):
-    return request.headers.get('User-Agent') == "backshots"
+    with open("config.json") as config:
+        return request.headers.get('User-Agent') == load(config).get("configs").get("secret-agent")
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if not user_agent(request):
+        logging_serial(f"ALERT - Unauthorized Request From IP: {request.remote_addr}", "Warning", "User-Agent")
         return render_template("apache.html")
     if request.method == 'POST':
         email = request.form.get('email')
@@ -24,6 +28,7 @@ def login():
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!', category='success')
                 login_user(user, remember=True)
+                logging_serial(f"User: {user.first_name} has logged in", True, "Login")
                 return redirect(url_for('views.home'))
             else:
                 flash('Incorrect password, try again.', category='error')
@@ -42,7 +47,7 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-# @auth.route('/sign-up', methods=['GET', 'POST'])
+@auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     if not user_agent(request):
         return render_template("404.html")
@@ -70,6 +75,7 @@ def sign_up():
             db.session.commit()
             login_user(new_user, remember=True)
             flash('Account created!', category='success')
+            logging_serial(f"Created new user, name: {first_name}", "Warning", "Sign-Up")
             return redirect(url_for('views.home'))
 
     return render_template("sign_up.html", user=current_user)
