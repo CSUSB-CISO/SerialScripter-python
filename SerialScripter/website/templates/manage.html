@@ -191,7 +191,7 @@
                            </tr>
                         </thead>
                         <tbody>
-                           {% for firewall in box.get["FirewallList"] %}
+                           {% for firewall in box["FirewallList"] %}
                               <tr>
                                  <td>{{ firewall.get("Name") }}</td>
                                  <td>{{ firewall.get("LocalPorts") }}</td>
@@ -220,7 +220,7 @@
                            </tr>
                         </thead>
                         <tbody>
-                           {% for software in box.get["InstalledSoftware"] %}
+                           {% for software in box["InstalledSoftware"] %}
                               <tr>
                                  <td>{{ software.get("Name") }}</td>
                                  <td>{{ software.get("Version") }}</td>
