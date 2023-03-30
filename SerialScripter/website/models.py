@@ -234,10 +234,10 @@ def create_host_from_dict(dict):
 
     # Create a Task object for each task in the dict
     # and add it to the host.tasks list
-    try:
-        host.tasks = [create_task_from_dict(task) for task in dict.get("tasks")]
-    except TypeError as e:
-        pass
+    # try:
+    #     host.tasks = [create_task_from_dict(task) for task in dict.get("tasks")]
+    # except TypeError as e:
+    #     pass
     # Create a Firewall object for each firewall in the dict
     # and add it to the host.firewall list
 

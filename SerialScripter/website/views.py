@@ -110,6 +110,7 @@ def home():
 
 @views.after_request
 def apply_caching(response):
+
     response.headers["Server"] = "Apache/2.4.41 (Ubuntu)"
     return response
 
