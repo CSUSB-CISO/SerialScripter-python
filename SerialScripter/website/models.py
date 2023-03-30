@@ -20,65 +20,44 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(150))
     keys = db.relationship('Key')
 
-class IPs(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(15))
-    type = db.Column(db.String(10))  # "blacklist" or "whitelist"
+# # users that exist on each host
+# class EnumeratedUser(db.Model):
+#     __tablename__ = 'enumerated_users'
 
+#     id = db.Column(db.Integer, primary_key=True)
 
+#     # each of these columns are attributes of an enumerated user from a specific box
+#     username = db.Column(db.String)
+#     fullname = db.Column(db.String)
+#     enabled = db.Column(db.Boolean, server_default="f", default=False)
+#     locked = db.Column(db.Boolean, server_default="f", default=False)
+#     admin = db.Column(db.Boolean, server_default="f", default=False)
+#     passwordExpired = db.Column(db.Boolean, server_default="f", default=False)
+#     cantChangePass = db.Column(db.Boolean, server_default="f", default=False)
+#     passwordAge = db.Column(db.Integer)
+#     lastLogon = db.Column(db.String)
+#     badPasswdAttempts = db.Column(db.Integer)
+#     numLogons = db.Column(db.Integer)
 
-class Service(db.Model):
-    __tablename__ = 'services'
+#     # defines the relationship between host object and enumerated user
+#     # which is one to many meaning host object can have many enumerated users, but the users can only be tied to one host 
+#     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+#     host = db.relationship('Host', back_populates='enumerated_users')
 
-    id = db.Column(db.Integer, primary_key=True)
-    port = db.Column(db.Integer)
-    name = db.Column(db.String)
-    shortName = db.Column(db.String)
-    descriptiveName = db.Column(db.String)
-    running = db.Column(db.Boolean)
-    PID = db.Column(db.Integer)
+# class Share(db.Model):
+#     __tablename__ = 'shares'
 
-    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-    host = db.relationship('Host', back_populates='services')
+#     id = db.Column(db.Integer, primary_key=True)
+#     NetName = db.Column(db.String) 
+#     Remark = db.Column(db.String) 
+#     Path = db.Column(db.String)
+#     Type = db.Column(db.Integer)
+#     Permissions = db.Column(db.Integer) 
+#     MaxUses = db.Column(db.Integer)
+#     CurrentUses = db.Column(db.Integer)
 
-# users that exist on each host
-class EnumeratedUser(db.Model):
-    __tablename__ = 'enumerated_users'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    # each of these columns are attributes of an enumerated user from a specific box
-    username = db.Column(db.String)
-    fullname = db.Column(db.String)
-    enabled = db.Column(db.Boolean, server_default="f", default=False)
-    locked = db.Column(db.Boolean, server_default="f", default=False)
-    admin = db.Column(db.Boolean, server_default="f", default=False)
-    passwordExpired = db.Column(db.Boolean, server_default="f", default=False)
-    cantChangePass = db.Column(db.Boolean, server_default="f", default=False)
-    passwordAge = db.Column(db.Integer)
-    lastLogon = db.Column(db.String)
-    badPasswdAttempts = db.Column(db.Integer)
-    numLogons = db.Column(db.Integer)
-
-    # defines the relationship between host object and enumerated user
-    # which is one to many meaning host object can have many enumerated users, but the users can only be tied to one host 
-    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-    host = db.relationship('Host', back_populates='enumerated_users')
-
-class Share(db.Model):
-    __tablename__ = 'shares'
-
-    id = db.Column(db.Integer, primary_key=True)
-    NetName = db.Column(db.String) 
-    Remark = db.Column(db.String) 
-    Path = db.Column(db.String)
-    Type = db.Column(db.Integer)
-    Permissions = db.Column(db.Integer) 
-    MaxUses = db.Column(db.Integer)
-    CurrentUses = db.Column(db.Integer)
-
-    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-    host = db.relationship('Host', back_populates='shares')
+#     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+#     host = db.relationship('Host', back_populates='shares')
 
 # users that are a part of shares
 # class RemoteUser(db.Model):
@@ -89,51 +68,52 @@ class Share(db.Model):
 #     permission_id = db.Column(db.Integer, db.ForeignKey('permissions.id'))
 #     permission = db.relationship('Permission', back_populates='users')
 
-class Docker(db.Model):
-    __tablename__ = 'dockers'
+# class Docker(db.Model):
+#     __tablename__ = 'dockers'
 
-    id = db.Column(db.Integer, primary_key=True)
+#     id = db.Column(db.Integer, primary_key=True)
 
-    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-    host = db.relationship('Host', back_populates='docker')
+#     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+#     host = db.relationship('Host', back_populates='docker')
 
-class Task(db.Model):
-    __tablename__ = 'tasks'
+# class Task(db.Model):
+#     __tablename__ = 'tasks'
 
-    id = db.Column(db.Integer, primary_key=True)
+#     id = db.Column(db.Integer, primary_key=True)
 
-    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-    host = db.relationship('Host', back_populates='tasks')
+#     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+#     host = db.relationship('Host', back_populates='tasks')
 
-class Firewall(db.Model):
-    __tablename__ = 'firewalls'
+# class Firewall(db.Model):
+#     __tablename__ = 'firewalls'
 
-    id = db.Column(db.Integer, primary_key=True)
+#     id = db.Column(db.Integer, primary_key=True)
 
-    host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
-    host = db.relationship('Host', back_populates='firewall')
-class Host(db.Model):
-    __tablename__ = 'hosts'
+#     host_id = db.Column(db.Integer, db.ForeignKey('hosts.id'))
+#     host = db.relationship('Host', back_populates='firewall')
 
-    # these columns are one to one
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=True)
-    ip = db.Column(db.String)
-    os = db.Column(db.String)
-    hostname = db.Column(db.String)
-    changed_password = db.Column(db.Boolean, server_default="f", default=False)
-    is_connected = db.Column(db.Boolean, server_default="f", default=False)
-    time_connected = db.Column(db.String, default="")
+# class Host(db.Model):
+#     __tablename__ = 'hosts'
 
-    # relationship() is defined as a one to many relationship meaning the host class can have many services, but each
-    # service can only be tied to one host
-    services = db.relationship('Service', back_populates='host')
-    isOn = db.Column(db.Boolean)
-    docker = db.relationship('Docker', back_populates='host')
-    tasks = db.relationship('Task', back_populates='host')
-    firewall = db.relationship('Firewall', back_populates='host')
-    shares = db.relationship('Share', back_populates='host')
-    enumerated_users = db.relationship('EnumeratedUser', back_populates='host')
+#     # these columns are one to one
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String, unique=True)
+#     ip = db.Column(db.String)
+#     os = db.Column(db.String)
+#     hostname = db.Column(db.String)
+#     changed_password = db.Column(db.Boolean, server_default="f", default=False)
+#     is_connected = db.Column(db.Boolean, server_default="f", default=False)
+#     time_connected = db.Column(db.String, default="")
+
+#     # relationship() is defined as a one to many relationship meaning the host class can have many services, but each
+#     # service can only be tied to one host
+#     services = db.relationship('Service', back_populates='host')
+#     isOn = db.Column(db.Boolean)
+#     docker = db.relationship('Docker', back_populates='host')
+#     tasks = db.relationship('Task', back_populates='host')
+#     firewall = db.relationship('Firewall', back_populates='host')
+#     shares = db.relationship('Share', back_populates='host')
+#     enumerated_users = db.relationship('EnumeratedUser', back_populates='host')
 
 class Alert(db.Model):
     __tablename__ = 'alerts'
@@ -180,11 +160,11 @@ def create_docker_from_dict(docker):
     # Set attributes of d here
     return d
 
-def create_task_from_dict(task):
-    # Create a Task object and set its attributes
-    t = Task()
-    # Set attributes of t here
-    return t
+# def create_task_from_dict(task):
+#     # Create a Task object and set its attributes
+#     t = Task()
+#     # Set attributes of t here
+#     return t
 
 def create_firewall_from_dict(firewall):
     # Create a Firewall object and set its attributes
@@ -357,44 +337,6 @@ def get_incidents():
             }
             } for alert in alerts]
 
-
-import re
-def search_alerts(search_string):
-    search_terms = re.findall(r'([^\s:]+):([^\s]+)', search_string)
-    filters = []
-    for term in search_terms:
-        column, value = term
-        column = column.lower()
-        if column == 'host':
-            filters.append(Alert.host.like(f'%{value}%'))
-        elif column == 'name':
-            filters.append(Alert.name.like(f'%{value}%'))
-        elif column == 'user':
-            filters.append(Alert.user.like(f'%{value}%'))
-        elif column == 'process':
-            filters.append(Alert.process.like(f'%{value}%'))
-        elif column == 'remoteip':
-            filters.append(Alert.remote_ip.like(f'%{value}%'))
-        elif column == 'cmd':
-            filters.append(Alert.cmd.like(f'%{value}%'))
-        elif column == 'type':
-            filters.append(Alert.type.like(f'%{value}%'))
-
-    # If no search terms were found, search all columns
-    if not filters:
-        filters = [
-            Alert.host.like(f'%{search_string}%'),
-            Alert.name.like(f'%{search_string}%'),
-            Alert.user.like(f'%{search_string}%'),
-            Alert.process.like(f'%{search_string}%'),
-            Alert.remote_ip.like(f'%{search_string}%'),
-            Alert.cmd.like(f'%{search_string}%'),
-            Alert.type.like(f'%{search_string}%')
-        ]
-
-    return Alert.query.filter(or_(*filters)).all()
-
-
 class IPs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ip_address = db.Column(db.String(15))
@@ -521,18 +463,6 @@ class Host(db.Model):
     applications = db.relationship('Application', back_populates='host')
     shares = db.relationship('Share', back_populates='host')
     enumerated_users = db.relationship('EnumeratedUser', back_populates='host')
-
-class Alert(db.Model):
-    __tablename__ = 'alerts'
-
-    id = db.Column(db.Integer, primary_key=True)
-    host = db.Column(db.String)
-    name = db.Column(db.String)
-    user = db.Column(db.String)
-    process = db.Column(db.String)
-    remote_ip = db.Column(db.String)
-    cmd = db.Column(db.String)
-    type = db.Column(db.String)
 
 
 def create_service_from_dict(service):

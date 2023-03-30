@@ -703,10 +703,10 @@ def filter_serial_logs(filter: str):
 def incidents():
     incidents = get_incidents()
 
-    search_words = request.args.get("search").lower()
+    search_words = request.args.get("search")
 
     if search_words:
-        results = Search(incidents, search_words).result
+        results = Search(incidents, search_words.lower()).result
 
         return render_template("incidents.html", incidents=results, user=current_user)
             
