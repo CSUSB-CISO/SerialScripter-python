@@ -4991,7 +4991,6 @@ input[type="checkbox"] {
   border-radius: 4px;
   background: #e7abf7;
   width: 475px;
-  display: inline-block;
   vertical-align: top;
   margin: 36px 0 50px 135px; /* top right bottom left */
   color: #292929;
