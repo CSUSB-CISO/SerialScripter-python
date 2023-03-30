@@ -137,14 +137,13 @@ class Alert(db.Model):
     __tablename__ = 'alerts'
 
     id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String)
     host = db.Column(db.String)
     name = db.Column(db.String)
+    current_time = db.Column(db.String)
     user = db.Column(db.String)
-    process = db.Column(db.String)
-    remote_ip = db.Column(db.String)
-    cmd = db.Column(db.String)
-    type = db.Column(db.String)
-
+    severity = db.Column(db.String)
+    payload = db.Column(db.String)
 
 def create_service_from_dict(service):
     # Create a Service object and set its attributes
@@ -341,6 +340,20 @@ def from_host_to_dict(host):
         } for s in host.shares]
 
     return host_dict
+
+def get_incidents():
+    alerts = Alert.query.all()
+    return [{"Alert": {
+                "Host": alert.host,
+                "Incident": {
+                    "Name": alert.name,
+                    "CurrentTime": alert.current_time,
+                    "User": alert.user,
+                    "Severity": alert.severity,
+                    "Payload": alert.payload
+                }
+            }
+            } for alert in alerts]
 
 
 import re

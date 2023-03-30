@@ -82,8 +82,23 @@ def incidentalert():
     if not user_agent(request):
         return render_template("404.html")
     
+    # json.loads(b'{"Host":"DESKTOP-OJ45OVL","Incident":{"Name":"New share Created","CurrentTime":"2023-03-29 20:21:28.4294908 -0700 PDT m=+62.183084001","User":"New share detected","Severity":"High","Payload":"{\\"NewShareInfo\\":[{\\"NetName\\":\\"bruh\\",\\"Remark\\":\\"\\",\\"Path\\":\\"C:\\\\\\\\bruh\\",\\"Type\\":0,\\"Permissions\\":0,\\"MaxUses\\":4294967295,\\"CurrentUses\\":1}],\\"LastLoggedOnUser\\":\\"Hunter Pittman\\"}"}}')
+
+    data = loads(request.data)
     print(f'Alert:\n{request.data}')
-    return jsonify({"incidents":[]})
+    db.session.add(Alert(
+        type='Incident',
+        host=data['Host'].lower(),
+        name=data['Incident']['Name'].lower(),
+        current_time=data['Incident']['CurrentTime'].lower(),
+        user=data['Incident']['User'].lower(),
+        severity=data['Incident']['Severity'].lower(),
+        payload=str(data['Incident']['Payload']).lower()
+    ))
+
+    db.session.commit()
+
+    return jsonify({"received": True})
 
 @api.route('/api/v1/common/inventory', methods=['POST', 'GET'])
 def inventory():

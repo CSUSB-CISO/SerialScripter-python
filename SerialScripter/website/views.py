@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
 from random import randint, choice
-from .models import Key, Host, from_host_to_dict, Alert, or_, and_ #, create_host_from_dict,  search_alerts
+from .models import Key, Host, from_host_to_dict, Alert, or_, and_, get_incidents #, create_host_from_dict,  search_alerts
 from . import db
 from src.razdavat import Razdavat
 from threading import Thread
@@ -676,10 +676,9 @@ def filter_serial_logs(filter: str):
 @views.route('/incidents', methods=["GET", "POST"])
 @login_required
 def incidents():
-    with open("website/data/incidents.json", "r") as f:
-        incidents = load(f)["Incidents"]
+    incidents = get_incidents()
 
-    search_words = request.args.get("search")
+    search_words = request.args.get("search").lower()
 
     if search_words:
         results = Search(incidents, search_words).result
