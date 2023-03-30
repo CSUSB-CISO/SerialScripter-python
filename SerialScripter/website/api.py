@@ -82,10 +82,7 @@ def incidentalert():
     if not user_agent(request):
         return render_template("404.html")
     
-    # json.loads(b'{"Host":"DESKTOP-OJ45OVL","Incident":{"Name":"New share Created","CurrentTime":"2023-03-29 20:21:28.4294908 -0700 PDT m=+62.183084001","User":"New share detected","Severity":"High","Payload":"{\\"NewShareInfo\\":[{\\"NetName\\":\\"bruh\\",\\"Remark\\":\\"\\",\\"Path\\":\\"C:\\\\\\\\bruh\\",\\"Type\\":0,\\"Permissions\\":0,\\"MaxUses\\":4294967295,\\"CurrentUses\\":1}],\\"LastLoggedOnUser\\":\\"Hunter Pittman\\"}"}}')
-
     data = loads(request.data)
-    print(f'Alert:\n{request.data}')
     db.session.add(Alert(
         type='Incident',
         host=data['Host'].lower(),
