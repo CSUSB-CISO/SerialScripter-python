@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file
+from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file, send_file
 from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
 from random import randint, choice
-from .models import Key, Host, from_host_to_dict, Alert, or_, and_ #, create_host_from_dict,  search_alerts
+from .models import Key, Host, from_host_to_dict, Alert, or_, and_, get_incidents #, create_host_from_dict,  search_alerts
 from . import db
 from src.razdavat import Razdavat
 from threading import Thread
@@ -51,6 +51,33 @@ def home():
         logging_serial(e, False, "host-enum")
         box_list = {}
 
+    if request.method == "POST":
+        with open("config.json") as config:
+            config = load(config)
+            config = config.get("configs")
+
+            if request.form.get("rescan"):
+                Recon(config.get("out-ip")).save_box_data(db)
+
+            elif request.form.get("download_host_info") or request.form.get("upload_host_info"):
+
+                try:
+                    filename = from_host_to_csv(box_list, config.get("UID"))
+
+                    if request.form.get("download_host_info"):
+                        return send_file(f'../{filename}', as_attachment=True)
+                
+                    elif request.form.get("upload_host_info"):
+                        try: 
+                            upload_csv(config.get("url"), config.get("port"), filename=filename)
+                        except Exception as e:
+                            flash("Unable to upload csv. Check url/port settings")
+                            logging_serial(e, False, "upload-csv")
+
+                except Exception as e:
+                    flash("Unable to create csv. Hosts not enumerated")
+                    logging_serial(e, False, "convert-csv")
+                    
     if request.method == "POST":
         with open("config.json") as config:
             config = load(config)
@@ -202,6 +229,8 @@ def scripting_hub():
     # gather scripts from linux and windows' scripts directories
     scripts_list = listdir('scripts/windows/') + listdir('scripts/linux/') 
 
+    # load list of boxes 
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
     # load list of boxes 
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
@@ -672,13 +701,12 @@ def filter_serial_logs(filter: str):
 @views.route('/incidents', methods=["GET", "POST"])
 @login_required
 def incidents():
-    with open("website/data/incidents.json", "r") as f:
-        incidents = load(f)["Incidents"]
+    incidents = get_incidents()
 
     search_words = request.args.get("search")
 
     if search_words:
-        results = Search(incidents, search_words).result
+        results = Search(incidents, search_words.lower()).result
 
         return render_template("incidents.html", incidents=results, user=current_user)
             

@@ -705,6 +705,9 @@ function ExportToJSON() {
 	printf "\n\n${BLUE}Exporting to JSON...\n\n${NC}"
 	#json format with or without docker containers
 
+	printf "\n\n${BLUE}Exporting to JSON...\n\n${NC}"
+	#json format with or without docker containers
+	which docker 1>/dev/null 2>&1 && JSON='{"name":"%s","hostname":"%s","ip":"%s","OS":"%s","services":[%s], "containers":[%s], "users": [%s]}' || JSON='{"name":"%s","hostname":"%s","ip":"%s","OS":"%s","services":[%s], "users": [%s]}'
 
 	#FOR SHARES JUST WAIT TO SEE IF PARSING CAN BE DIFFERENT FOR LINUX
 	#then just grep through /etc/samba/smb.conf and smbclient tools
