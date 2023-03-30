@@ -296,17 +296,6 @@ def scripting_hub():
         user=current_user
     )
 
-
-@views.route("/test")
-def test():
-
-    matching_alerts = search_alerts("(hunte or john) and sshd.exe")
-    for alert in matching_alerts:
-        print(alert.host)
-        
-    return ""
-
-
 @views.route("/open-shell/<ip>", methods=["GET"])
 @login_required
 def pop_a_shell(ip: str) -> None:
