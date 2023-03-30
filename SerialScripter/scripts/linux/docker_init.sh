@@ -33,9 +33,10 @@ manager_detection(){
 
 container_install(){
     mkdir -p /var/log/rsyslog
-    docker pull l3m0n42/jeffery-dahcker:latest 
-    docker run -it --name jeffery-dahcker --net=host --mount type=bind,source=/var/log/rsyslog,target=/var/log/rsyslog l3m0n42/jeffery-dahcker
-
+   # docker pull l3m0n42/jeffery-dahcker:latest
+    docker rm -f jeffery-dahcker
+    docker volume create database
+    docker run -it --name jeffery-dahcker --net=host -v /var/log/rsyslog:/var/log/rsyslog -v database:/app/website/data l3m0n42/jeffery-dahcker /bin/ash
 }
 
 manager_detection

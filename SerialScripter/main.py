@@ -1,7 +1,6 @@
 from os import environ
 from website import create_app
 from flask_bootstrap import Bootstrap
-from logging.config import fileConfig
 
 app = create_app()
 
