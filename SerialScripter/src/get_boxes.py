@@ -81,11 +81,11 @@ class Recon:
 
     def save_box_data(self, db):
         for box in self.box_data:
-            print(box)
+            # print(box)
             host = create_host_from_dict(box)
             try:
                 db.session.add(host)
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
-                print("Inventory has been ran already")
+                # print("Inventory has been ran already")

@@ -670,7 +670,7 @@ def filter_serial_logs(filter: str):
         else:
             per_page = 2500
 
-        filtered_log_file = filter_log_list("serial_logs.log", filter=filter, start=0, end=increment, page_num=page, max=total_lines, filtered_log=[], log_format=log_format, mode=1, filtered_log_lines_total=filtered_log_lines_total)
+        filtered_log_file = filter_log_list("serial_logs.log", filter=filter, start=0, end=increment, page_num=page, max=total_lines, filtered_log=[], log_format=log_format, mode=1, per_page=per_page)
         
         if not filtered_log_file:
             filtered_log_file = [{"timestamp": "the-time",

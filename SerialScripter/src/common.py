@@ -131,7 +131,8 @@ def get_rsyslog_list(offset=slice(None, None)):
                 })
             
             except:
-                print(f"No match found for line: {line.strip()}")
+                # print(f"No match found for line: {line.strip()}")
+                pass
 
     return log_file
 
@@ -187,7 +188,8 @@ def filter_log_list(filename: str, filter: str, start:int, end: int, page_num: i
                                 'log_message': parsed_line[5]
                             })
                     except Exception as e:
-                        print(e)
+                        # print(e)
+                        pass
 
                 elif mode == 1:
                     try:
@@ -230,7 +232,8 @@ def filter_log_list(filename: str, filter: str, start:int, end: int, page_num: i
         
         # catch exception to prevent from crashing
         except Exception as e:
-            print(str(e))
+            # print(str(e))
+            pass
 
     return filtered_log
 

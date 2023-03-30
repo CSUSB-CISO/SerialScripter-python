@@ -67,7 +67,7 @@ class Razdavat(paramiko.SSHClient):
         else:
             _, stdout, _ = self.exec_command("cat ~/.ssh/authorized_keys")
             keys = stdout.readlines()
-            print(keys)
+            # print(keys)
             self.exec_command(f'echo -n "" > ~/.ssh/authorized_keys')
 
             for key in keys:
