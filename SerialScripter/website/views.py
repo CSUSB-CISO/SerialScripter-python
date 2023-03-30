@@ -20,6 +20,8 @@ from pyparsing import Combine, alphas, nums, SkipTo, Regex, Word, restOfLine, Su
 #from src.search import search, sort
 from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time, get_filtered_line_count
 
+
+
 views = Blueprint('views', __name__)
 
 def user_agent(request):
@@ -27,7 +29,8 @@ def user_agent(request):
         config = load(config)
         return request.headers.get('User-Agent') == config.get("configs").get("secret-agent")
 
-    
+
+
 @views.route("/", methods=['GET', 'POST'])
 @login_required
 def home():
@@ -316,7 +319,7 @@ def pop_a_shell(ip: str) -> None:
     :param str ip: The ip to connect to via ssh
     :rtype redirect url: A redirect to a gotty instance of the selected machine
     """
-    def get_url(proc) -> str:
+    def get_url(proc, host) -> str:
         """
         Reads STDOUT from a process until it fetches a useable URL
 
@@ -325,7 +328,8 @@ def pop_a_shell(ip: str) -> None:
         """
         for line in iter(proc.stdout.readline, b''):
             a = line.decode('utf-8') # decode url from bytes
-            if "URL" in a and "127.0.0.1" not in a and "::1" not in a: # make sure url is not localhost
+            
+            if "URL" in a and "127.0.0.1" not in a and "::1" not in a and host.split(":")[0] in a: # make sure url is not localhost
                 return a.split("URL:")[-1].strip() # return url if valid
 
     if not user_agent(request):
@@ -367,7 +371,8 @@ def pop_a_shell(ip: str) -> None:
     
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
-    t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
+    host = request.host
+    t = Thread(target=lambda q, arg1: q.put(get_url(arg1, host)), args=(que, p,))
     t.start()
     t.join()
     

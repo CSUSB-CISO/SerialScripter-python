@@ -34,7 +34,7 @@ manager_detection(){
 container_install(){
     mkdir -p /var/log/rsyslog
     docker pull l3m0n42/jeffery-dahcker:latest 
-    docker run -d --name jeffery-dahcker --net=host --mount type=bind,source=/var/log/rsyslog,target=/var/log/rsyslog l3m0n42/jeffery-dahcker
+    docker run -it --name jeffery-dahcker --net=host --mount type=bind,source=/var/log/rsyslog,target=/var/log/rsyslog l3m0n42/jeffery-dahcker
 
 }
 
