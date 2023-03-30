@@ -11,7 +11,7 @@
    </div>
    <div class="container tab-content">
       <div class="tab-pane active" id="script-selection"> 
-         <table class="table table-box" >
+         <table class="table table-box" style="padding-bottom: 200px;">
          <thead>
             <tr>
                <th class="column-hotpink" scope="col">Scripts to Deploy</th>
@@ -29,13 +29,13 @@
                      <input class="scriptsWindows" type="checkbox" id={{ script }} name={{ script }}>
                      <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
                   </td>
-               {% elif script.split(".")[1] == "sh" or script in ("godadelus", "gomemento") %}
+               {% elif script.split(".")[1] == ("sh") or script in ("godadelus", "gomemento", "cobalt-strikeout") or script.split(".")[-1] in ("rpm", "deb") %}
                   <td>
                      <input class="scriptsLinux" type="checkbox" id={{ script }} name={{ script }}>
                      <label style="font-size: 20px" for={{ script }}>   {{ script }} </label>
                   </td>
                {% endif %}
-               {% if script in ("godadelus", "gomemento") %}
+               {% if script in ("godadelus", "gomemento", "cobalt-strikeout") %}
                   <td style="padding-left:5px"> 
                      <input type="text" name={{ script[0:3] }} id={{ script[0:3] }}>
                   </td>
@@ -47,7 +47,7 @@
                <td>
                      {% if script.split(".")[1] == "ps1" or script == "wingoEDR.exe" %}
                         Windows
-                     {% elif script.split(".")[1] == "sh" or script in ("godadelus", "gomemento") %}
+                     {% elif script.split(".")[1] == "sh" or script in ("godadelus", "gomemento", "cobalt-strikeout") or script.split(".")[-1] in ("rpm", "deb") %}
                         Linux
                      {% endif %}
                </td>
@@ -68,6 +68,9 @@
          </tr>
          </tbody>
          </table>
+         <hr>
+         <hr>
+         <hr>
          <hr>
       </div>
    <!-- <input type="submit" value="Submit"> -->
@@ -118,14 +121,23 @@
                            <input class="run" type="checkbox" id="Deploy" name="Deploy">
                            <label style="font-size: 20px" for="Deploy">Run Script</label>
                         </td>
-                        <td>
-                           <a class="nav-link active" href="#script-selection" data-toggle="tab">&larr; Previous</a>
-                        </td>
+                  </tr>
+                  <tr>
+                     <td colspan="3">
+                        <a class="nav-link active" href="#script-selection" data-toggle="tab">&larr; Previous</a>
+                     </td>
                   </tr>
                </tbody>
          </table>
          <hr>
-         <input type="submit" value="Submit">
+         <hr>
+         <hr>
+         <hr>
+         <input type="submit" value="Deploy!">
+         <hr>
+         <hr>
+         <hr>
+         <hr>
       </div>
 
 

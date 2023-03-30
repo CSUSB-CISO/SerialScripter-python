@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file
+from flask import Blueprint, render_template, request, session, flash, jsonify, redirect, url_for, json, send_file, send_file
 from flask_login import login_required, current_user
 from json import load, loads, dumps
 from datetime import datetime
@@ -20,6 +20,8 @@ from pyparsing import Combine, alphas, nums, SkipTo, Regex, Word, restOfLine, Su
 #from src.search import search, sort
 from src.common import from_json_to_csv, from_host_to_csv, upload_csv, get_rsyslog_list, logging_serial, get_log_lines, filter_log_list, get_password, get_serial_log_list, get_current_time, get_filtered_line_count
 
+
+
 views = Blueprint('views', __name__)
 
 def user_agent(request):
@@ -27,7 +29,8 @@ def user_agent(request):
         config = load(config)
         return request.headers.get('User-Agent') == config.get("configs").get("secret-agent")
 
-    
+
+
 @views.route("/", methods=['GET', 'POST'])
 @login_required
 def home():
@@ -42,12 +45,39 @@ def home():
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
         # for box in box_list:
-        #     if box.get("isChanged"):
-        #         print(box)
+        #     if box.get("timeConnected"):
+        #         print(box.get("users"))
     except Exception as e:
         logging_serial(e, False, "host-enum")
         box_list = {}
 
+    if request.method == "POST":
+        with open("config.json") as config:
+            config = load(config)
+            config = config.get("configs")
+
+            if request.form.get("rescan"):
+                Recon(config.get("out-ip")).save_box_data(db)
+
+            elif request.form.get("download_host_info") or request.form.get("upload_host_info"):
+
+                try:
+                    filename = from_host_to_csv(box_list, config.get("UID"))
+
+                    if request.form.get("download_host_info"):
+                        return send_file(f'../{filename}', as_attachment=True)
+                
+                    elif request.form.get("upload_host_info"):
+                        try: 
+                            upload_csv(config.get("url"), config.get("port"), filename=filename)
+                        except Exception as e:
+                            flash("Unable to upload csv. Check url/port settings")
+                            logging_serial(e, False, "upload-csv")
+
+                except Exception as e:
+                    flash("Unable to create csv. Hosts not enumerated")
+                    logging_serial(e, False, "convert-csv")
+                    
     if request.method == "POST":
         with open("config.json") as config:
             config = load(config)
@@ -162,7 +192,7 @@ def box_management(name: str):
                             flash("Unable to create csv. No services exist.")
                             logging_serial(e, False, "convert-csv")
 
-
+            print(box_list[i])
             return render_template(
                 "manage.html",
                 title=name,
@@ -199,6 +229,8 @@ def scripting_hub():
     # gather scripts from linux and windows' scripts directories
     scripts_list = listdir('scripts/windows/') + listdir('scripts/linux/') 
 
+    # load list of boxes 
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
     # load list of boxes 
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
@@ -305,7 +337,7 @@ def pop_a_shell(ip: str) -> None:
     :param str ip: The ip to connect to via ssh
     :rtype redirect url: A redirect to a gotty instance of the selected machine
     """
-    def get_url(proc) -> str:
+    def get_url(proc, host) -> str:
         """
         Reads STDOUT from a process until it fetches a useable URL
 
@@ -314,7 +346,8 @@ def pop_a_shell(ip: str) -> None:
         """
         for line in iter(proc.stdout.readline, b''):
             a = line.decode('utf-8') # decode url from bytes
-            if "URL" in a and "127.0.0.1" not in a and "::1" not in a: # make sure url is not localhost
+            
+            if "URL" in a and "127.0.0.1" not in a and "::1" not in a and host.split(":")[0] in a: # make sure url is not localhost
                 return a.split("URL:")[-1].strip() # return url if valid
 
     if not user_agent(request):
@@ -356,7 +389,8 @@ def pop_a_shell(ip: str) -> None:
     
     # Start thread to run shell sessions concurrently
     # Give it Queue object to allow for retrieval or return value
-    t = Thread(target=lambda q, arg1: q.put(get_url(arg1)), args=(que, p,))
+    host = request.host
+    t = Thread(target=lambda q, arg1: q.put(get_url(arg1, host)), args=(que, p,))
     t.start()
     t.join()
     
@@ -458,7 +492,7 @@ def rsyslog():
         page = request.args.get(get_page_parameter(), type=int, default=1)
 
         # total num of lines in file
-        line_count = get_log_lines("/var/log/rsyslog.log")
+        line_count = get_log_lines("/var/log/rsyslog/rsyslog.log")
 
         # amount of lines per page determined by file size
         if line_count > 5000:
@@ -478,7 +512,9 @@ def rsyslog():
 
     except FileNotFoundError:
         log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
-        flash(f"Log file does not exist")     
+        flash(f"Log file does not exist")
+        pagination = Pagination(page=page, total=0, per_page=0)
+
     
     return render_template(
             "rsyslog.html",

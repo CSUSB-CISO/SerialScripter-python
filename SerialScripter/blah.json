@@ -1,0 +1,1 @@
+{'Name': 'SNMP Trap Service (UDP In)', 'Description': 'Inbound rule for the SNMP Trap Service to allow SNMP traps. [UDP 162]', 'ApplicationName': 'C:\\Windows\\system32\\snmptrap.exe', 'ServiceName': 'SNMPTRAP', 'LocalPorts': '162', 'RemotePorts': '*', 'LocalAddresses': '*', 'RemoteAddresses': 'LocalSubnet', 'Profile': 6}

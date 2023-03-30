@@ -36,6 +36,26 @@ def is_changed():
 
     return jsonify({})
 
+@api.route('/api/v1/linux/ischanged', methods=['POST'])
+def is_changed():
+    
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
+    try:
+        for box in box_list:
+            # query hosts and grab host that has the name as the one given by the post request
+            if box.get("ip") == request.remote_addr:
+                host = Host.query.filter_by(name=box["name"]).first()
+                host.changed_password = True
+                logging_serial(f"Password changed on host: {box['hostname']}, IP: {box['ip']}", True, "ischanged")
+
+    except Exception as e:
+        logging_serial(e, False, "ischanged")
+
+    db.session.commit()
+
+    return jsonify({})
+
 @api.route('/api/v1/wingoEDR/systemhealth/diskspace', methods=['POST'])
 def disk_space():
     if not user_agent(request):
@@ -60,6 +80,22 @@ def errors():
 def heartbeat():
     if not user_agent(request):
         return render_template("404.html")
+    
+    box_list = [from_host_to_dict(host) for host in Host.query.all()]
+
+    try:
+        for box in box_list:
+            # query hosts and grab host that has the name as the one given by the post request
+            if box.get('ip') == request.remote_addr:
+                host = Host.query.filter_by(name=box["name"]).first()
+                host.time_connected = get_current_time()
+
+    except Exception as e:
+        logging_serial(str(e), False, "heartbeat")
+
+    db.session.commit()
+
+    return jsonify({})
     
     box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
@@ -105,25 +141,47 @@ def inventory():
 
     # receives dictionary 
     # print(request.data)
-    a = loads(request.data)
+    rhost_inventory = loads(request.data)
+
+    if rhost_inventory["hostname"] == "bingus":
+        print(rhost_inventory["containers"])
     
     # query hosts and grab host that has the name as the one given by the post request
-    host = Host.query.filter_by(name=a["name"]).first()
+    host = Host.query.filter_by(name=rhost_inventory["name"]).first()
 
     # if host doesn't exist we add the table for it
     if not host:
-        db.session.add(create_host_from_dict(a))
+        db.session.add(create_host_from_dict(rhost_inventory))
         db.session.commit()
     else:
-        if not a.get("services"):
-            a["services"] = from_host_to_dict(host)["services"]
-        a["ip"] = from_host_to_dict(host)["ip"]
-        a["timeConnected"] = get_current_time()
-        db.session.delete(Host.query.filter_by(name=a["name"]).first())
+        if not rhost_inventory.get("services"):
+            rhost_inventory["services"] = from_host_to_dict(host)["services"]
+
+        # if an os isn't passed then retain current os 
+        if not rhost_inventory.get("OS"):
+            rhost_inventory["OS"] = from_host_to_dict(host)["OS"]
+
+        rhost_inventory["ip"] = from_host_to_dict(host)["ip"]
+        rhost_inventory["timeConnected"] = get_current_time()
+        # print(rhost_inventory["users"][0])
+        db.session.delete(Host.query.filter_by(name=rhost_inventory["name"]).first())
         db.session.commit()
-        db.session.add(create_host_from_dict(a))
+        db.session.add(create_host_from_dict(rhost_inventory))
         db.session.commit()
 
+    # return jsonify({"hosts": [from_host_to_dict(host) for host in Host.query.all()]})
+
+    return jsonify({})
+ 
+
+@api.route('/blacklist_ip/<ip_address>')
+def blacklist_ip(ip_address):
+    if not user_agent(request):
+        return render_template("404.html")
+    ip = IPs(ip_address=ip_address, type='blacklist')
+    db.session.add(ip)
+    db.session.commit()
+    return f'IP address {ip_address} blacklisted successfully.'
     # return jsonify({"hosts": [from_host_to_dict(host) for host in Host.query.all()]})
 
     return jsonify({})
@@ -147,6 +205,29 @@ def whitelist_ip(ip_address):
     db.session.commit()
     return f'IP address {ip_address} whitelisted successfully.'
 
+@api.route('/whitelist_ip/<ip_address>')
+def whitelist_ip(ip_address):
+    if not user_agent(request):
+        return render_template("404.html")
+    ip = IPs(ip_address=ip_address, type='whitelist')
+    db.session.add(ip)
+    db.session.commit()
+    return f'IP address {ip_address} whitelisted successfully.'
+
+
+@api.route('/get_blacklisted_ips')
+def get_blacklisted_ips():
+    if not user_agent(request):
+        return render_template("404.html")
+    ips = IPs.query.filter_by(type='blacklist').all()
+    return jsonify([ip.ip_address for ip in ips])
+
+@api.route('/get_whitelisted_ips')
+def get_whitelisted_ips():
+    if not user_agent(request):
+        return render_template("404.html")
+    ips = IPs.query.filter_by(type='whitelist').all()
+    return jsonify([ip.ip_address for ip in ips])
 
 @api.route('/get_blacklisted_ips')
 def get_blacklisted_ips():

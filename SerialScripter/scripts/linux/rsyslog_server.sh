@@ -35,10 +35,11 @@ else
 		service rsyslog restart
 	fi
 fi
+
 echo 'module(load="imudp")' >> /etc/rsyslog.conf 
 echo 'input(type="imudp" port="514")' >> /etc/rsyslog.conf
 echo '$template TraditionalFormatWithPRI,"%pri-text%: %timegenerated% %fromhost-ip% %HOSTNAME% %syslogtag%%msg:::drop-last-lf%\n' >> /etc/rsyslog.conf
-echo '$template RemoteLogs,"/var/log/rsyslog.log"' >> /etc/rsyslog.conf
+echo '$template RemoteLogs,"/var/log/rsyslog/rsyslog.log"' >> /etc/rsyslog.conf
 echo 'if $msg contains "ssl_client_socket_impl.cc" then {stop}' >> /etc/rsyslog.conf
 echo '*.*;kern.none ?RemoteLogs;TraditionalFormatWithPRI & ~debug' >> /etc/rsyslog.conf
 echo 'stop' >> /etc/rsyslog.conf

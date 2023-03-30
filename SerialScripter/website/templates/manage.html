@@ -19,6 +19,12 @@
                      <a class="nav-link active" data-toggle="tab" href="#serviceinfo">Service Info</a>
                   </li>
                   <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#firewall">Firewall</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#software">Installed Software</a>
+                  </li>
+                  <li class="nav-item">
                      <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
                   </li>
                </ul>
@@ -32,6 +38,9 @@
                   </li>
                   <li class="nav-item">
                      <a class="nav-link active" data-toggle="tab" href="#users">User Info</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link active" data-toggle="tab" href="#docker">Docker Containers</a>
                   </li>
                </ul>
             {% endif %}
@@ -88,6 +97,39 @@
                   </div>
                </div>
             </div>
+            <div class="tab-pane" id="docker">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Detailed Port Information:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Name</th>
+                              <th class= "column-hotpink" scope="col">Status</th>
+                              <th class= "column-hotpink" scope="col">Health</th>
+                              <th class= "column-hotpink" scope="col">ID</th>
+                              <th class= "column-hotpink" scope="col">Command Used</th>
+                              <th class= "column-hotpink" scope="col">Ports</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for item in box["containers"]%}
+                              <tr>
+                                 <td>{{ item["name"] }}</td>
+                                 <td>{{ item["status"] }}</td>
+                                 <td>{{ item["health"] }}</td>
+                                 <td>{{ item["dockerId"] }}</td>
+                                 <td>{{ item["cmd"] }}</td>
+                                 <td>{{ item["ports"] }}</td>
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
             <div class="tab-pane" id="serviceinfo">
                <div class="container">
                   <div class="form-inline">
@@ -133,6 +175,64 @@
                   </div>
                </div>
             </div>
+            <div class="tab-pane" id="firewall">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Firewall Information:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Name</th>
+                              <th class= "column-hotpink" scope="col">Local Ports</th>
+                              <th class= "column-hotpink" scope="col">Remote Ports</th>
+                              <th class= "column-hotpink" scope="col">Remote Addresses</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for firewall in box["FirewallList"] %}
+                              <tr>
+                                 <td>{{ firewall.get("Name") }}</td>
+                                 <td>{{ firewall.get("LocalPorts") }}</td>
+                                 <td>{{ firewall.get("RemotePorts") }}</td>
+                                 <td>{{ firewall.get("RemoteAddresses") }}</td>
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <div class="tab-pane" id="software">
+               <div class="container">
+                  <div class="form-inline">
+                     <div class="page-header">
+                        <h2 class="header-font-xl">Installed Software:</h2>
+                     </div>
+                     <table class="table table-box">
+                        <thead>
+                           <tr>
+                              <th class= "column-hotpink" scope="col">Name</th>
+                              <th class= "column-hotpink" scope="col">Version</th>
+                              <th class= "column-hotpink" scope="col">Install Path</th>
+                              <th class= "column-hotpink" scope="col">Uninstall String</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for software in box["InstalledSoftware"] %}
+                              <tr>
+                                 <td>{{ software.get("Name") }}</td>
+                                 <td>{{ software.get("Version") }}</td>
+                                 <td>{{ software.get("InstallPath") }}</td>
+                                 <td>{{ software.get("UninstallString") }}</td>
+                              </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
             <div class="tab-pane" id="users">
                <div class="container">
                   <div class="form-inline">
@@ -146,12 +246,12 @@
                               <th class= "column-hotpink" scope="col">Enabled</th>
                               <th class= "column-hotpink" scope="col">Admin/Root</th>
                               <th class= "column-hotpink" scope="col">Number of Logons</th>
-                              <!-- <th class= "column-hotpink" scope="col">Password Age</th> -->
                               <th class= "column-hotpink" scope="col">Last Login</th>
+                              <th class= "column-hotpink" scope="col">Bad Login Attempts</th>
                            </tr>
                         </thead>
                         <tbody>
-                           {% for user in box["users"]%}
+                           {% for user in box["users"] %}
                               <tr>
                                  <td> {{ user["Username"] }} </td>
                                  {% if user["Enabled"] %}
@@ -166,15 +266,22 @@
                                     <td><span class="badge rounded-pill bg-danger">False</span></td>
                                  {% endif %}
 
-                                 {% if user["NumOfLogons"] == 0 %}
+                                 {% if "windows" not in box["OS"].lower() %}
+                                    <td style="text-align: center;"> {{ user["NumOfLogons"] }} </td>
+                                    <td> {{ user["LastLogon"] }} </td>                                 
+                                    <td style="text-align: center;"> {{ user["BadPasswdAttempts"] }} </td>                                 
+                                 {% elif user["NumOfLogons"] == 0 %}
+                                    <td> Never Logged In </td>
                                     <td> Never Logged In </td>
                                     <td> Never Logged In </td>
                                  {% elif user["NumOfLogons"] == None %}
                                     <td> {{ user["NumOfLogons"] }} </td>
                                     <td> {{ user["LastLogon"] }} </td>
+                                    <td style="text-align: center;"> {{ user["BadPasswdAttempts"] }} </td>                                 
                                  {% elif "T" in user["LastLogon"]%}
                                     <td> {{ user["NumOfLogons"] }} </td>
                                     <td> {{ user["LastLogon"].split("T")[1].split("-")[0] }} </td>
+                                    <td style="text-align: center;"> {{ user["BadPasswdAttempts"] }} </td>                                 
                                  {% endif %}
                               </tr>
                            {% endfor %}
@@ -184,7 +291,6 @@
                      <input type="submit" value="Download CSV" class="btn btn-secondary" name="users-download">
                      <input type="submit" value="Upload CSV" class="btn btn-secondary" name="users-upload">
                   </form>
-                  </div>
                </div>
             </div>
          </div>

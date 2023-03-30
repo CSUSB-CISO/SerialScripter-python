@@ -97,7 +97,7 @@ def get_log_lines(log_file: str):
 # create list of logs from rsyslog.log from a given offset
 def get_rsyslog_list(offset=slice(None, None)):
 
-    rsyslog_logs_file = "/var/log/rsyslog.log"
+    rsyslog_logs_file = "/var/log/rsyslog/rsyslog.log"
 
     log_format = (Combine(Word(alphas + nums + '-_') + '.' + Word(alphas + nums + '-_') ) + 
               SkipTo(Regex('\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}')).suppress() + Regex('\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}') +
