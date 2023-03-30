@@ -31,9 +31,13 @@ def login():
                 logging_serial(f"User: {user.first_name} has logged in", True, "Login")
                 return redirect(url_for('views.home'))
             else:
-                flash('Incorrect password, try again.', category='error')
+                flash('Incorrect!, try again.', category='error')
+                logging_serial(f"Failed login attempt from IP: {request.remote_addr}", "Warning", "Login")
+
         else:
-            flash('Email does not exist.', category='error')
+            flash('Incorrect!, try again.', category='error')
+            logging_serial(f"Failed login attempt from IP: {request.remote_addr}", "Warning", "Login")
+
 
     return render_template("login.html", user=current_user)
 

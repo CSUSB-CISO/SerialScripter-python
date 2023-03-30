@@ -593,9 +593,10 @@ def create_host_from_dict(dict):
     # and add it to the host.docker list
     try:
         host.dockers = [create_docker_from_dict(docker) for docker in dict.get("containers")]
-        print("created docker")
+        # print("created docker")
     except TypeError as e:
-        print(f"{str(e)}")
+        # print(f"{str(e)}")
+        pass
 
     
     # create application object from dict

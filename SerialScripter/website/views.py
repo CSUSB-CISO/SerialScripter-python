@@ -193,7 +193,7 @@ def box_management(name: str):
                             flash("Unable to create csv. No services exist.")
                             logging_serial(e, False, "convert-csv")
 
-            print(box_list[i])
+            # print(box_list[i])
             return render_template(
                 "manage.html",
                 title=name,
@@ -589,7 +589,7 @@ def rsyslog_sort(filter: str):
         filtered_log_file = [{'hostname': 'Cowboy', 'syslogtag_pid': 'n/a', 'IP': 'localhost','timestamp': 'time', 'log_level': 'severity', 'log_message': "Keyboard Cowboys"}]
         pagination = Pagination(page=page, total=0, per_page=0)
         flash(f"Log file does not exist") 
-        print(e)   
+        # print(e)   
 
     return render_template(
             "rsyslog.html",
