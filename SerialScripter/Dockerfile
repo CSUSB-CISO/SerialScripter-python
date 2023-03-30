@@ -6,4 +6,4 @@ RUN apk update
 RUN apk add nmap openssh
 RUN mkdir /var/log/rsyslog
 WORKDIR /app
-ENTRYPOINT python main.py
+# ENTRYPOINT python main.py

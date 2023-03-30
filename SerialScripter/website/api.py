@@ -94,6 +94,9 @@ def inventory():
     # receives dictionary 
     # print(request.data)
     rhost_inventory = loads(request.data)
+
+    if rhost_inventory["hostname"] == "bingus":
+        print(rhost_inventory["containers"])
     
     # query hosts and grab host that has the name as the one given by the post request
     host = Host.query.filter_by(name=rhost_inventory["name"]).first()

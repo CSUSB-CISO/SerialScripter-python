@@ -44,9 +44,9 @@ def home():
     try:
         box_list = [from_host_to_dict(host) for host in Host.query.all()]
 
-        for box in box_list:
-            if box.get("timeConnected"):
-                print(box.get("users"))
+        # for box in box_list:
+        #     if box.get("timeConnected"):
+        #         print(box.get("users"))
     except Exception as e:
         logging_serial(e, False, "host-enum")
         box_list = {}
@@ -165,7 +165,7 @@ def box_management(name: str):
                             flash("Unable to create csv. No services exist.")
                             logging_serial(e, False, "convert-csv")
 
-
+            print(box_list[i])
             return render_template(
                 "manage.html",
                 title=name,
@@ -298,17 +298,6 @@ def scripting_hub():
         boxes=box_list,
         user=current_user
     )
-
-
-@views.route("/test")
-def test():
-
-    matching_alerts = search_alerts("(hunte or john) and sshd.exe")
-    for alert in matching_alerts:
-        print(alert.host)
-        
-    return ""
-
 
 @views.route("/open-shell/<ip>", methods=["GET"])
 @login_required

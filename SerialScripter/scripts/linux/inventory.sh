@@ -660,14 +660,26 @@ DSuck() {
 	for i in $(docker ps | awk '{print $1}' | grep -vi "container"); do
 		jname=$(docker inspect --format='{{.Config.Image}}' $i)
 		jstatus=$(docker inspect --format='{{.State.Status}}' $i)
-		jhealth=$(docker inspect --format='{{.State.Health.Status}}' $i)
+		# jhealth=$(docker inspect --format='{{.State.Health.Status}}' $i)
+		jhealth=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' $i)
 		jID=$(echo $i)
-		cmds=$(docker inspect --format='{{.Config.Cmd}}' $i)
-		jcmds=$(echo ${cmds::-1} | cut -b 2-)
-		ports=$(docker inspect --format='{{.NetworkSettings.Ports}}' $i)
-		jports=$(echo ${ports::-1} | cut -b 5-)
+		# cmds=$(docker inspect --format='{{.Config.Cmd}}' $i)
+		cmds=$(docker inspect --format='{{if .Config.Cmd}}{{.Config.Cmd}}{{else}}none{{end}}' $i)
+		if [[ -n $cmds ]]; then
+			jcmds="none"
+		else
+			jcmds=$(echo ${cmds::-1} | cut -b 2-)
+		fi
+		# ports=$(docker inspect --format='{{.NetworkSettings.Ports}}' $i)
+		ports=$(docker inspect --format='{{if .NetworkSettings.Ports}}{{.NetworkSettings.Ports}}{{else}}none{{end}}' $i)
+		if [[ -n $ports ]]; then
+			jports="none"
+		else
+			jports=$(echo ${ports::-1} | cut -b 5-)
+		fi
 		docinfo+="{\"name\":\"$jname\",\"status\":\"$jstatus\",\"health\":\"$jhealth\",\"dockerId\":\"$jID\",\"cmd\":\"$jcmds\",\"ports\":\"$jports\"},"
 	done
+	docinfo=$(echo "$docinfo" | awk '{print substr($0, 1, length($0)-1)}')
 	echo -n $docinfo
 }
 
@@ -713,9 +725,10 @@ function ExportToJSON() {
 	else	
 		JSON='{"name":"%s","hostname":"%s","ip":"%s","OS":"%s","services":[%s], "users": [%s]}'
 		postdata=$(printf "$JSON" "$name" "$hostname" "$IPS" "$OS" "${checkedservices}" "${userinfo::-1}")
+	fi
 	# echo $postdata
 	PostToServ "$postdata"
-	fi
+	
 }
 
 #banner

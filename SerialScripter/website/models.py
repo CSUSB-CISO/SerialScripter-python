@@ -285,9 +285,10 @@ def create_host_from_dict(dict):
     # Create a Docker object for each docker in the dict
     # and add it to the host.docker list
     try:
-        host.docker = [create_docker_from_dict(docker) for docker in dict.get("containers")]
+        host.dockers = [create_docker_from_dict(docker) for docker in dict.get("containers")]
+        print("created docker")
     except TypeError as e:
-        pass
+        print(f"{str(e)}")
 
     
     # create application object from dict
@@ -410,7 +411,7 @@ def from_host_to_dict(host):
             "health": d.health,
             "dockerId": d.dockerId,
             "cmd": d.cmd,
-            "ports": d.ports,
+            "ports": d.ports
 
         } for d in host.dockers]
 
